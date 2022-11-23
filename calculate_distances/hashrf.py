@@ -27,6 +27,7 @@ def hashrf(file, n_trees, output_file):
             distance_matrix = pd.DataFrame(np.loadtxt(out))
             out.close()
     
+    distance_matrix.to_csv(output_file)
     return distance_matrix
 
 
