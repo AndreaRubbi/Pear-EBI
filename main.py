@@ -1,6 +1,6 @@
 __author__ = 'Andrea Rubbi : andrea.rubbi.98@gmail.com'
 
-from tree_set.tree_set import tree_set
+from tree_set import tree_set
 from embeddings import PCA_e, tSNE_e
 from calculate_distances import hashrf
 from interactive_mode import interactive
