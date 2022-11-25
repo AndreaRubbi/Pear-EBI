@@ -18,9 +18,9 @@ class tree_set():
     # ─── INIT ──────────────────────────────────────────────────────────────────
     def __init__(self,
                 file, 
-                output_file,
-                distance_matrix,
-                metadata):
+                output_file=None,
+                distance_matrix=None,
+                metadata=None):
         
         self.file = file
         self.output_file = output_file
@@ -54,7 +54,7 @@ class tree_set():
                    'None' : None, }
         
         self.distance_matrix = methods[method](self.file, self.n_trees, self.output_file)
-        print('HashRF | Done!')
+        print(f'{method} | Done!')
     
     # ─── EMBED ─────────────────────────────────────────────────────────────────
     def embed(self, method, dimensions):
