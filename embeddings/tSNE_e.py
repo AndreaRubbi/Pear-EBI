@@ -4,9 +4,10 @@ import plotly.express as px
 import numpy as np
 import pandas as pd
 from sklearn.manifold import TSNE
+from .graph import graph
 # ──────────────────────────────────────────────────────────────────────────────
 # ─── t-SNE ND ─────────────────────────────────────────────────────────────────
-def tsne(distance_matrix, n_dimensions):
+'''def tsne(distance_matrix, n_dimensions):
     method = 'barnes_hut'
     if n_dimensions > 3: method = 'exact'
     
@@ -24,7 +25,18 @@ def tsne(distance_matrix, n_dimensions):
                     title=f't-SNE 2D Embedding') #color=Distances[WHAT]
     fig.write_html("./graph_t-SNE2.html")
         
-    return Distances_embedded_ND
+    return Distances_embedded_ND, fig'''
 
 # ──────────────────────────────────────────────────────────────────────────────
 
+def tsne(distance_matrix, n_dimensions, metadata=None):
+    method = 'barnes_hut'
+    if n_dimensions > 3: method = 'exact'
+    
+    Distances_embedded_ND = TSNE(n_components=n_dimensions, method=method,
+            init='random', learning_rate=200.0, perplexity=3).fit_transform(distance_matrix.values.astype(np.float32))
+    pd.DataFrame(Distances_embedded_ND).to_csv('./t-SNE_Embedding.csv')
+    
+    fig = graph.plot_embedding(Distances_embedded_ND, metadata, n_dimensions, name_plot='Tree_embedding')
+
+    return Distances_embedded_ND, fig

@@ -4,9 +4,10 @@ import plotly.express as px
 from sklearn.decomposition import PCA
 import numpy as np
 import pandas as pd
+from .graph import graph
 # ──────────────────────────────────────────────────────────────────────────────
 # ─── PCA N COMPONENTS ─────────────────────────────────────────────────────────
-def pca(distance_matrix, n_components):
+'''def pca(distance_matrix, n_components):
     pca = PCA(n_components=n_components)
     components = pca.fit_transform(distance_matrix)
     total_var = pca.explained_variance_ratio_.sum() * 100
@@ -24,6 +25,17 @@ def pca(distance_matrix, n_components):
             title=f'Total Explained Variance: {total_var:.2f}%') #color=Distances[WHAT]
     fig.write_html("./graph_PCA2.html")
     
-    return components
+    return components, fig'''
         
 # ──────────────────────────────────────────────────────────────────────────────
+
+
+def pca(distance_matrix, n_components, metadata=None):
+    pca = PCA(n_components=n_components)
+    components = pca.fit_transform(distance_matrix)
+    total_var = pca.explained_variance_ratio_.sum() * 100
+    pd.DataFrame(components).to_csv('./PCA_Embedding.csv')
+    
+    fig = graph.plot_embedding(components, metadata, n_components, name_plot='Tree_embedding')
+
+    return components, fig
