@@ -69,8 +69,8 @@ class tree_set():
         
         dimensions = 2
         
-        if type(self.distance_matrix) == type(None): 
-            raise Exception('Distance matrix has to be computed or inserted by the user prior the embedding')
+        if type(self.distance_matrix) == type(None): self.calculate_distances('hashrf')
+            #raise Exception('Distance matrix has to be computed or inserted by the user prior the embedding')
         if method == 'pca':
             self.embedding_pca2D = methods[method](self.distance_matrix, dimensions, self.metadata)
         if method == 'tsne':
@@ -94,12 +94,12 @@ class tree_set():
     
     def plot_2D(self, method, save=False, name_plot=None):
         if method == 'pca':
-            if name_plot == None: name_plot='PCA_2D.html'
+            if name_plot == None: name_plot='PCA_2D'
             if type(self.embedding_pca2D) == type(None): self.embed_2D('pca')
             fig = graph.plot_embedding(self.embedding_pca2D, self.metadata, 2, save, name_plot)
         
         elif method == 'tsne':
-            if name_plot == None: name_plot='TSNE_2D.html'
+            if name_plot == None: name_plot='TSNE_2D'
             if type(self.embedding_tsne2D) == type(None): self.embed_2D('tsne')
             fig = graph.plot_embedding(self.embedding_tsne2D, self.metadata, 2, save, name_plot)
         
@@ -109,12 +109,12 @@ class tree_set():
     
     def plot_3D(self, method, save=False, name_plot=None):
         if method == 'pca':
-            if name_plot == None: name_plot='PCA_3D.html'
+            if name_plot == None: name_plot='PCA_3D'
             if type(self.embedding_pca3D) == type(None): self.embed_3D('pca')
             fig = graph.plot_embedding(self.embedding_pca3D, self.metadata, 3, save, name_plot)
         
         elif method == 'tsne':
-            if name_plot == None: name_plot='TSNE_3D.html'
+            if name_plot == None: name_plot='TSNE_3D'
             if type(self.embedding_tsne3D) == type(None): self.embed_3D('tsne')
             fig = graph.plot_embedding(self.embedding_tsne3D, self.metadata, 3, save, name_plot)
         

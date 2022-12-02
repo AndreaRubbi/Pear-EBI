@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
 from ipywidgets import widgets
-from contextlib import suppress
+import builtins
 
 
 def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embedding'):
@@ -24,6 +24,15 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
         value='SET-ID',
         description='Metadata:',
         )
+    save_pdf = widgets.Button(
+            description='Save plot as PDF',
+            button_style='danger',
+            layout= widgets.Layout(width="150px"),)
+    
+    def save_pdf_func(b):
+        fig.write_image(name_plot + '.pdf')
+    
+    save_pdf.on_click(save_pdf_func)
     
     if dimensions == 3:
         assert data.shape[1] == 3, 'Embed distance_matrix in 3D before requesting a 3D plot'
@@ -108,7 +117,9 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
         
         meta_widget.observe(response_meta, names="value")
         
-        container = widgets.HBox([meta_widget]) 
+        container = widgets.HBox([meta_widget, save_pdf]) 
+        
+        no_widget_fig = fig
         
         fig = go.FigureWidget(fig)
         
@@ -331,11 +342,15 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
         meta_widget.observe(response_meta, names="value")
         points_density.on_click(response_points)
         
-        container = widgets.HBox([meta_widget,points_density]) 
+        container = widgets.HBox([meta_widget,points_density, save_pdf]) 
+        
+        no_widget_fig = fig
         
         fig = go.FigureWidget(fig)
         
         image = widgets.VBox([container, fig])     
     
-    if save: fig.write_html(name_plot)
-    return image
+    if save: no_widget_fig.write_html(name_plot + '.html')
+    
+    if hasattr(builtins,'__IPYTHON__'): return image
+    else: return no_widget_fig
