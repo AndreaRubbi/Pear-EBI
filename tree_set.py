@@ -13,6 +13,7 @@ sys.path.append(parent)
 from .embeddings import PCA_e, tSNE_e
 from .calculate_distances import hashrf
 from .interactive_mode import interactive
+from .embeddings.graph import graph
 # ────────────────────────────────────────────────────────── TREE_SET CLASS ─────
 class tree_set():
     # ─── INIT ──────────────────────────────────────────────────────────────────
@@ -25,8 +26,12 @@ class tree_set():
         self.file = file
         self.output_file = output_file
         self.distance_matrix = distance_matrix
-        self.metadata = metadata 
-        
+        self.metadata = metadata
+        self.embedding_pca2D = None
+        self.embedding_tsne2D = None
+        self.embedding_pca3D = None
+        self.embedding_tsne3D = None
+                 
         if self.output_file == None: self.output_file = "./{file}_distance_matrix.csv".format(file = os.path.splitext(os.path.basename(self.file))[0])
         
         if self.distance_matrix != None:
@@ -57,22 +62,66 @@ class tree_set():
         print(f'{method} | Done!')
     
     # ─── EMBED ─────────────────────────────────────────────────────────────────
-    def embed(self, method, dimensions):
+    def embed_2D(self, method):
         methods = {'pca' : PCA_e.pca,
                    'tsne' : tSNE_e.tsne,
                    'None' : None, }
         
-        if dimensions == 1: raise Exception('Cannot embed in 1 dimension')
-        if dimensions > self.n_trees: raise Exception('Cannot embed in #dimensions greater than #trees')
+        dimensions = 2
         
-        if type(self.distance_matrix) == None: 
+        if type(self.distance_matrix) == type(None): 
             raise Exception('Distance matrix has to be computed or inserted by the user prior the embedding')
         if method == 'pca':
-            self.embedding_pca, fig = methods[method](self.distance_matrix, dimensions, self.metadata)
+            self.embedding_pca2D = methods[method](self.distance_matrix, dimensions, self.metadata)
         if method == 'tsne':
-            self.embedding_tsne, fig = methods[method](self.distance_matrix, dimensions, self.metadata)
+            self.embedding_tsne2D = methods[method](self.distance_matrix, dimensions, self.metadata)
+    
+    def embed_3D(self, method):
+        methods = {'pca' : PCA_e.pca,
+                   'tsne' : tSNE_e.tsne,
+                   'None' : None, }
+        
+        dimensions = 3
+        
+        if type(self.distance_matrix) == type(None): self.calculate_distances('hashrf') 
+            #raise Exception('Distance matrix has to be computed or inserted by the user prior the embedding')
+        if method == 'pca':
+            self.embedding_pca3D = methods[method](self.distance_matrix, dimensions, self.metadata)
+        if method == 'tsne':
+            self.embedding_tsne3D = methods[method](self.distance_matrix, dimensions, self.metadata)
+    
+    # ─── PLOT EMBEDDING ─────────────────────────────────────────────────────────
+    
+    def plot_2D(self, method, save=False, name_plot=None):
+        if method == 'pca':
+            if name_plot == None: name_plot='PCA_2D.html'
+            if type(self.embedding_pca2D) == type(None): self.embed_2D('pca')
+            fig = graph.plot_embedding(self.embedding_pca2D, self.metadata, 2, save, name_plot)
+        
+        elif method == 'tsne':
+            if name_plot == None: name_plot='TSNE_2D.html'
+            if type(self.embedding_tsne2D) == type(None): self.embed_2D('tsne')
+            fig = graph.plot_embedding(self.embedding_tsne2D, self.metadata, 2, save, name_plot)
+        
+        else: raise ValueError("'method' can only be either 'pca' or 'tsne' ")
         
         return fig
+    
+    def plot_3D(self, method, save=False, name_plot=None):
+        if method == 'pca':
+            if name_plot == None: name_plot='PCA_3D.html'
+            if type(self.embedding_pca3D) == type(None): self.embed_3D('pca')
+            fig = graph.plot_embedding(self.embedding_pca3D, self.metadata, 3, save, name_plot)
+        
+        elif method == 'tsne':
+            if name_plot == None: name_plot='TSNE_3D.html'
+            if type(self.embedding_tsne3D) == type(None): self.embed_3D('tsne')
+            fig = graph.plot_embedding(self.embedding_tsne3D, self.metadata, 3, save, name_plot)
+        
+        else: raise ValueError("'method' can only be either 'pca' or 'tsne' ")
+        
+        return fig
+            
             
 # ──────────────────────────────────────────────────────────────────────────────
 # ─────────────────────────────────────────────────── SET_COLLECTION CLASS ─────
@@ -81,6 +130,10 @@ class set_collection(tree_set):
                  output_file = "./Set_collection_distance_matrix.csv"):
         self.file = file
         self.distance_matrix = None
+        self.embedding_pca2D = None
+        self.embedding_tsne2D = None
+        self.embedding_pca3D = None
+        self.embedding_tsne3D = None
         
         if file != 'Set_collection' and output_file == "./Set_collection_distance_matrix.csv": 
             self.output_file = "./{file}_distance_matrix.csv".format(file = os.path.splitext(os.path.basename(self.file))[0])
