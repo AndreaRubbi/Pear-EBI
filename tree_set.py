@@ -1,6 +1,7 @@
 import os, sys
 import pandas as pd
 import numpy as np
+import uuid
 # getting the name of the directory
 current = os.path.dirname(os.path.realpath(__file__))
  
@@ -34,17 +35,20 @@ class tree_set():
                  
         if self.output_file == None: self.output_file = "./{file}_distance_matrix.csv".format(file = os.path.splitext(os.path.basename(self.file))[0])
         
+        with open(file, 'r') as f:
+            self.n_trees = len(f.readlines())
+            f.close()
+        
         if self.distance_matrix != None:
             try: pd.read_csv(self.distance_matrix) 
             except: print("There's an error with the Distance Matrix file - please check the correct location and name of the .csv file"), exit() 
               
         if self.metadata != None:
-            try: pd.read_csv(self.metadata) 
+            try: self.metadata = pd.read_csv(self.metadata) 
             except: print("There's an error with the Metadata file - please check the correct location and name of the .csv file"), exit() 
         
-        with open(file, 'r') as f:
-            self.n_trees = len(f.readlines())
-            f.close()
+        else: self.metadata = pd.DataFrame()
+        self.metadata['SET-ID'] = [os.path.splitext(os.path.basename(self.file))[0] for i in range(self.n_trees)]
             
     # ─── STR ───────────────────────────────────────────────────────────────────
     def __str__(self):
@@ -92,31 +96,31 @@ class tree_set():
     
     # ─── PLOT EMBEDDING ─────────────────────────────────────────────────────────
     
-    def plot_2D(self, method, save=False, name_plot=None):
+    def plot_2D(self, method, save=False, name_plot=None, static=False):
         if method == 'pca':
             if name_plot == None: name_plot='PCA_2D'
             if type(self.embedding_pca2D) == type(None): self.embed_2D('pca')
-            fig = graph.plot_embedding(self.embedding_pca2D, self.metadata, 2, save, name_plot)
+            fig = graph.plot_embedding(self.embedding_pca2D, self.metadata, 2, save, name_plot, static)
         
         elif method == 'tsne':
             if name_plot == None: name_plot='TSNE_2D'
             if type(self.embedding_tsne2D) == type(None): self.embed_2D('tsne')
-            fig = graph.plot_embedding(self.embedding_tsne2D, self.metadata, 2, save, name_plot)
+            fig = graph.plot_embedding(self.embedding_tsne2D, self.metadata, 2, save, name_plot, static)
         
         else: raise ValueError("'method' can only be either 'pca' or 'tsne' ")
         
         return fig
     
-    def plot_3D(self, method, save=False, name_plot=None):
+    def plot_3D(self, method, save=False, name_plot=None, static=False):
         if method == 'pca':
             if name_plot == None: name_plot='PCA_3D'
             if type(self.embedding_pca3D) == type(None): self.embed_3D('pca')
-            fig = graph.plot_embedding(self.embedding_pca3D, self.metadata, 3, save, name_plot)
+            fig = graph.plot_embedding(self.embedding_pca3D, self.metadata, 3, save, name_plot, static)
         
         elif method == 'tsne':
             if name_plot == None: name_plot='TSNE_3D'
             if type(self.embedding_tsne3D) == type(None): self.embed_3D('tsne')
-            fig = graph.plot_embedding(self.embedding_tsne3D, self.metadata, 3, save, name_plot)
+            fig = graph.plot_embedding(self.embedding_tsne3D, self.metadata, 3, save, name_plot, static)
         
         else: raise ValueError("'method' can only be either 'pca' or 'tsne' ")
         
@@ -127,17 +131,18 @@ class tree_set():
 # ─────────────────────────────────────────────────── SET_COLLECTION CLASS ─────
 class set_collection(tree_set):
     def __init__(self, collection = list(), file = 'Set_collection', 
-                 output_file = "./Set_collection_distance_matrix.csv"):
-        self.file = file
+                 output_file = "./Set_collection_distance_matrix"):
+        self.id = uuid.uuid4()
+        self.file = file + str(self.id)
         self.distance_matrix = None
         self.embedding_pca2D = None
         self.embedding_tsne2D = None
         self.embedding_pca3D = None
         self.embedding_tsne3D = None
         
-        if file != 'Set_collection' and output_file == "./Set_collection_distance_matrix.csv": 
+        if self.file != 'Set_collection' + str(self.id) and output_file == "./Set_collection_distance_matrix.csv": 
             self.output_file = "./{file}_distance_matrix.csv".format(file = os.path.splitext(os.path.basename(self.file))[0])
-        else: self.output_file = output_file
+        else: self.output_file = output_file + str(self.id) + ".csv"
         
         if isinstance(collection, tree_set): 
             self.collection = [collection]

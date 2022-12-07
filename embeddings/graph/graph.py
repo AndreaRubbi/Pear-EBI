@@ -5,7 +5,7 @@ from ipywidgets import widgets
 import builtins
 
 
-def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embedding'):
+def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embedding', static=False):
     assert dimensions <= 3 and dimensions > 1, 'Please select either 2 or 3 dimensions for the plot'  
     
     sets = np.unique(metadata['SET-ID'])
@@ -42,8 +42,10 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
                                    showlegend=False,
                                    marker_color=color_plot,
                                    text=metadata['SET-ID'],
+                                   opacity = 0.6,
                                    marker=dict(
-                                   colorscale=col_list,)))
+                                   colorscale=col_list,
+                                   size = 10)))
         
         
             
@@ -55,6 +57,7 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
             template="seaborn",
             plot_bgcolor='rgba(0,0,0,0)',
             paper_bgcolor='rgba(0,0,0,0)',
+            #hovermode="x unified",
         )
 
         # Update 3D scene options
@@ -132,8 +135,10 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
                                    showlegend=False,
                                    marker_color=color_plot,
                                    text=metadata['SET-ID'],
+                                   opacity = 0.6,
                                    marker=dict(
-                                   colorscale=col_list,)))
+                                   colorscale=col_list,
+                                   size = 10)))
         
         fig.add_trace(go.Scatter(x=data[:,0],
                                    y=data[:,1],
@@ -200,6 +205,7 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
                 showgrid = True
             ),
             paper_bgcolor='rgba(0,0,0,0)',
+            #hovermode="x unified",
         )
 
         # Add dropdown
@@ -352,5 +358,6 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
     
     if save: no_widget_fig.write_html(name_plot + '.html')
     
+    if static: return no_widget_fig
     if hasattr(builtins,'__IPYTHON__'): return image
     else: return no_widget_fig
