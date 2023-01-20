@@ -5,14 +5,16 @@ from ipywidgets import widgets
 import builtins
 
 
-def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embedding', static=False):
+def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embedding', static=False, plot_meta = 'SET-ID'):
     assert dimensions <= 3 and dimensions > 1, 'Please select either 2 or 3 dimensions for the plot'  
+    assert plot_meta in metadata.columns, f'Could not find {plot_meta} in metadata'
+    assert 'SET-ID' in metadata.columns, 'Could not find SET-ID in metadata - please redefine SET-ID or reset the tree_set/set_collection and subsequently define additional metadata'
     
-    sets = np.unique(metadata['SET-ID'])
-    color_plot = np.array(metadata['SET-ID'].values)
+    sets = np.unique(metadata[plot_meta])
+    color_plot = np.array(metadata[plot_meta].values)
     col_list = ["red", "green", "cyan", "blue", "yellow", 'black', "magenta"]
     for i, elem in enumerate(sets):
-        idx = metadata['SET-ID'] == elem
+        idx = metadata[plot_meta] == elem
         color_plot[idx] = i
     
     if len(col_list) < len(sets): col_list = 'Jet'
@@ -21,7 +23,7 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
     
     meta_widget = widgets.Dropdown(
         options=list(metadata.columns),
-        value='SET-ID',
+        value=plot_meta,
         description='Metadata:',
         )
     save_pdf = widgets.Button(
@@ -41,7 +43,26 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
                                    z=data[:,2], mode= 'markers', 
                                    showlegend=False,
                                    marker_color=color_plot,
-                                   text=metadata['SET-ID'],
+                                   text=metadata[plot_meta],
+                                   opacity = 0.6,
+                                   marker=dict(
+                                   colorscale=col_list,
+                                   size = 10)))
+        
+        SetID, nSetID = np.unique(metadata['SET-ID'], return_counts=True)
+        nUnique = len(SetID)
+        for i, uSet in enumerate(SetID):
+            if i == 0: start = 0
+            else: start = sum(nSetID[:i])
+            end = start + int(nSetID[i])
+            if end - start == 1: continue
+            fig.add_trace(go.Scatter3d(x=data[start:end,0],
+                                   y=data[start:end,1],
+                                   z=data[start:end,2], mode= 'lines', 
+                                   showlegend=False,
+                                   visible=False,
+                                   marker_color=color_plot[start:end],
+                                   text=metadata[plot_meta].values[start:end],
                                    opacity = 0.6,
                                    marker=dict(
                                    colorscale=col_list,
@@ -74,12 +95,12 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
                     direction = "left",
                     buttons=list([
                         dict(
-                            args=[{"mode":"markers"},[0]],
+                            args=[{"visible":False},list(range(1,1+nUnique))],
                             label="Markers",
                             method="restyle"
                         ),
                         dict(
-                            args=[{"mode":"lines+markers"},[0]],
+                            args=[{"visible":True},list(range(1,1+nUnique))],
                             label="Markers & Lines",
                             method="restyle"
                         ),
@@ -134,7 +155,7 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
                                    mode= 'markers', 
                                    showlegend=False,
                                    marker_color=color_plot,
-                                   text=metadata['SET-ID'],
+                                   text=metadata[plot_meta],
                                    opacity = 0.6,
                                    marker=dict(
                                    colorscale=col_list,
@@ -148,7 +169,7 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
                                    visible=False,
                                    showlegend=False, 
                                    marker_color=color_plot,
-                                   text=metadata['SET-ID'],
+                                   text=metadata[plot_meta],
                                    marker=dict(
                                    colorscale=col_list,)))
         
@@ -171,6 +192,25 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
                     color = 'rgba(200,200,250,1)'
                 )
             ))
+        
+        SetID, nSetID = np.unique(metadata['SET-ID'], return_counts=True)
+        nUnique = len(SetID)
+        for i, uSet in enumerate(SetID):
+            if i == 0: start = 0
+            else: start = sum(nSetID[:i])
+            end = start + int(nSetID[i])
+            if end - start == 1: continue
+            fig.add_trace(go.Scatter(x=data[start:end,0],
+                                   y=data[start:end,1],
+                                   mode= 'lines', 
+                                   showlegend=False,
+                                   visible=False,
+                                   marker_color=color_plot[start:end],
+                                   text=metadata[plot_meta].values[start:end],
+                                   opacity = 0.6,
+                                   marker=dict(
+                                   colorscale=col_list,
+                                   size = 10)))
             
             
         fig.update_layout(
@@ -216,8 +256,8 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
                     direction = "left",
                     buttons=list([
                         dict(
-                            args=[{"type": ["scatter", "scatter", "histogram", "histogram"],
-                                   "visible":[True, False, True, True]},
+                            args=[{"type": ["scatter", "scatter", "histogram", "histogram"] + ["scatter" for i in range(nUnique)],
+                                   "visible":[True, False, True, True] + [False for i in range(nUnique)]},
                                   {"xaxis":{"showgrid":True,
                                                 "showline":True,
                                                 "zeroline":True,
@@ -247,8 +287,8 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
                             method="update"
                         ),
                         dict(
-                            args=[{"type": ["histogram2dcontour", "scatter",  "histogram", "histogram"],
-                                   "visible":[True, False, False, False]},
+                            args=[{"type": ["histogram2dcontour", "scatter",  "histogram", "histogram"] + ["scatter" for i in range(nUnique)],
+                                   "visible":[True, False, False, False] + [False for i in range(nUnique)]},
                                   {"xaxis":{"showgrid":True,
                                                 "showline":True,
                                                 "zeroline":True,
@@ -291,12 +331,12 @@ def plot_embedding(data, metadata, dimensions, save=False, name_plot='Tree_embed
                     direction = "left",
                     buttons=list([
                         dict(
-                            args=[{"mode":"markers"},[0,1]],
+                            args=[{"visible":False},list(range(4,4+nUnique))],
                             label="Markers",
                             method="restyle"
                         ),
                         dict(
-                            args=[{"mode":"lines+markers"},[0,1]], 
+                            args=[{"visible":True},list(range(4,4+nUnique))], 
                             label="Markers & Lines",
                             method="restyle"
                         ),

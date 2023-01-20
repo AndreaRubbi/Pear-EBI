@@ -2,6 +2,9 @@ import os, sys
 import pandas as pd
 import numpy as np
 import uuid
+from rich.console import Console
+from rich import print
+
 # getting the name of the directory
 current = os.path.dirname(os.path.realpath(__file__))
  
@@ -15,8 +18,10 @@ from .embeddings import PCA_e, tSNE_e
 from .calculate_distances import hashrf
 from .interactive_mode import interactive
 from .embeddings.graph import graph
+
 # ────────────────────────────────────────────────────────── TREE_SET CLASS ─────
 class tree_set():
+    console = Console()
     # ─── INIT ──────────────────────────────────────────────────────────────────
     def __init__(self,
                 file, 
@@ -39,16 +44,17 @@ class tree_set():
             self.n_trees = len(f.readlines())
             f.close()
         
-        if self.distance_matrix != None:
+        if type(self.distance_matrix) != type(None):
             try: pd.read_csv(self.distance_matrix) 
             except: print("There's an error with the Distance Matrix file - please check the correct location and name of the .csv file"), exit() 
               
-        if self.metadata != None:
+        if type(self.metadata) != type(None):
             try: self.metadata = pd.read_csv(self.metadata) 
             except: print("There's an error with the Metadata file - please check the correct location and name of the .csv file"), exit() 
         
         else: self.metadata = pd.DataFrame()
         self.metadata['SET-ID'] = [os.path.splitext(os.path.basename(self.file))[0] for i in range(self.n_trees)]
+        self.metadata['STEP'] = [i for i in range(self.n_trees)]
             
     # ─── STR ───────────────────────────────────────────────────────────────────
     def __str__(self):
@@ -60,10 +66,12 @@ class tree_set():
     # ─── CALCULATE DISTANCES ───────────────────────────────────────────────────
     def calculate_distances(self, method):
         methods = {'hashrf' : hashrf.hashrf,
+                   'hashrf_weighted' : hashrf.hashrf_weighted,
                    'None' : None, }
         
-        self.distance_matrix = methods[method](self.file, self.n_trees, self.output_file)
-        print(f'{method} | Done!')
+        with self.console.status("[bold green]Calculating distances...") as status:
+            self.distance_matrix = methods[method](self.file, self.n_trees, self.output_file)
+        print(f'[bold red]{method} | Done!')
     
     # ─── EMBED ─────────────────────────────────────────────────────────────────
     def embed_2D(self, method):
@@ -96,31 +104,31 @@ class tree_set():
     
     # ─── PLOT EMBEDDING ─────────────────────────────────────────────────────────
     
-    def plot_2D(self, method, save=False, name_plot=None, static=False):
+    def plot_2D(self, method, save=False, name_plot=None, static=False, plot_meta = 'SET-ID'):
         if method == 'pca':
             if name_plot == None: name_plot='PCA_2D'
             if type(self.embedding_pca2D) == type(None): self.embed_2D('pca')
-            fig = graph.plot_embedding(self.embedding_pca2D, self.metadata, 2, save, name_plot, static)
+            fig = graph.plot_embedding(self.embedding_pca2D, self.metadata, 2, save, name_plot, static, plot_meta)
         
         elif method == 'tsne':
             if name_plot == None: name_plot='TSNE_2D'
             if type(self.embedding_tsne2D) == type(None): self.embed_2D('tsne')
-            fig = graph.plot_embedding(self.embedding_tsne2D, self.metadata, 2, save, name_plot, static)
+            fig = graph.plot_embedding(self.embedding_tsne2D, self.metadata, 2, save, name_plot, static, plot_meta)
         
         else: raise ValueError("'method' can only be either 'pca' or 'tsne' ")
         
         return fig
     
-    def plot_3D(self, method, save=False, name_plot=None, static=False):
+    def plot_3D(self, method, save=False, name_plot=None, static=False, plot_meta = 'SET-ID'):
         if method == 'pca':
             if name_plot == None: name_plot='PCA_3D'
             if type(self.embedding_pca3D) == type(None): self.embed_3D('pca')
-            fig = graph.plot_embedding(self.embedding_pca3D, self.metadata, 3, save, name_plot, static)
+            fig = graph.plot_embedding(self.embedding_pca3D, self.metadata, 3, save, name_plot, static, plot_meta)
         
         elif method == 'tsne':
             if name_plot == None: name_plot='TSNE_3D'
             if type(self.embedding_tsne3D) == type(None): self.embed_3D('tsne')
-            fig = graph.plot_embedding(self.embedding_tsne3D, self.metadata, 3, save, name_plot, static)
+            fig = graph.plot_embedding(self.embedding_tsne3D, self.metadata, 3, save, name_plot, static, plot_meta)
         
         else: raise ValueError("'method' can only be either 'pca' or 'tsne' ")
         
@@ -130,6 +138,7 @@ class tree_set():
 # ──────────────────────────────────────────────────────────────────────────────
 # ─────────────────────────────────────────────────── SET_COLLECTION CLASS ─────
 class set_collection(tree_set):
+    console = Console()
     def __init__(self, collection = list(), file = 'Set_collection', 
                  output_file = "./Set_collection_distance_matrix"):
         self.id = uuid.uuid4()
@@ -176,7 +185,7 @@ class set_collection(tree_set):
             key = os.path.splitext(os.path.basename(set.file))[0]
             
             metadata = set.metadata
-            if metadata == None: metadata = pd.DataFrame()
+            if type(metadata) == type(None): metadata = pd.DataFrame()
             metadata['SET-ID'] = np.array([key] * set.n_trees)
             
             self.metadata = pd.concat([self.metadata, metadata])
