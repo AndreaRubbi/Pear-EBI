@@ -1,4 +1,5 @@
 # TreeEmbedding ![Logo Goldman](./goldman_logo.jpg | width=200)
+<img src="./goldman_logo.jpg" width="200" height="200">
 ### by Goldman group - EMBL-EBI
 
 TreeEmbedding can:
