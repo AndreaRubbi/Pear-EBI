@@ -1,4 +1,4 @@
-# TreeEmbedding ![Logo Goldman](./goldman_logo.jpg =x250)
+# TreeEmbedding ![Logo Goldman](./goldman_logo.jpg =250x)
 ### by Goldman group - EMBL-EBI
 
 TreeEmbedding can:
