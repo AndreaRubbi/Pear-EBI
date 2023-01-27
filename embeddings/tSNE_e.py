@@ -6,6 +6,16 @@ from sklearn.manifold import TSNE
 # ──────────────────────────────────────────────────────────────────────────────
 # ─── t-SNE ND ─────────────────────────────────────────────────────────────────
 def tsne(distance_matrix, n_dimensions, metadata=None):
+    """embed distance_matrix in n_components with t-Stochastic Neighbor Embedding
+
+    Args:
+        distance_matrix (pandas.DataFrame): distance_matrix
+        n_dimensions (int): number of desired dimensions
+        metadata (pandas.DataFrame, optional): metadata of elements. Defaults to None.
+
+    Returns:
+        Distances_embedded_ND (numpy.array): distances embedded in n_dimensions 
+    """    
     method = 'barnes_hut'
     if n_dimensions > 3: method = 'exact'
     
