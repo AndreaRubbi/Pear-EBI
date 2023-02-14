@@ -1,0 +1,16 @@
+ipykernel==6.17.1
+ipython==8.6.0
+ipywidgets==7.7.2
+jupyter==1.0.0
+jupyterlab==3.5.0
+matplotlib
+nbconvert==6.4.5
+notebook==6.5.2
+numpy
+pandas
+pandoc
+plotly==5.11.0
+rich
+scikit-learn
+scipy
+Wand
