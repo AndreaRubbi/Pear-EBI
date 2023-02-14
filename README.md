@@ -1,6 +1,6 @@
 
 # <font color='green'>P</font>hylogeny <font color='green'>E</font>mbedding & <font color='green'>A</font>pproximate <font color='green'>R</font>epresentation <img src="LOGO_PEAR.png" width="100" height="100">
-***
+
 ## Goldman Group - European Bioinformatics Institute <img src="goldman_logo.png" width="30" height="30">
 
 PEAR can:
@@ -33,7 +33,6 @@ this script launches the program in interactive mode. Once the program starts, i
 ________________________
 
 ## Licensing
-__________________
 
 This project is released under the terms of the MIT Open Source License. View
 *LICENSE.txt* for more information.
