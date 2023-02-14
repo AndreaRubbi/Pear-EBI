@@ -1,4 +1,4 @@
-# PEAR - Phylogeny Embedding & Approximate Representation <img src="LOGO_PEAR.png" width="100" height="100">
+# <font color='red'>P</font>hylogeny <font color='red'>E</font>mbedding & <font color='red'>A</font>pproximate <font color='red'>R</font>epresentation <img src="LOGO_PEAR.png" width="100" height="100">
 ### Goldman group - European Bioinformatics Institute <img src="goldman_logo.jpg" width="12" height="12">
 
 PEAR can:
