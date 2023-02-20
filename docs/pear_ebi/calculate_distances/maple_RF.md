@@ -120,4 +120,3 @@ making the RFL less accurate.
    file, n_trees, output_file
 )
 ```
-

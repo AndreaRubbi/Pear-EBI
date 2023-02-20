@@ -31,4 +31,3 @@ Plot embedding of distance matrix - in 2D or 3D
 **Returns**
 
 * **image**  : plot with related widgets - interactive or static format
-

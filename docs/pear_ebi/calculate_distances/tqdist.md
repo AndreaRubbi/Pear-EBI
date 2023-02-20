@@ -62,4 +62,3 @@ compute triplet distances
 **Returns**
 
 * **distance_matrix** (pandas.DataFrame) : computed distance matrix
-

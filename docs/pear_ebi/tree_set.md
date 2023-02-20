@@ -3,7 +3,7 @@
 
 ## tree_set
 [source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/tree_set.py/#L68)
-```python 
+```python
 tree_set(
    file, output_file = None, distance_matrix = None, metadata = None
 )
@@ -69,7 +69,7 @@ Class for the analysis of a set of phylogenetic trees
 
 ## set_collection
 [source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/tree_set.py/#L392)
-```python 
+```python
 set_collection(
    collection = list(), file = 'Set_collection',
    output_file = './Set_collection_distance_matrix', distance_matrix = None
@@ -89,4 +89,3 @@ set_collection(
    other
 )
 ```
-

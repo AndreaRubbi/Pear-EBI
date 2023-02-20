@@ -1,9 +1,9 @@
-/* print styles for mkdocs material theme 
+/* print styles for mkdocs material theme
 https://github.com/squidfunk/mkdocs-material */
 
 
 /* Table of Contents styling */
-#print-site-page ul.toc-section-line-border { 
+#print-site-page ul.toc-section-line-border {
     border-left: 5px solid var(--md-default-fg-color--lightest);
 }
 

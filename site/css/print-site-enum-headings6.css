@@ -1,12 +1,12 @@
 
-/* 
+/*
 Enumerate level 2 headings of CHAPTERS,
 that are part of an original included page
 
 Only displayed when set in mkdocs.yml:
 
 print-site:
-    - enumerate_headings: true 
+    - enumerate_headings: true
     - enumerate_headings_depth: 2 # or more
 */
 
@@ -15,15 +15,15 @@ print-site:
     counter-increment: last;
     content: counter(chapter) "." counter(section) "." counter(sub-section) "." counter(composite) "." counter(detail) "." counter(last) " " !important;
 }
-    
-/* 
+
+/*
 Enumerate level 2 headings of SECTIONS,
 that are part of an original included page
 
 Only displayed when set in mkdocs.yml:
 
 print-site:
-    - enumerate_headings: true 
+    - enumerate_headings: true
     - enumerate_headings_depth: 2 # or more
 */
 
@@ -46,4 +46,3 @@ print-site:
     counter-increment: toc-sec-last;
     content: counter(toc-sec-chapter, upper-roman) "." counter(toc-sec-section, upper-roman) "." counter(toc-sec-sub-section, upper-roman) "." counter(toc-sec-composite, upper-roman) "." counter(toc-sec-detail, upper-roman) "." counter(toc-last, upper-roman) " ";
 }
-

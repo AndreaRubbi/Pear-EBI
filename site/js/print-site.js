@@ -1,4 +1,4 @@
-/* 
+/*
 Javascript functions to help make the print page more PDF friendly
 */
 
@@ -21,7 +21,7 @@ function generate_toc() {
     "#print-site-page h6.nav-section-title, #print-site-page h6.nav-section-title-end," +
     "section.print-page h1,section.print-page h2,section.print-page h3," +
     "section.print-page h4,section.print-page h5,section.print-page h6")
-  
+
   var current_heading_depth = 0;
   var current_section_depth = 0;
 
@@ -30,7 +30,7 @@ function generate_toc() {
   var toc_depth = document.getElementById("print-page-toc").getAttribute("data-toc-depth")
 
   for (var i = 0; i < toc_elements.length; i++) {
-    
+
     // Get the info from the element
     el = toc_elements[i]
     link = "#" + el.id;
@@ -73,14 +73,14 @@ function generate_toc() {
       }
       while (tag_level < current_heading_depth) {
         current_heading_depth--;
-        ToC += "</ul>"; 
+        ToC += "</ul>";
       }
 
       // Insert a section heading <li> item, however deeply we are nested.
       current_section_depth++;
       // Insert item as a section title in the current list
       ToC += "<li class='toc-nav-section-title toc-nav-section-title-level-" + (current_section_depth) + "'>" + title + "</li>";
-      
+
       // Start a new ul for the section
       ToC += "<ul class='print-site-toc-level-" + current_heading_depth + " toc-section-line-border'>";
       continue;
@@ -102,7 +102,7 @@ function generate_toc() {
     }
     while (tag_level < current_heading_depth) {
       current_heading_depth--;
-      ToC += "</ul>"; 
+      ToC += "</ul>";
     }
 
 

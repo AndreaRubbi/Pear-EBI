@@ -1,0 +1,3 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/pear_ebi/calculate_distances/tqDist/tqDist"
+}

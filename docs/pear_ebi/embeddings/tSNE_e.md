@@ -23,4 +23,3 @@ embed distance_matrix in n_components with t-Stochastic Neighbor Embedding
 **Returns**
 
 * **Distances_embedded_ND** (numpy.array) : distances embedded in n_dimensions
-

@@ -1,12 +1,12 @@
 
-/* 
+/*
 Enumerate level 2 headings of CHAPTERS,
 that are part of an original included page
 
 Only displayed when set in mkdocs.yml:
 
 print-site:
-    - enumerate_headings: true 
+    - enumerate_headings: true
     - enumerate_headings_depth: 2 # or more
 */
 
@@ -15,14 +15,14 @@ print-site:
   content: counter(chapter) "." counter(section) " " !important;
 }
 
-/* 
+/*
 Enumerate level 2 headings of SECTIONS,
 that are part of an original included page
 
 Only displayed when set in mkdocs.yml:
 
 print-site:
-    - enumerate_headings: true 
+    - enumerate_headings: true
     - enumerate_headings_depth: 2 # or more
 */
 .print-site-enumerate-headings h2.nav-section-title:before {
@@ -34,13 +34,13 @@ print-site:
 /* Enumerate CHAPTERS in table of contents also */
 
 .print-site-enumerate-headings .print-site-toc-level-2 > li a:before {
-    counter-increment: toc-section; 
+    counter-increment: toc-section;
     content: counter(toc-chapter) "." counter(toc-section) " ";
 }
 
 /* Enumerate SECTIONS in table of contents also */
 
 .print-site-enumerate-headings li.toc-nav-section-title-level-2:before {
-    counter-increment: toc-sec-section; 
+    counter-increment: toc-sec-section;
     content: counter(toc-sec-chapter, upper-roman) "." counter(toc-sec-section, upper-roman) " ";
 }

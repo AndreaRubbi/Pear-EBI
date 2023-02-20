@@ -34,4 +34,3 @@ subsample a set of trees considering their
 
 * **points** (list) : list of trees subsampled.
 * **idxs** (list) : list of indexes of the trees subsampled.
-
