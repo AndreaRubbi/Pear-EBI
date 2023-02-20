@@ -1,0 +1,2 @@
+include pear_ebi/calculate_distances/HashRF/*
+include pear_ebi/calculate_distances/tqDist/*
