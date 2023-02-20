@@ -1,7 +1,7 @@
 
-<h1> <font color='green'>P</font>hylogeny <font color='green'>E</font>mbedding and <font color='green'>A</font>pproximate <font color='green'>R</font>epresentation </h1><img src="LOGO_PEAR.png" width="100" height="100">
+<h1> <font color='green'>P</font>hylogeny <font color='green'>E</font>mbedding and <font color='green'>A</font>pproximate <font color='green'>R</font>epresentation </h1><img src="logos/LOGO_PEAR.png" width="100" height="100">
 
-## Goldman Group - European Bioinformatics Institute <img src="goldman_logo.png" width="30" height="30">
+## Goldman Group - European Bioinformatics Institute <img src="logos/goldman_logo.png" width="30" height="30">
 
 PEAR can:
 1. Compute the distance matrix given a set of phylogenetic trees;
