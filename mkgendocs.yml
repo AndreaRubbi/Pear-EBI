@@ -1,0 +1,12 @@
+sources_dir: docs
+templates_dir: docs/templates
+repo: https://github.com/LouisdeBruijn/Medium
+version: master
+pages:
+  - page: "scripts/base/base.md"
+    source: "Python tips/base.py"
+    functions:
+      - parse_arguments
+      - print_df
+      - unescape_html
+      - equal_array_items
