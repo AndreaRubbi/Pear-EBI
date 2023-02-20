@@ -1,6 +1,6 @@
 - id: automate_functions
   name: Add functions to mkgendocs configurations YAML
-  entry: bash -c "python3 auto_cl/automate.py; git add -u" --
+  entry: bash -c "python3 gendoc.py; git add -u" --
   language: system
 - id: mkgendocs
   name: Generate markdown from docstrings
