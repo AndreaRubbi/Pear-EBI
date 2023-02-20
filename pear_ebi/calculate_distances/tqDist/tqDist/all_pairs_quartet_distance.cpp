@@ -13,7 +13,7 @@ void usage(char *programName) {
   std::cout << "Usage: " << programName << " <input filename> [output filename]" << std::endl
 	    << std::endl;
   std::cout << "Where:" << std::endl
-	    << "\t" << "<input filename> is the name of a file containing multiple trees in" << std::endl 
+	    << "\t" << "<input filename> is the name of a file containing multiple trees in" << std::endl
 	    << "\t" << "Newick format. Each tree should be on a seperate line. In each tree" << std::endl
 	    << "\t" << "all leaves should be labeled and all trees should have the same set" << std::endl
 	    << "\t" << "of leaf labels." << std::endl;
@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 
   char *inFilename = argv[1];
   char *outFilename = NULL;
-  if(argc > 2) 
+  if(argc > 2)
     outFilename = argv[2];
 
   QuartetDistanceCalculator quartetCalc;

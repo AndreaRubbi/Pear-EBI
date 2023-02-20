@@ -1,5 +1,5 @@
 
-# <font color='green'>P</font>hylogeny <font color='green'>E</font>mbedding and <font color='green'>A</font>pproximate <font color='green'>R</font>epresentation <img src="LOGO_PEAR.png" width="100" height="100">
+<h1> <font color='green'>P</font>hylogeny <font color='green'>E</font>mbedding and <font color='green'>A</font>pproximate <font color='green'>R</font>epresentation </h1><img src="LOGO_PEAR.png" width="100" height="100">
 
 ## Goldman Group - European Bioinformatics Institute <img src="goldman_logo.png" width="30" height="30">
 
@@ -9,7 +9,7 @@ PEAR can:
 
 PEAR usage
 ==========
-Pear is both a python software and library. It can be installed with `python -m pip install pear_ebi` or downloaded from <a href="https://github.com/AndreaRubbi/Pear-EBI">Github</a>. Pear is currently compatible with Linux and Mac OSs. 
+Pear is both a python software and library. It can be installed with `python -m pip install pear_ebi` or downloaded from <a href="https://github.com/AndreaRubbi/Pear-EBI">Github</a>. Pear is currently compatible with Linux and Mac OSs.
 
 PEAR as a python library
 ------------------------
@@ -21,7 +21,7 @@ Run `python3 PEAR.py --help` to see the complete list of arguments and flags.
 ### Simple usage
 
 `python3 PEAR.py examples_trees_sets/beast_trees/beast_run1.trees -hashrf -pca 3 -plot 2`
-this script calculates the unweighted <a href='https://doi.org/10.1016/0025-5564(81)90043-2'>Robison Foulds</a> distances between the trees in the file "beast_run1.trees", which contains 1001 phylogenetic trees. 
+this script calculates the unweighted <a href='https://doi.org/10.1016/0025-5564(81)90043-2'>Robison Foulds</a> distances between the trees in the file "beast_run1.trees", which contains 1001 phylogenetic trees.
 The flag "-hashrf" defines the use of [HasRF](https://code.google.com/archive/p/hashrf/) algorithm to perform this task.
 The flag "-pca 3" indicates to the program to perform a Principal Coordinate Analysis to embed the distance matrix in 3 dimensions, returning the final coordinates in the lower-dimensional space and plotting them 3D thanks to "-plot 2".
 ### Config file
@@ -36,5 +36,3 @@ ________________________
 
 This project is released under the terms of the MIT Open Source License. View
 *LICENSE.txt* for more information.
-
-

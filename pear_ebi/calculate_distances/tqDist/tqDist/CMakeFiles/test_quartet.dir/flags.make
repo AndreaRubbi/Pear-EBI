@@ -7,4 +7,3 @@ CXX_DEFINES = -DN4INT128 -DdoExtractAndContract
 CXX_INCLUDES = -I/home/andrear/tqDist
 
 CXX_FLAGS =  -Wno-long-long -m64 -O3 -DquartetsToo
-

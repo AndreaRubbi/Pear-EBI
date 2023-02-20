@@ -9,7 +9,7 @@
 #endif
 
 void usage(char *programName) {
-  std::cout << "Usage: " << programName << " [-v] <filename1> <filename2>" << std::endl 
+  std::cout << "Usage: " << programName << " [-v] <filename1> <filename2>" << std::endl
 	    << std::endl;
   std::cout << "Where <filename1> and <filename2> point to two files each containing one"     << std::endl
 	    << "tree in Newick format. In both trees all leaves should be labeled and the"    << std::endl

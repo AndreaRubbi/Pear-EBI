@@ -52,7 +52,7 @@ extern "C" {
 
     TripletDistanceCalculator tripletCalc;
     std::vector<INTTYPE_REST> res = tripletCalc.pairs_triplet_distance(filename1, filename2);
-    
+
     SEXP res_sexp;
     PROTECT(res_sexp = allocVector(INTSXP, res.size()));
     int *ians = INTEGER(res_sexp);
@@ -60,7 +60,7 @@ extern "C" {
     for(size_t i = 0; i < res.size(); ++i) {
       ians[i] = res[i];
     }
-   
+
     UNPROTECT(1);
 
     return res_sexp;

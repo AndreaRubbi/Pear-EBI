@@ -1,7 +1,7 @@
 //*****************************************************************/
 //
 // Copyright (C) 2006-2009 Seung-Jin Sul
-// 		
+//
 //		Department of Computer Science
 // 		Texas A&M University
 // 		Contact: sulsj@cs.tamu.edu
@@ -30,17 +30,17 @@
 #include "hashfunc.hh"
 
 using namespace std;
-	
+
 typedef struct {
 	unsigned long long  _hv2;
 	unsigned int 	      _t_i;
-	float 				      _dist;	
+	float 				      _dist;
 } BUCKET_STRUCT_T;
 
 typedef vector<BUCKET_STRUCT_T> V_BUCKET_T;
 typedef vector<V_BUCKET_T> HASHTAB_T;
 
-	
+
 typedef struct {
 	unsigned long	long		_hv2;
 	vector<unsigned int> 	_vec_treeidx;
@@ -49,24 +49,23 @@ typedef struct {
 
 typedef vector<TREEIDX_STRUCT_T> V_BUCKET_T2;
 typedef vector<V_BUCKET_T2> HASHTAB_T2;
-	
 
-class HashRFMap {	
-	
+
+class HashRFMap {
+
 public:
 	HashRFMap() {}
 	~HashRFMap() {}
-	
+
 	CHashFunc 	_HF;
 	HASHTAB_T 	_hashtab;	// for weighted RF
 	HASHTAB_T2 	_hashtab2;
-		
-	void hashing_bs_without_type2_nbits(unsigned int tree_i, unsigned int num_taxa, unsigned long long hv1, unsigned long long hv2, float dist, bool w_option); // fast hash-rf
-	void uhashfunc_init(unsigned int t, unsigned int n, unsigned int c);	
 
-	void hashrfmap_clear();	
+	void hashing_bs_without_type2_nbits(unsigned int tree_i, unsigned int num_taxa, unsigned long long hv1, unsigned long long hv2, float dist, bool w_option); // fast hash-rf
+	void uhashfunc_init(unsigned int t, unsigned int n, unsigned int c);
+
+	void hashrfmap_clear();
 };
 
 
 #endif
-

@@ -13,7 +13,7 @@
 			Texas A&M University
 			U.S.A.
 		(contact: sulsj@cs.tamu.edu)
-		
+
   LICENSE AGREEMENT
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -150,25 +150,25 @@
 
 
 		12.16.2008 Change matrix data type to unsigned short
-		
-		
+
+
 		1.20.2009 ULLONG_MAX check
-		
-		2.13.2009 PROBLEM with c value and error rate 
+
+		2.13.2009 PROBLEM with c value and error rate
 		    due to abnormal behavior of MT random number generator
 		    fixed with RandomLib which is based on new MT random number generator
-		
+
 		2.17.2009 HashRF 6.0.0
-		
+
 		2.18.2009 remove bitset.hh bitset.cc
-		
+
     4.14.2009 prepare distribution
         SIM -> divide into SHORTMAT & FLAOTMAT
-        
-        
-		
 
- 
+
+
+
+
 
 */
 /*****************************************************/
@@ -202,7 +202,7 @@ using namespace std;
 #define HASHTABLE_FACTOR    							0.2
 
 // the c value of m2 > c*t*n in the paper
-static unsigned int C						    			= 1000; 
+static unsigned int C						    			= 1000;
 static unsigned NUM_TREES                 = 0; // number of trees
 static unsigned NUM_TAXA                	= 0; // number of taxa
 static bool WEIGHTED                      = false; // unweighted
@@ -283,25 +283,25 @@ dfs_compute_hash(
     // After an internal node is found, compute the hv1 and hv2
     unsigned long long temphv1=0;
     unsigned long long temphv2=0;
-   
-    for (int i=0; i<startNode->Nchildren; ++i) {    	
+
+    for (int i=0; i<startNode->Nchildren; ++i) {
     	unsigned long long t1 = temphv1;
     	unsigned long long t2 = temphv2;
     	unsigned long long h1 = startNode->child[i]->hv1;
     	unsigned long long h2 = startNode->child[i]->hv2;
 
     	if ( add_of(temphv1, t1, h1) ) {
-    		cout << "ERROR: ullong add overflow!!!\n"; 
+    		cout << "ERROR: ullong add overflow!!!\n";
     		cout << "t1=" << t1 << " h1=" << h1 << " t1+h1=" << t1+h1 << endl;
     		exit(0);
     	}
     	if ( add_of(temphv2, t2, h2) ) {
-    		cout << "ERROR: ullong add overflow!!!\n"; 
+    		cout << "ERROR: ullong add overflow!!!\n";
     		cout << "t2=" << t2 << " h2=" << h2 << " t2+h2=" << t2+h2 << endl;
     		exit(0);
     	}
 	  }
-		
+
 		// Check overflow
 		unsigned long long temp1 = temphv1 % m1;
 		unsigned long long temp2 = temphv2 % m2;
@@ -415,19 +415,19 @@ print_rf_short_matrix(
     }
     break;
   case 4:
-  	if (outfile == "") { 
-	    for (size_t i = 0; i < NUM_TREES; ++i) {		
+  	if (outfile == "") {
+	    for (size_t i = 0; i < NUM_TREES; ++i) {
 		    for	(size_t j = 0; j < i; ++j)
 		      std::cout << (NUM_TAXA-3)-(float((SHORTSIM[i][j] + SHORTSIM[j][i])/2)) << " ";
 		    std::cout << "\n";
-		 	}		
+		 	}
 		}
 		else {
-			for (size_t i = 0; i < NUM_TREES; ++i) {		
+			for (size_t i = 0; i < NUM_TREES; ++i) {
 		    for	(size_t j = 0; j < i; ++j)
 		      fout << (NUM_TAXA-3)-(float((SHORTSIM[i][j] + SHORTSIM[j][i])/2)) << " ";
 		    	fout << "\n";
-		 	}	
+		 	}
 		}
     break;
   }
@@ -438,7 +438,7 @@ print_rf_short_matrix(
 
 static void
 print_rf_float_matrix(
-	vector< vector<float> > &SIM, 
+	vector< vector<float> > &SIM,
 	unsigned options,
 	string outfile)
 {
@@ -446,73 +446,73 @@ print_rf_float_matrix(
 	if (outfile != "") {
 		fout.open(outfile.c_str());
 	}
-	
+
 	switch (options) {
-		case 0: 
-			return;   
-		case 1: 
+		case 0:
+			return;
+		case 1:
 			cout << "\nRobinson-Foulds distance (list format):\n";
-			
+
 				if (outfile == "") {
-					for (unsigned i = 0; i < NUM_TREES; ++i) {          
-						for (unsigned j = 0; j < NUM_TREES; ++j) {        	
-							if (i == j) 
+					for (unsigned i = 0; i < NUM_TREES; ++i) {
+						for (unsigned j = 0; j < NUM_TREES; ++j) {
+							if (i == j)
 								cout << "<" << i << "," << j << "> " << 0 << endl;
 							else {
 								if (!WEIGHTED)
 									cout << "<" << i << "," << j << "> " << (NUM_TAXA-3)-(float((SIM[i][j] + SIM[j][i])/2)) << endl;
-								else 
+								else
 									cout << "<" << i << "," << j << "> " << float((SIM[i][j] + SIM[j][i])/4) << endl;
 							}
 						}
 					}
 				}
 				else {
-					for (unsigned i = 0; i < NUM_TREES; ++i) {          
-						for (unsigned j = 0; j < NUM_TREES; ++j) {        	
-							if (i == j) 
+					for (unsigned i = 0; i < NUM_TREES; ++i) {
+						for (unsigned j = 0; j < NUM_TREES; ++j) {
+							if (i == j)
 								fout << "<" << i << "," << j << "> " << 0 << endl;
 							else {
-								if (!WEIGHTED) 
+								if (!WEIGHTED)
 									fout << "<" << i << "," << j << "> " << (NUM_TAXA-3)-(float((SIM[i][j] + SIM[j][i])/2)) << endl;
-								else 
+								else
 									fout << "<" << i << "," << j << "> " << float((SIM[i][j] + SIM[j][i])/4) << endl;
 							}
 						}
 					}
 				}
-			
-			break;      
+
+			break;
 		case 2:
-			cout << "\nRobinson-Foulds distance (rate):\n"; 
+			cout << "\nRobinson-Foulds distance (rate):\n";
 			if (WEIGHTED) {
 					cout << "Fatal error: RF rate is only for unweighted RF distance.\n";
 					exit(0);
-			}      
-			
+			}
+
 			if (outfile == "") {
 				for (unsigned i = 0; i < NUM_TREES; ++i) {
-					for (unsigned j = 0; j < NUM_TREES; ++j) {              
+					for (unsigned j = 0; j < NUM_TREES; ++j) {
 						cout << "<" << i << "," << j << "> ";
-						if (i==j) 
+						if (i==j)
 							cout << 0 << endl;
-						else 
+						else
 							cout << (float) ((NUM_TAXA-3)-((SIM[i][j] + SIM[j][i])/2)) / (NUM_TAXA-3) * 100 << endl;
 					}
 				}
 			}
 			else {
 				for (unsigned i = 0; i < NUM_TREES; ++i) {
-					for (unsigned j = 0; j < NUM_TREES; ++j) {              
+					for (unsigned j = 0; j < NUM_TREES; ++j) {
 						fout << "<" << i << "," << j << "> ";
-						if (i==j) 
+						if (i==j)
 							fout << 0 << endl;
-						else      
+						else
 							fout << (float) ((NUM_TAXA-3)-((SIM[i][j] + SIM[j][i])/2)) / (NUM_TAXA-3) * 100 << endl;
 					}
 				}
 			}
-			break;      
+			break;
 		case 3:
 			cout << "\nRobinson-Foulds distance (matrix format):\n";
 			if (outfile == "") {
@@ -524,7 +524,7 @@ print_rf_float_matrix(
 						else
 							if (WEIGHTED)
 								cout << float((SIM[i][j] + SIM[j][i])/4) << ' ';
-							else 
+							else
 								cout << (NUM_TAXA-3)-(float((SIM[i][j] + SIM[j][i])/2)) << ' ';
 					}
 					cout << endl;
@@ -539,18 +539,18 @@ print_rf_float_matrix(
 						else
 							if (WEIGHTED)
 								fout << float((SIM[i][j] + SIM[j][i])/4) << ' ';
-							else 
+							else
 								fout << (NUM_TAXA-3)-(float((SIM[i][j] + SIM[j][i])/2)) << ' ';
 					}
 					fout << endl;
 				}
 				fout << endl;
 			}
-			break;    
+			break;
 	}
-	
-	if (outfile != "") 
-		fout.close();	
+
+	if (outfile != "")
+		fout.close();
 }
 
 int main(int argc, char** argv)
@@ -586,9 +586,9 @@ int main(int argc, char** argv)
     helpMsg += "Weighted RF distance: to select RF distance mode between weighted and unweighted (defualt = unweighted).\n";
     helpMsg += "   -w, compute weighted RF distance.\n";
 
-    helpMsg += "Specify c value: \n";   
+    helpMsg += "Specify c value: \n";
     helpMsg += "   -c <rate>, specify c value (default: 1000) \n";
-    			
+
     helpMsg += "Examples: \n";
     helpMsg += "  hashf foo.tre 1000\n";
     helpMsg += "  hashf bar.tre 1000 -w\n";
@@ -612,13 +612,13 @@ int main(int argc, char** argv)
 
     TCLAP::ValueArg<unsigned int> cArg("c", "cvalue", "c value", false, 1000, "c value");
     cmd.add( cArg );
-    
+
     TCLAP::SwitchArg ubidSwitch("u", "uBID", "unique BID count", false);
     cmd.add( ubidSwitch );
-   
+
     TCLAP::ValueArg<string> outfileArg("o", "outfile", "Output file name", false, "", "Output file name");
     cmd.add( outfileArg );
-				
+
     cmd.parse( argc, argv );
 
     NUM_TREES = numtreeArg.getValue();
@@ -659,10 +659,10 @@ int main(int argc, char** argv)
 
     if (cArg.getValue())
       C = cArg.getValue();
-    
+
     if (ubidSwitch.getValue())
-      bUbid = ubidSwitch.getValue();  
- 
+      bUbid = ubidSwitch.getValue();
+
     outfilename = outfileArg.getValue();
 
   } catch (TCLAP::ArgException &e) { // catch any exceptions
@@ -705,7 +705,7 @@ int main(int argc, char** argv)
   try	{
     GetTaxaLabels(newickTree->root, lm);
   }
-  catch (LabelMap::AlreadyPushedEx ex) { 
+  catch (LabelMap::AlreadyPushedEx ex) {
     cerr << "Fatal error: The label '" << ex.label << "' appeard twice in " << endl;
     exit(2);
   }
@@ -727,7 +727,7 @@ int main(int argc, char** argv)
   unsigned long long M2=0;
 
  	vvec_hashrf.uhashfunc_init(NUM_TREES, NUM_TAXA, C);
- 
+
   M1 = vvec_hashrf._HF.getM1();
   M2 = vvec_hashrf._HF.getM2();
   vvec_hashrf._hashtab2.resize(M1);
@@ -773,28 +773,28 @@ int main(int argc, char** argv)
   typedef vector< vector<float> > FLOAT_MATRIX_T;
   typedef vector< vector<unsigned short> > SHORT_MATRIX_T;
   SHORT_MATRIX_T SHORTSIM;
-  FLOAT_MATRIX_T FLOATSIM; 
+  FLOAT_MATRIX_T FLOATSIM;
 
   //---------------------------------------- UNWEIGHTED --------------------------------------------
   if (!WEIGHTED) //  for unweighted RF
     SHORTSIM = SHORT_MATRIX_T (NUM_TREES, vector<unsigned short>(NUM_TREES,0));
   else // for weighted RF
     FLOATSIM = FLOAT_MATRIX_T (NUM_TREES, vector<float>(NUM_TREES,0.0));
-       
+
 	unsigned long uBID = 0;
-	
+
 	if (!WEIGHTED) {    // unweighted
     for (unsigned int hti=0; hti<vvec_hashrf._hashtab2.size(); ++hti) {
       unsigned int sizeVec = vvec_hashrf._hashtab2[hti].size();
-			
+
 			if (sizeVec) {
 
       	uBID += sizeVec;
-      	
+
       	if (!bUbid) {
   	      for (unsigned int i=0; i<sizeVec; ++i) {
   	        unsigned int sizeTreeIdx = vvec_hashrf._hashtab2[hti][i]._vec_treeidx.size();
-   
+
   	        if (sizeTreeIdx > 1) {
   	          for (unsigned int j=0; j<sizeTreeIdx; ++j) {
   	            for (unsigned int k=0; k<sizeTreeIdx; ++k) {
@@ -809,8 +809,8 @@ int main(int argc, char** argv)
 	      } //if
 	    }
     }
-  } 
-  //---------------------------------------- WEIGHTED --------------------------------------------  
+  }
+  //---------------------------------------- WEIGHTED --------------------------------------------
   else {
     vvec_hashrf._hashtab.resize(vvec_hashrf._hashtab2.size());
     for (unsigned int hti=0; hti<vvec_hashrf._hashtab2.size(); ++hti) {
@@ -904,7 +904,7 @@ int main(int argc, char** argv)
 
 	if (!WEIGHTED)
   	print_rf_short_matrix(SHORTSIM, PRINT_OPTIONS, outfilename);
-  else 
+  else
   	print_rf_float_matrix(FLOATSIM, PRINT_OPTIONS, outfilename);
 
 
@@ -916,7 +916,7 @@ int main(int argc, char** argv)
   if (getrusage(RUSAGE_SELF,&a) == -1) { cerr << "Fatal error: getrusage failed.\n";  exit(2); }
   cout << "\n    Total CPU time: " << a.ru_utime.tv_sec+a.ru_stime.tv_sec << " sec and ";
   cout << a.ru_utime.tv_usec+a.ru_stime.tv_usec << " usec.\n";
- 
+
 
   /*****************************************************/
 //  cout << "\n*** Clear allocated memory***\n";
@@ -931,4 +931,3 @@ int main(int argc, char** argv)
 
 
 // eof
-

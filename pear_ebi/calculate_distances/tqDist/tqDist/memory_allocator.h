@@ -13,7 +13,7 @@ class MemoryAllocator
 		voider *freelist, *createdList, *currentList;
 		unsigned int size;
 		unsigned int chunks;
-		
+
 	public:
 		unsigned int numUses;
 
@@ -30,7 +30,7 @@ class MemoryAllocator
 			chunks = (2 * 1024 * 1024 - 2 * sizeof(type)) / (sizeof(type) * size);
 			getMoreSpace();
 		}
-		
+
 		~MemoryAllocator()
 		{
 			voider *current = createdList;
@@ -64,7 +64,7 @@ class MemoryAllocator
 				releaseMemory(&asRealType[i * size + 1]);
 			}
 		}
-		
+
 		type* getMemory()
 		{
 			if (freelist == NULL)
@@ -76,7 +76,7 @@ class MemoryAllocator
 			freelist = freelist->next;
 			return reinterpret_cast<type*>(returnThis); // cast (and don't call constructor)
 		}
-		
+
 		void releaseMemory(type *mem)
 		{
 			voider *casted = reinterpret_cast<voider*>(mem);

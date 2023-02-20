@@ -24,46 +24,46 @@
 #include "hashfunc.hh"
 
 
-void 
+void
 HashRFMap::uhashfunc_init(
-	unsigned int t, 
-	unsigned int n, 
-//	float r, 
+	unsigned int t,
+	unsigned int n,
+//	float r,
 	unsigned int c)
 {
-//	_HF.UHashfunc_init(t, n, r, c);	
-	_HF.UHashfunc_init(t, n, c);	
+//	_HF.UHashfunc_init(t, n, r, c);
+	_HF.UHashfunc_init(t, n, c);
 }
 
 
-void 
+void
 HashRFMap::hashing_bs_without_type2_nbits(
-	unsigned int treeIdx, 
+	unsigned int treeIdx,
 	unsigned int numTaxa,
 	unsigned long long hv1,
 	unsigned long long hv2,
 	float dist,
 	bool w_option)
-{	
+{
 	///////////////////////////////
 	// double linked list
 	///////////////////////////////
 	unsigned sizeVec = _hashtab2[hv1].size();
-	if (sizeVec > 0) 
+	if (sizeVec > 0)
 	{
 		bool found = false;
-		for (unsigned int i=0; i<sizeVec; ++i) 
-		{			
+		for (unsigned int i=0; i<sizeVec; ++i)
+		{
 			if (_hashtab2[hv1][i]._hv2 == hv2) {
 				_hashtab2[hv1][i]._vec_treeidx.push_back(treeIdx);
 				if (w_option)
 					_hashtab2[hv1][i]._vec_dist.push_back(dist);
-				
+
 				found = true;
 				break;
 			}
 		}
-		if (!found) 
+		if (!found)
 		{
 			TREEIDX_STRUCT_T bk2;
 			bk2._hv2 = hv2;
@@ -73,7 +73,7 @@ HashRFMap::hashing_bs_without_type2_nbits(
 			_hashtab2[hv1].push_back(bk2);
 		}
 	}
-	else if (sizeVec == 0) 
+	else if (sizeVec == 0)
 	{
 		TREEIDX_STRUCT_T bk2;
 		bk2._hv2 = hv2;
@@ -84,12 +84,11 @@ HashRFMap::hashing_bs_without_type2_nbits(
 	}
 }
 
-void 
+void
 HashRFMap::hashrfmap_clear()
 {
   _hashtab.clear();
 	_hashtab2.clear();
 }
- 
-// eof
 
+// eof

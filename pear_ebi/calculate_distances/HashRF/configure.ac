@@ -24,4 +24,3 @@ AC_CHECK_FUNCS(strcpy)
 AC_OUTPUT([
 	Makefile
 ])
-

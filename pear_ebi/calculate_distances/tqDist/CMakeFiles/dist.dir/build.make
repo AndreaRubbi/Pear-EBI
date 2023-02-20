@@ -84,4 +84,3 @@ CMakeFiles/dist.dir/clean:
 CMakeFiles/dist.dir/depend:
 	cd /home/andrear/tqDist && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/andrear/tqDist /home/andrear/tqDist /home/andrear/tqDist /home/andrear/tqDist /home/andrear/tqDist/CMakeFiles/dist.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/dist.dir/depend
-

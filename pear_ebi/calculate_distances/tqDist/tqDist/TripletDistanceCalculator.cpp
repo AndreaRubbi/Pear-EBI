@@ -20,12 +20,12 @@ TripletDistanceCalculator::~TripletDistanceCalculator() {
 void TripletDistanceCalculator::pairs_triplet_distance_verbose(std::ostream &out, std::vector<UnrootedTree *> &unrootedTrees1, std::vector<UnrootedTree *> &unrootedTrees2) {
   RootedTree *rt1;
   RootedTree *rt2;
-  
+
   for(size_t i = 0; i < unrootedTrees1.size(); i++) {
-    
+
     rt1 = unrootedTrees1[i]->convertToRootedTree(NULL);
     rt2 = unrootedTrees2[i]->convertToRootedTree(rt1->factory);
-    
+
     INTTYPE_REST dist = calculateTripletDistance(rt1, rt2);
 
     INTTYPE_REST n = get_n();
@@ -35,7 +35,7 @@ void TripletDistanceCalculator::pairs_triplet_distance_verbose(std::ostream &out
     double dist_norm = double(dist) / double(totalNoTriplets);
     double resolved_norm = double(resolved) / double(totalNoTriplets);
     double unresolved_norm = double(unresolved) / double(totalNoTriplets);
-    
+
     out << n               << "\t"
 	<< totalNoTriplets << "\t"
 	<< dist            << "\t"
@@ -49,15 +49,15 @@ void TripletDistanceCalculator::pairs_triplet_distance_verbose(std::ostream &out
 
 std::vector<INTTYPE_REST> TripletDistanceCalculator::pairs_triplet_distance(const char *filename1, const char *filename2) {
   NewickParser parser;
-  
-  std::vector<UnrootedTree *> unrootedTrees1  = parser.parseMultiFile(filename1); 
+
+  std::vector<UnrootedTree *> unrootedTrees1  = parser.parseMultiFile(filename1);
   if (unrootedTrees1.size() == 0 || parser.isError()) {
     std::cerr << "Error: Parsing of \"" << filename1 << "\" failed." << endl;
     std::cerr << "Aborting!" << endl;
     std::exit(-1);
   }
 
-  std::vector<UnrootedTree *> unrootedTrees2  = parser.parseMultiFile(filename2); 
+  std::vector<UnrootedTree *> unrootedTrees2  = parser.parseMultiFile(filename2);
   if (unrootedTrees2.size() == 0 || parser.isError()) {
     std::cerr << "Error: Parsing of \"" << filename2 << "\" failed." << endl;
     std::cerr << "Aborting!" << endl;
@@ -73,11 +73,11 @@ std::vector<INTTYPE_REST> TripletDistanceCalculator::pairs_triplet_distance(std:
 
   RootedTree *rt1;
   RootedTree *rt2;
-  
+
   for(size_t i = 0; i < unrootedTrees1.size(); i++) {
     rt1 = unrootedTrees1[i]->convertToRootedTree(NULL);
     rt2 = unrootedTrees2[i]->convertToRootedTree(rt1->factory);
-    
+
     INTTYPE_REST dist = calculateTripletDistance(rt1, rt2);
     res.push_back(dist);
   }
@@ -87,8 +87,8 @@ std::vector<INTTYPE_REST> TripletDistanceCalculator::pairs_triplet_distance(std:
 
 std::vector<std::vector<INTTYPE_REST> > TripletDistanceCalculator::calculateAllPairsTripletDistance(const char *filename) {
   NewickParser parser;
-  
-  std::vector<UnrootedTree *> unrootedTrees  = parser.parseMultiFile(filename); 
+
+  std::vector<UnrootedTree *> unrootedTrees  = parser.parseMultiFile(filename);
   if (unrootedTrees.size() == 0 || parser.isError()) {
     std::cerr << "Error: Parsing of \"" << filename << "\" failed." << endl;
     std::cerr << "Aborting!" << endl;
@@ -105,7 +105,7 @@ std::vector<std::vector<INTTYPE_REST> > TripletDistanceCalculator::calculateAllP
 
 std::vector<std::vector<INTTYPE_REST> > TripletDistanceCalculator::calculateAllPairsTripletDistance(std::vector<UnrootedTree *> trees) {
   std::vector<std::vector<INTTYPE_REST> > results(trees.size());
-  
+
   RootedTree *rt1;
   RootedTree *rt2;
 
@@ -113,7 +113,7 @@ std::vector<std::vector<INTTYPE_REST> > TripletDistanceCalculator::calculateAllP
     for(size_t c = 0; c < r; ++c) {
       rt1 = trees[r]->convertToRootedTree(NULL);
       rt2 = trees[c]->convertToRootedTree(rt1->factory);
- 
+
       INTTYPE_REST distance = calculateTripletDistance(rt1, rt2);
       results[r].push_back(distance);
 
@@ -124,8 +124,8 @@ std::vector<std::vector<INTTYPE_REST> > TripletDistanceCalculator::calculateAllP
   }
 
   return results;
-} 
- 
+}
+
 INTTYPE_REST TripletDistanceCalculator::calculateTripletDistance(const char *filename1, const char *filename2) {
   UnrootedTree *ut1 = NULL;
   UnrootedTree *ut2 = NULL;
@@ -169,12 +169,12 @@ INTTYPE_REST TripletDistanceCalculator::calculateTripletDistance(RootedTree *t1,
     std::cerr << "Aborting." << std::endl;
     return -1;
   }
-  
+
   // Section 3 of Soda13: Counting unresolved triplets and quartets in a single tree
   countChildren(t1);
 
   hdt = HDT::constructHDT(t2, t1->maxDegree, dummyHDTFactory);
-  
+
   resolvedTriplets = unresolvedTriplets = 0;
   n = t1->n;
   totalNoTriplets = Util::binom3(n);
@@ -184,7 +184,7 @@ INTTYPE_REST TripletDistanceCalculator::calculateTripletDistance(RootedTree *t1,
 #ifndef doExtractAndContract
   delete hdt->factory;
 #endif
-	
+
   return totalNoTriplets - resolvedTriplets - unresolvedTriplets;
 }
 

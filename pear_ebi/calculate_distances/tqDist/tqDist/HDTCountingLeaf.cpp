@@ -62,7 +62,7 @@ void HDT::handleLeaf()
 	countingVars->n_i_arrow_circ_arrow_0 = 0;
 	countingVars->n_i_arrow_0_arrow_circ = 0;
 	countingVars->n_circ_arrow_i_arrow_i = 0;
-	
+
 	// Added by us
 	countingVars->n_i_arrow_paren_circ_circ = 0;
 	countingVars->n_0_arrow_ii = 0;

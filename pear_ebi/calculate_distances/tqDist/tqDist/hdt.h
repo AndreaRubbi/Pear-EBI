@@ -137,7 +137,7 @@ class HDT
 		void handleIGToC();
 		void handleCTransform();
 		void handleG();
-		
+
 #ifdef quartetsToo
 		bool gotoIteratorValueForList(CountingLinkedList *list, unsigned int num);
 		enum AddToType {i_j, paren_i_j, j_arrow_i, i_arrow_j, i_paren_i_j, paren_i_paren_i_j, bracket_i_paren_i_j};

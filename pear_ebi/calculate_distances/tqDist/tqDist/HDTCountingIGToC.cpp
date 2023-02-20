@@ -46,7 +46,7 @@ void HDT::handleIGToC()
 	n_0_arrow_circ = 0;
 	n_circ_arrow_0 = 0;
 	n_0_arrow_circ_circ = 0;
-		
+
 	// Added by us for filling out tables
 	n_bracket_circ_circ = right->n_bracket_circ_circ;
 	n_paren_circ_paren_square_square = right->n_paren_circ_paren_square_square;
@@ -154,7 +154,7 @@ void HDT::handleIGToC()
 		ourCount->n_i_arrow_paren_circ_circ = 0;
 		ourCount->n_0_arrow_ii = 0;
 		ourCount->n_paren_0_circ_arrow_i = 0;
-		
+
 		// Figure 15 counters (part 1+2, all with j)
 		ourCount->resetIterator();
 		current->resetIterator();
@@ -175,7 +175,7 @@ void HDT::handleIGToC()
 
 		ourCount->n_0_arrow_i_circ = 0;
 
-		
+
 		// Added by us for filling out tables
 		// A
 		ourCount->n_paren_i_paren_circ_circ = current->n_paren_i_paren_circ_circ;

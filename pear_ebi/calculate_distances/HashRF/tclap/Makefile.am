@@ -22,4 +22,3 @@ libtclapinclude_HEADERS = \
 			 OptionalUnlabeledTracker.h \
 			 Constraint.h \
 			 ValuesConstraint.h
-

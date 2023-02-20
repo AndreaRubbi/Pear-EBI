@@ -90,28 +90,28 @@ CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
 CPP = gcc -E
-CPPFLAGS = 
+CPPFLAGS =
 CXX = g++
 CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -g -O2
 CYGPATH_W = echo
 DEFS = -DHAVE_CONFIG_H
 DEPDIR = .deps
-ECHO_C = 
+ECHO_C =
 ECHO_N = -n
-ECHO_T = 
+ECHO_T =
 EGREP = /usr/bin/grep -E
-EXEEXT = 
+EXEEXT =
 GREP = /usr/bin/grep
 INSTALL = /usr/bin/install -c
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
-LDFLAGS = 
-LIBOBJS = 
-LIBS = 
-LTLIBOBJS = 
+LDFLAGS =
+LIBOBJS =
+LIBS =
+LTLIBOBJS =
 MAKEINFO = ${SHELL} /hps/software/users/goldman/zsuzsa/30.hashrf-6.0.0-dist/missing --run makeinfo
 MKDIR_P = /usr/bin/mkdir -p
 OBJEXT = o
@@ -122,9 +122,9 @@ PACKAGE_STRING = hashrf 6.0.0
 PACKAGE_TARNAME = hashrf
 PACKAGE_VERSION = 6.0.0
 PATH_SEPARATOR = :
-SET_MAKE = 
+SET_MAKE =
 SHELL = /bin/sh
-STRIP = 
+STRIP =
 VERSION = 6.0.0
 abs_builddir = /hps/software/users/goldman/zsuzsa/30.hashrf-6.0.0-dist
 abs_srcdir = /hps/software/users/goldman/zsuzsa/30.hashrf-6.0.0-dist
@@ -134,18 +134,18 @@ ac_ct_CC = gcc
 ac_ct_CXX = g++
 am__include = include
 am__leading_dot = .
-am__quote = 
+am__quote =
 am__tar = ${AMTAR} chof - "$$tardir"
 am__untar = ${AMTAR} xf -
 bindir = ${exec_prefix}/bin
-build_alias = 
+build_alias =
 builddir = .
 datadir = ${datarootdir}
 datarootdir = ${prefix}/share
 docdir = ${datarootdir}/doc/${PACKAGE_TARNAME}
 dvidir = ${docdir}
 exec_prefix = ${prefix}
-host_alias = 
+host_alias =
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
@@ -165,7 +165,7 @@ sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
 srcdir = .
 sysconfdir = ${prefix}/etc
-target_alias = 
+target_alias =
 top_builddir = .
 top_srcdir = .
 
@@ -228,7 +228,7 @@ config.h: stamp-h1
 stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
 	@rm -f stamp-h1
 	cd $(top_builddir) && $(SHELL) ./config.status config.h
-$(srcdir)/config.h.in:  $(am__configure_deps) 
+$(srcdir)/config.h.in:  $(am__configure_deps)
 	cd $(top_srcdir) && $(AUTOHEADER)
 	rm -f stamp-h1
 	touch $@
@@ -258,7 +258,7 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-hashrf$(EXEEXT): $(hashrf_OBJECTS) $(hashrf_DEPENDENCIES) 
+hashrf$(EXEEXT): $(hashrf_OBJECTS) $(hashrf_DEPENDENCIES)
 	@rm -f hashrf$(EXEEXT)
 	$(CXXLINK) $(hashrf_OBJECTS) $(hashrf_LDADD) $(LIBS)
 

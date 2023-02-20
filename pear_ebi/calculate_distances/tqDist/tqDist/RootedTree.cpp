@@ -79,7 +79,7 @@ void RootedTree::pairAltWorld(RootedTree *t)
 			delete l;
 			return;
 		}
-				
+
 		// If we got this far, we found the match! Setup bidirectional pointers!
 		leaf->altWorldSelf = j->second;
 		j->second->altWorldSelf = leaf;
@@ -147,7 +147,7 @@ void RootedTree::toDotImpl()
 	cout << "n" << this << "[label=\"";
 	if (isLeaf() && numZeroes > 0) cout << "0's: " << numZeroes;
 	else cout << name;
-	
+
 	cout << "\"];" << endl;
 
 	for(TemplatedLinkedList<RootedTree*> *i = children; i != NULL; i = i->next)

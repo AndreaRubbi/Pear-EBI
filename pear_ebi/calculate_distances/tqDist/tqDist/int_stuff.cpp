@@ -24,7 +24,7 @@
 		}
 		return strm;
 	}
-	
+
 	std::ostream &operator<<(std::ostream &strm, __int128 value)
 	{
 		strm << "value: " << value << std::endl;
@@ -72,7 +72,7 @@
 		}
 		return strm;
 	}
-	
+
 	std::ostream &operator<<(std::ostream &strm, __int128_t value)
 	{
 		const unsigned long long uLongLongMax = 18446744073709551615ULL;
@@ -96,6 +96,6 @@
 			strm << shorterValue;
 		}
 		return strm;
-	}	
+	}
 #endif
 #endif

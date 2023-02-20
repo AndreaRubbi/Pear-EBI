@@ -9,9 +9,9 @@ __author__ = "Andrea Rubbi"
     in order to give information regarding the name of the tree set and the index (or step) of each tree.
     Please note that, once an instance of a class is generated, its metadata dataframe should not be substituted
     as this would invalidate it for the plotting functions. Addition of columns and features is possible by
-    accessing the dataframe and modifying it as a pandas.DataFrame instance. 
+    accessing the dataframe and modifying it as a pandas.DataFrame instance.
     set_collection behaves similarly to set_collection. Matter of fact, it is a subclass of the latter and therefore
-    shares most of its methods. Its purpose is to analyze concurrently multiple instances of tree_sets and plot their 
+    shares most of its methods. Its purpose is to analyze concurrently multiple instances of tree_sets and plot their
     relative distance in a common embedding. Examples of possible applications are present at: ###LINK###"""
 # ──────────────────────────────────────────────────────────────────────────────
 
@@ -38,7 +38,6 @@ import warnings
 import numpy as np
 import pandas as pd
 from rich import print
-
 # ? rich is a very nice library that allows to
 # ? easily format the output of console
 # ? https://github.com/Textualize/rich
@@ -55,21 +54,12 @@ parent = os.path.dirname(current)
 sys.path.append(parent)
 
 # importing other modules
-# if used as a library
 try:
     from .calculate_distances import hashrf, maple_RF, tqdist
     from .embeddings import PCA_e, tSNE_e
     from .embeddings.graph import graph
     from .interactive_mode import interactive
     from .subsample import subsample
-# if used as a program
-except ImportError:
-    from calculate_distances import hashrf, maple_RF, tqdist
-    from embeddings import PCA_e, tSNE_e
-    from embeddings.graph import graph
-    from interactive_mode import interactive
-    from subsample import subsample
-
 except:
     sys.exit("Error")
 
@@ -184,12 +174,15 @@ class tree_set:
         if quality:
             if method == "pca":
                 embedding, var, corr = embedding
-                print(var, corr[0, 1])
+                print(
+                    f"With {dimensions} components/dimensions, the explained variance is {var:.2f},\n with an estimated correlation {corr[0, 1]:.2f} with the {self.n_trees}-dimensional coordinates"
+                )
             else:
                 embedding, corr = embedding
-                print(corr[0, 1])
+                print(
+                    f"With {dimensions} components/dimensions, the estimated correlation with the {self.n_trees}-dimensional coordinates is {corr[0, 1]:.2f}"
+                )
 
-        # TODO : use exec and string fomratting here!
         if dimensions == 2:
             if method == "pca":
                 self.embedding_pca2D = embedding
@@ -198,15 +191,20 @@ class tree_set:
         if dimensions == 3:
             if method == "pca":
                 self.embedding_pca3D = embedding
+                self.embedding_pca2D = embedding[:, :3]
             if method == "tsne":
                 self.embedding_tsne3D = embedding
-
+                self.embedding_tsne2D = embedding[:, :3]
         if dimensions > 3:
             if method == "pca":
                 self.embedding_pca = embedding
+                self.embedding_pca3D = embedding[:, :4]
+                self.embedding_pca2D = embedding[:, :3]
             if method == "tsne":
                 warnings.warn("t-SNE on more than 3 dimensions can be considerably slow")
                 self.embedding_tsne = embedding
+                self.embedding_tsne3D = embedding[:, :4]
+                self.embedding_tsne2D = embedding[:, :3]
 
     # ─── PLOT EMBEDDING ─────────────────────────────────────────────────────────
 

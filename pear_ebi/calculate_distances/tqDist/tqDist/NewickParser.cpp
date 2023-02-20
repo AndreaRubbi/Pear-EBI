@@ -3,8 +3,8 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
-#include <algorithm> 
-#include <functional> 
+#include <algorithm>
+#include <functional>
 #include <cctype>
 #include <locale>
 
@@ -21,7 +21,7 @@ namespace {
     s.erase(std::find_if(s.rbegin(), s.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
     return s;
   }
-  
+
   static inline bool emptyLine(std::string &line) {
     std::string l = rtrim(line);
     return l == "";
@@ -30,13 +30,13 @@ namespace {
   static inline void eraseWhitespace(std::string &s) {
     s.erase(std::remove_if(s.begin(), s.end(), ::isspace), s.end());
   }
-  
+
 }
 
 UnrootedTree* NewickParser::parseFile(const char* filename) {
   // Read file
   ifstream infile;
-  
+
   // Open file at the end!
   infile.open(filename);
   if (infile) {
@@ -96,7 +96,7 @@ std::vector<UnrootedTree *> NewickParser::parseMultiFile(const char *filename) {
 
 	trees.push_back(parse());
 	ss.str(std::string());
-      }    
+      }
     }
 
     infile.close();
@@ -131,8 +131,8 @@ UnrootedTree* NewickParser::parse() {
   parseError = false;
   it = str.begin();
   strEnd = str.end();
-  
-  if (*str.rbegin() != ';') 
+
+  if (*str.rbegin() != ';')
     return NULL;
   UnrootedTree *t = parseSubTree();
   parseLength();
@@ -159,7 +159,7 @@ UnrootedTree* NewickParser::parseSubTree() {
     parseError = true;
     return new UnrootedTree();
   }
-  
+
   if (*it == '(') return parseInternal();
   // TODO: Other possibilities than name?!?
   return new UnrootedTree(parseName());
@@ -171,7 +171,7 @@ UnrootedTree* NewickParser::parseInternal() {
     parseError = true;
     return new UnrootedTree();
   }
-  
+
   // Remove '(' char, create internal node, and recurse
   if (*it != '(') {
     cerr << "Parse error! Expected '(' here (got '" << *it << "' on pos " << getPos() << "). Continuing anyways..." << endl;
@@ -180,13 +180,13 @@ UnrootedTree* NewickParser::parseInternal() {
   it++;
   UnrootedTree *internalNode = new UnrootedTree();
   ParseBranchSet(internalNode);
-  
+
   if (it == strEnd) {
     cerr << "Parse error! String ended! Continuing anyways..." << endl;
     parseError = true;
     return internalNode;
   }
-  
+
   // Remove ')' char, get name
   if (*it != ')') {
     cerr << "Parse error! Expected ')' here (got '" << *it << "' on pos " << getPos() << "). Continuing anyways..." << endl;
@@ -198,7 +198,7 @@ UnrootedTree* NewickParser::parseInternal() {
     parseError = true;
   }
   internalNode->name = parseName();
-  
+
   return internalNode;
 }
 
@@ -208,7 +208,7 @@ void NewickParser::ParseBranchSet(UnrootedTree *parent) {
     parseError = true;
     return;
   }
-  
+
   // Parse arbritrarily many branches (i.e. subtrees with lengths)
   int degreeHere = 0;
   int largestDegreeBelow = 0;
@@ -241,7 +241,7 @@ string NewickParser::parseName() {
       numChars++;
     }
     else break;
-    
+
     if (it == strEnd) {
       cerr << "Parse error! String ended! Continuing anyways..." << endl;
       parseError = true;
@@ -259,17 +259,17 @@ void NewickParser::parseLength() {
     return;
   }
   if (*it != ':') return;
-  
+
   // Go past ':'
   it++;
   while(true) {
     char c = *it;
-    
+
     // TODO: Should actually check that this is a number (i.e. [0-9\.]*)
     if (c != '(' && c != ')' && c != ',' && c != ':' && c != ';') {
       it++;
     }
-    else 
+    else
       break;
     if (it == strEnd) {
       cerr << "Parse error! String ended! Continuing anyways..." << endl;

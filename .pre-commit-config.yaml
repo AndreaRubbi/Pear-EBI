@@ -1,12 +1,33 @@
-- id: automate_functions
-  name: Add functions to mkgendocs configurations YAML
-  entry: bash -c "python3 gendoc.py; git add -A" --
-  language: system
-- id: mkgendocs
-  name: Generate markdown from docstrings
-  entry: bash -c "gendocs --config 'mkgendocs.yml'; git add -A" --
-  language: system
-- id: mkbuild
-  name: Build the markdown documentation, run with '$ mkdocs serve' at http://127.0.0.1:8000/
-  entry: bash -c 'mkdocs build'
-  language: system
+minimum_pre_commit_version: 2.13.0
+default_stages: [commit, push]
+exclude: "^$"
+#default_language_version:
+#  python: python3.10
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: double-quote-string-fixer
+      #- id: detect-aws-credentials
+      - id: detect-private-key
+      - id: check-added-large-files
+        types: ["python"]
+  - repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+      - id: black
+        types: ["python"]
+  - repo: https://github.com/asottile/blacken-docs
+    rev: v1.8.0
+    hooks:
+      - id: blacken-docs
+        types: ["python"]
+        additional_dependencies: [black==20.8b1]
+  - repo: https://github.com/pre-commit/mirrors-isort
+    rev: v5.4.2
+    hooks:
+      - id: isort

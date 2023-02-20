@@ -91,7 +91,7 @@ HDTFactory::~HDTFactory()
 			current = next;
 		}
 	}
-	
+
 	memHDT->numUses--;
 	if (memHDT->numUses == 0) delete memHDT;
 	memCLL->numUses--;

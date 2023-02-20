@@ -14,7 +14,7 @@ void HDT::handleCTransform()
 	// Sums initialized to 0, summed in loop below
 	n_paren_circ_circ = 0;
 	n_paren_circ_square = 0;
-	
+
 	// Not dependent on i, thus placed here. Value is 0 (always! (when transforming C to G))
 	n_0_circ = 0;
 
@@ -92,13 +92,13 @@ void HDT::handleCTransform()
 		// Added by us for filling out tables (sum)
 		// A
 		n_paren_circ_paren_square_square += current->n_paren_i_paren_circ_circ;
-		
+
 		// New counters for calculating E
 		current->n_i_circ_square = 0;
 		current->n_0_i_circ = 0;
 		current->n_paren_i_circ_square = current->n_bracket_i_circ_square;
 		current->n_paren_0_i_circ = current->n_bracket_0_i_circ;
-		
+
 		// New sums for E
 		n_paren_circ_square_triangle += current->n_paren_i_circ_square;
 		n_paren_0_circ_square += current->n_paren_0_i_circ;

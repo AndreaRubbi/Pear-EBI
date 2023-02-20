@@ -9,7 +9,7 @@ size_t
 LabelMap::push(string label) throw(AlreadyPushedEx)
 {
     if (_map.find(label) != _map.end()) throw AlreadyPushedEx(label);
-    _names.push_back(label);  
+    _names.push_back(label);
     return _map[label] = _count++;
 }
 

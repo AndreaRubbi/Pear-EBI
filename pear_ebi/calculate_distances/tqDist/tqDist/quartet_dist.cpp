@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
     double resAgree_norm = double(resAgree) / double(totalNoQuartets);
     INTTYPE_N4 unresolvedQuartetsAgree = quartetCalc.get_unresolvedQuartets();
     double unresolvedQuartetsAgree_norm = double(unresolvedQuartetsAgree) / double(totalNoQuartets);
-    
+
     std::cout << n                            << "\t"
 	      << totalNoQuartets              << "\t"
 	      << dist                         << "\t"
