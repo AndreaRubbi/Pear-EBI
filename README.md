@@ -1,5 +1,5 @@
 
-# <font color='green'>P</font>hylogeny <font color='green'>E</font>mbedding & <font color='green'>A</font>pproximate <font color='green'>R</font>epresentation <img src="LOGO_PEAR.png" width="100" height="100">
+# <font color='green'>P</font>hylogeny <font color='green'>E</font>mbedding and <font color='green'>A</font>pproximate <font color='green'>R</font>epresentation <img src="LOGO_PEAR.png" width="100" height="100">
 
 ## Goldman Group - European Bioinformatics Institute <img src="goldman_logo.png" width="30" height="30">
 
