@@ -2,7 +2,7 @@ site/
 docs/
 docs_assets/
 pear_ebi.egg\-info/
-*/__pycache__/
+__pycache__/
 build/
 dist/
 gendoc.py
