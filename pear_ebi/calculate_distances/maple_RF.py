@@ -431,21 +431,21 @@ def calculate_distance_matrix(file, n_trees, output_file):
 		#	res = subprocess.check_output(command, universal_newlines = True).split('\n')
 		#	distance_matrix.append(eval(res[1].rstrip()))
 	else:
-		with console.status(f"[bold green] Robison Foulds by MAPLE") as status:
-			time.sleep(1.0)
-			for i, tree in enumerate(trees):
-						status.update(f"[bold red]{i+1}/{len(trees)} [bold blue]Computing Robison Foulds distances...")
-						inputTree = trees[i:i+1]
-						inputRFtrees = trees[:] 
-						tree1 = readNewick(inputTree)[0]
-						tree1_prep = prepareTreeComparison(tree1, rooted=False)
-						otherTrees = readNewick(inputRFtrees)
-						RF_distances = list()
-						for tree in otherTrees:
-							res = RobinsonFouldsWithDay1985(tree, tree1_prep, rooted=False)
-							RF_distances.append(res[0])
-						distance_matrix.append(RF_distances)
-			np.savetxt(output_file, np.array(distance_matrix), delimiter=",")
+		#with console.status(f"[bold green] Robison Foulds by MAPLE") as status:
+		#time.sleep(1.0)
+		for i, tree in enumerate(trees):
+					#status.update(f"[bold red]{i+1}/{len(trees)} [bold blue]Computing Robison Foulds distances...")
+					inputTree = trees[i:i+1]
+					inputRFtrees = trees[:] 
+					tree1 = readNewick(inputTree)[0]
+					tree1_prep = prepareTreeComparison(tree1, rooted=False)
+					otherTrees = readNewick(inputRFtrees)
+					RF_distances = list()
+					for tree in otherTrees:
+						res = RobinsonFouldsWithDay1985(tree, tree1_prep, rooted=False)
+						RF_distances.append(res[0])
+					distance_matrix.append(RF_distances)
+		np.savetxt(output_file, np.array(distance_matrix), delimiter=",")
 	return distance_matrix
 
         
