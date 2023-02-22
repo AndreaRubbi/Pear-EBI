@@ -12,6 +12,14 @@ os.environ.setdefault("DISPLAY", ":0.0")
 
 
 def bash_command(cmd):
+    """Executes bash command in subprocess
+
+    Args:
+        cmd (str): bash command to be runned in subprocess
+
+    Returns:
+        0: returns 0 if everything's alright
+    """
     if os.name == "nt":
         try:
             subprocess.run(
@@ -46,7 +54,7 @@ def bash_command(cmd):
 
 
 def quartet(file, n_trees, output_file):
-    """compute quartet distances
+    """Computes quartet distances
 
     Args:
         file (str): name of input file with phylogenetic trees in newick format
@@ -89,7 +97,7 @@ def quartet(file, n_trees, output_file):
 
 
 def triplet(file, n_trees, output_file):
-    """compute triplet distances
+    """Computes triplet distances
 
     Args:
         file (str): name of input file with phylogenetic trees in newick format

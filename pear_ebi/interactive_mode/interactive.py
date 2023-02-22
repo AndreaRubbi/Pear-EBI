@@ -1,6 +1,7 @@
 import os
 import sys
 
+import rich
 from rich import print
 
 # getting the name of the directory
@@ -34,7 +35,7 @@ def usage():
 
 
 def exit_program():
-    print("- Leaving PEAR -")
+    print("[orange1]- Leaving PEAR -")
     exit()
 
 
@@ -47,12 +48,12 @@ def calculate_distances(SET):
                     "Method (1:hashrf - 2:weighted hashrf - 3:day's rf - 4:quartet - 5:triplet): "
                 )
             )
-        except:
+        except ValueError:
             continue
         if method in (1, 2, 3, 4, 5):
             break
         else:
-            print("[bold orange]Please select 1, 2 or 3")
+            rich.print("[bold orange1]Please select any available method")
 
     SET.calculate_distances(methods[method - 1])
     return 0
@@ -62,18 +63,20 @@ def embedding(SET):
     while True:
         try:
             method = int(input("Method (1:PCoA - 2:t-SNE): "))
-        except:
+        except ValueError:
+            print("")
             continue
         if method in (1, 2):
             break
         else:
-            print("[bold orange]Please select either 1 or 2")
+            print("[bold orange1]Please select either 1 or 2")
 
     while True:
         try:
             dimensions = int(input("Number of dimensions: "))
             break
-        except:
+        except ValueError:
+            print("")
             continue
 
     if method == 1:
@@ -88,29 +91,31 @@ def plotting(SET):
     while True:
         try:
             method = int(input("Method (1:PCoA - 2:t-SNE): "))
-        except:
+        except ValueError:
+            print("")
             continue
         if method in (1, 2):
             break
         else:
-            print("[bold orange]Please select either 1 or 2")
+            print("[bold orange1]Please select either 1 or 2")
 
     while True:
         try:
             dimensions = int(input("Number of dimensions: "))
-        except:
+        except ValueError:
+            print("")
             continue
         if dimensions in (2, 3):
             break
         else:
-            print("[bold orange]Please select either 2 or 3")
+            print("[bold orange1]Please select either 2 or 3")
 
     while True:
         show = input("Show figure (y/n): (default is no)  ")
         if show in ("y", "n", "Y", "N", "Yes", "No", "yes", "no", ""):
             break
         else:
-            print("[bold orange]Please select valid value")
+            print("[bold orange1]Please select valid value")
 
     if dimensions == 2:
         fig = SET.plot_2D(methods[method - 1], save=True)
@@ -130,7 +135,7 @@ def add_set():
             open(filename, "r").close()
             break
         except:
-            print("[bold orange]Cannot find the specified file")
+            print("[bold orange1]Cannot find the specified file")
     return filename
 
 
@@ -141,8 +146,8 @@ def get_subset(SET):
                 method = int(input("Method (1:syst/2:random/3:sequence): "))
                 if method in (1, 2, 3):
                     break
-            except:
-                print("[bold orange]Please select valid value")
+            except ValueError:
+                print("[bold orange1]Please select valid value")
         try:
             n_required = int(input("Number of elements in subset: "))
             if n_required >= SET.n_trees:
@@ -152,7 +157,8 @@ def get_subset(SET):
             show = input("Show subset embedding (y/n): (default is no)  ")
             if show in ("y", "n", "Y", "N", "Yes", "No", "yes", "no", ""):
                 break
-        except:
+        except ValueError:
+            print("")
             continue
 
     fig1, fig2 = SET.get_subset(n_required, ["syst", "random", "sequence"][method - 1])
@@ -174,5 +180,5 @@ def interact(control):
             8: "interactive.usage()",
         }
         return Actions[control]
-    except:
-        return ""
+    except KeyError:
+        return "Operation unavailable"

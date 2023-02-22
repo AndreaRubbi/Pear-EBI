@@ -12,6 +12,14 @@ os.environ.setdefault("DISPLAY", ":0.0")
 
 
 def bash_command(cmd):
+    """Executes bash command in subprocess
+
+    Args:
+        cmd (str): bash command to be runned in subprocess
+
+    Returns:
+        0: returns 0 if everything's alright
+    """
     if os.name == "nt":
         sys.exit("PEAR isn't compatble with Windows yet")
         try:
@@ -35,7 +43,7 @@ def bash_command(cmd):
 
 
 def hashrf(file, n_trees, output_file):
-    """compute unweighted Robison Foulds distances
+    """Computes unweighted Robison Foulds distances
 
     Args:
         file (str): name of input file with phylogenetic trees in newick format
@@ -78,7 +86,7 @@ def hashrf(file, n_trees, output_file):
 
 # HashRF calculating weighted RF distances
 def hashrf_weighted(file, n_trees, output_file):
-    """compute weighted Robison Foulds distances
+    """Computes weighted Robison Foulds distances
 
     Args:
         file (str): name of input file with phylogenetic trees in newick format

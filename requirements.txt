@@ -10,6 +10,7 @@ numpy
 pandas
 pandoc
 plotly==5.11.0
+pyDRMetrics
 rich
 scikit-learn
 scipy

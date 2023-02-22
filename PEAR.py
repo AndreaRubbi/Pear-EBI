@@ -1,5 +1,7 @@
 __author__ = "Andrea Rubbi : andrea.rubbi.98@gmail.com"
 
+from rich import print
+
 import pear_ebi.tree_emb_parser
 from pear_ebi.calculate_distances import hashrf
 from pear_ebi.embeddings import PCA_e, tSNE_e
@@ -47,9 +49,17 @@ if __name__ == "__main__":
         interactive.usage()
 
     while args.interactive_mode:
-        control = input("Command: ")
         try:
+            control = input("Command: ")
             control = int(control)
-        except:
+        except ValueError:
             pass
-        exec(interactive.interact(control))
+        except KeyboardInterrupt:
+            print("[orange1]\n- Leaving PEAR -")
+            exit()
+
+        try:
+            exec(interactive.interact(control))
+        except KeyboardInterrupt:
+            print("[red] Interrupted")
+            pass

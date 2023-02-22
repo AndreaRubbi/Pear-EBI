@@ -18,6 +18,7 @@ import time
 import warnings
 
 import numpy as np
+import pandas as pd
 import rich
 from rich.console import Console
 
@@ -153,7 +154,17 @@ def readNewick(tree_list, defaultBLen=0.000033, normalizeInputBLen=1.0):
 
 
 def prepareTreeComparison(t1, rooted=False, minimumBLen=0.000006):
+    """Prepares newick tree for comparison
+
+    Args:
+        t1 (str): input tree
+        rooted (bool, optional): set to True if t1 is rooted, default ro False
+        minimumBLen (float, optional): minimum value for branch length, default to 6E-6
+
+    Returns:
+        tree metrics (tuple of values) (leafNameDict, nodeTable, leafCount, numBranches, leafDistDict, branchLengthDict, sumBranchLengths,): tree metrics among which the RFL.
     """
+    """ Additional info from original program by NdM:
     For every branch that is shared among two trees,
     add the absolute difference of the two branches to the RFL.
     (This is first stored seperately as the KL value first).
@@ -177,14 +188,8 @@ def prepareTreeComparison(t1, rooted=False, minimumBLen=0.000006):
     than the minimum branch length are not taken into account.
     However, cases may occur that a branch exists in both trees,
     but in one of them it is lower than the minimum branch length,
-    making the RFL less accurate.
+    making the RFL less accurate."""
 
-    :param t1: input tree;
-    :param rooted: set to True if t1 is rooted, default ro False;
-    :param minimumBLen: minimum value for branch length, default to 6E-6;
-
-    :return: tree metrics, among which the RFL.
-    """
     # dictionary of values given to sequence names
     leafNameDict = dict()
     # list of sequence names sorted according to value
@@ -325,6 +330,17 @@ def prepareTreeComparison(t1, rooted=False, minimumBLen=0.000006):
 # Example usage: leafNameDict, nodeTable, leafCount, numBranches = prepareTreeComparison(phyloTrue,rooted=False)
 # numDiffs, normalisedRF, leafCount, foundBranches, missedBranches, notFoundBranches = RobinsonFouldsWithDay1985(phyloEstimated,leafNameDict,nodeTable,leafCount,numBranches,rooted=False)
 def RobinsonFouldsWithDay1985(t2, t1, rooted=False, minimumBLen=0.000006):
+    """Computes Robison Foulds distances using Day's algorithm
+
+    Args:
+        t2 (string): newick tree to be compared to t1
+        t1 (tuple): t1 after preprocessing using prepareTreeComparison()
+        rooted (bool, optional): True if t2 is rooted. Defaults to False.
+        minimumBLen (float, optional): minimum branch length. Defaults to 0.000006.
+
+    Returns:
+        comparison parameters (tuple) (numDiffs, float(numDiffs) / (normalization), leafCount, foundBranches, missedBranches, (numBranches - foundBranches), RFL): results of comparison, among which the RF distance (numDiffs).
+    """
     (
         leafNameDict,
         nodeTable,
@@ -476,6 +492,16 @@ def RobinsonFouldsWithDay1985(t2, t1, rooted=False, minimumBLen=0.000006):
 
 
 def calculate_distance_matrix(file, n_trees, output_file):
+    """Computes the whole pipeline that calculates the pairwise distances in a collection of trees
+
+    Args:
+        file (str): file containing the newick trees
+        n_trees (int): number of trees (or lines) in file
+        output_file (str): output file for distance matrix
+
+    Returns:
+        distance_matrix (np.array): distance matrix
+    """
     console = Console()
     global func_pool
 
@@ -498,22 +524,22 @@ def calculate_distance_matrix(file, n_trees, output_file):
         with mp.Pool() as pool:
             arg_pool = list(range(len(trees)))
             results = list(pool.imap(func_pool, arg_pool))
-        distance_matrix = np.array(
-            list(map(lambda res: eval(res.split("\n")[1].strip()), results))
+        distance_matrix_upper = list(
+            map(lambda res: eval(res.split("\n")[1].strip()), results)
         )
-        np.savetxt(output_file, distance_matrix, delimiter=",")
-        # for i, tree in enumerate(trees):
-        # 	status.update(f"[bold red]{i+1}/{len(trees)} [bold blue]Computing Robison Foulds distances...")
-        # 	command = ['pypy3', f'{current}/RF_pypy.py', str(i)]
-        # 	res = subprocess.check_output(command, universal_newlines = True).split('\n')
-        # 	distance_matrix.append(eval(res[1].rstrip()))
+
+        distance_matrix = np.zeros((n_trees, n_trees))
+        for i, line in enumerate(distance_matrix_upper):
+            distance_matrix[i, i + 1 :] = line
+
+        distance_matrix_lower = distance_matrix.transpose()
+
     else:
-        # with console.status(f"[bold green] Robison Foulds by MAPLE") as status:
-        # time.sleep(1.0)
+        distance_matrix = np.zeros((n_trees, n_trees))
         for i, tree in enumerate(trees):
             # status.update(f"[bold red]{i+1}/{len(trees)} [bold blue]Computing Robison Foulds distances...")
             inputTree = trees[i : i + 1]
-            inputRFtrees = trees[:]
+            inputRFtrees = trees[i + 1 :]
             tree1 = readNewick(inputTree)[0]
             tree1_prep = prepareTreeComparison(tree1, rooted=False)
             otherTrees = readNewick(inputRFtrees)
@@ -521,6 +547,10 @@ def calculate_distance_matrix(file, n_trees, output_file):
             for tree in otherTrees:
                 res = RobinsonFouldsWithDay1985(tree, tree1_prep, rooted=False)
                 RF_distances.append(res[0])
-            distance_matrix.append(RF_distances)
-        np.savetxt(output_file, np.array(distance_matrix), delimiter=",")
+            distance_matrix[i, i + 1 :] = RF_distances
+
+        distance_matrix_lower = distance_matrix.transpose()
+
+    distance_matrix = pd.DataFrame(distance_matrix + distance_matrix_lower)
+    distance_matrix.to_csv(output_file)
     return distance_matrix

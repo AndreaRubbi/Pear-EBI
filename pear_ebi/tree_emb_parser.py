@@ -2,6 +2,11 @@ import argparse
 
 
 def parser():
+    """Generates parser for PEAR program
+
+    Returns:
+        arg parser: PEAR parser
+    """
     parser = argparse.ArgumentParser(
         prog="PEAR",
         description="PEAR-EBI | \

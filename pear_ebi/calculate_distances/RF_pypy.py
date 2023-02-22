@@ -2,7 +2,7 @@ import sys
 
 try:
     from .maple_RF import *
-except:
+except ImportError:
     from maple_RF import *
 
 if __name__ == "__main__":
@@ -12,7 +12,7 @@ if __name__ == "__main__":
 
     i = int(sys.argv[1])
     inputTree = trees[i : i + 1]
-    inputRFtrees = trees[:]
+    inputRFtrees = trees[i + 1 :]
 
     tree1 = readNewick(inputTree)[0]
     tree1_prep = prepareTreeComparison(tree1, rooted=False)

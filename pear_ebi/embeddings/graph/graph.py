@@ -400,7 +400,6 @@ def plot_embedding(
 
         buttons_ID = list()
         # buttons_ID are switch on-off buttons that allow to show or hyde specific tree_sets | activated by select
-        # TODO : transform double buttons in single toggle button --> specify the hyde-button behaviours in arg2
         if select:
             if nUnique > 16:
                 warnings.warn(

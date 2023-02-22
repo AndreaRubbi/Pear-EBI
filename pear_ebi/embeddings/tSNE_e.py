@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.manifold import TSNE
 
-from .pear_corr import pear_correlation
+from .emb_quality import DRM, pear_correlation
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -24,18 +24,24 @@ def tsne(distance_matrix, n_dimensions, metadata=None, quality=False):
     if n_dimensions > 3:
         method = "exact"
 
-    Distances_embedded_ND = TSNE(
+    tsne = TSNE(
         n_components=n_dimensions,
         method=method,
         init="random",
         learning_rate=200.0,
         perplexity=3,
-    ).fit_transform(distance_matrix.values.astype(np.float32))
+    )
+
+    Distances_embedded_ND = tsne.fit_transform(distance_matrix.values.astype(np.float32))
     pd.DataFrame(Distances_embedded_ND).to_csv("./t-SNE_Embedding.csv")
 
+    Xr = tsne.inverse_transform(Distances_embedded_ND)
+
     if quality:
-        return Distances_embedded_ND, pear_correlation(
-            distance_matrix, Distances_embedded_ND
+        return (
+            Distances_embedded_ND,
+            pear_correlation(distance_matrix, Distances_embedded_ND),
+            DRM(distance_matrix, Distances_embedded_ND, Xr),
         )
 
     return Distances_embedded_ND
