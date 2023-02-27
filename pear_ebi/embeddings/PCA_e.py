@@ -9,7 +9,7 @@ from .emb_quality import DRM, pear_correlation
 
 # ──────────────────────────────────────────────────────────────────────────────
 # ─── PCA N COMPONENTS ─────────────────────────────────────────────────────────
-def pca(distance_matrix, n_components, metadata=None, quality=False):
+def pca(distance_matrix, n_components, metadata=None, quality=False, report=False):
     """embed distance_matrix in n_components with Principal Coordinate Analysis
 
     Args:
@@ -25,14 +25,18 @@ def pca(distance_matrix, n_components, metadata=None, quality=False):
     total_var = pca.explained_variance_ratio_.sum() * 100
     pd.DataFrame(components).to_csv("./PCA_Embedding.csv")
 
-    Xr = pca.inverse_transform(components)
+    if report:
+        Xr = pca.inverse_transform(components)
+        qu_re = DRM(distance_matrix, components, Xr)
+    else:
+        qu_re = None
 
     if quality:
         return (
             components,
             total_var,
             pear_correlation(distance_matrix, components),
-            DRM(distance_matrix, components, Xr),
+            qu_re,
         )
 
     return components

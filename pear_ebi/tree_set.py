@@ -168,7 +168,7 @@ class tree_set:
         print(f"[bold blue]{method} | Done!")
 
     # ─── EMBED ─────────────────────────────────────────────────────────────────
-    def embed(self, method, dimensions, quality=False):
+    def embed(self, method, dimensions, quality=False, report=False):
         """Compute embedding with n-dimensions and method of choice
 
         Args:
@@ -187,7 +187,11 @@ class tree_set:
 
         dim = dimensions if dimensions > 2 else 3
         embedding = methods[method](
-            self.distance_matrix, dimensions, self.metadata, quality=quality
+            self.distance_matrix,
+            dimensions,
+            self.metadata,
+            quality=quality if not report else True,
+            report=report,
         )
 
         if quality:
@@ -207,7 +211,8 @@ class tree_set:
             self.embedding_pca3D = embedding[:, :4]
             self.embedding_pca2D = embedding[:, :3]
         elif method == "tsne":
-            warnings.warn("t-SNE on more than 3 dimensions can be considerably slow")
+            if dimensions > 3:
+                warnings.warn("t-SNE on more than 3 dimensions can be considerably slow")
             self.embedding_tsne = embedding
             self.embedding_tsne3D = embedding[:, :4]
             self.embedding_tsne2D = embedding[:, :3]
@@ -446,9 +451,10 @@ class set_collection(tree_set):
     def __init__(
         self,
         collection=list(),
-        file="Set_collection",
-        output_file="./Set_collection_distance_matrix",
+        file="Set_collection_",
+        output_file=None,
         distance_matrix=None,
+        metadata=None,
     ):
         """Initialize set_collection
 
@@ -469,15 +475,17 @@ class set_collection(tree_set):
         self.embedding_pca3D = None
         self.embedding_tsne3D = None
 
-        if (
-            self.file != "Set_collection" + str(self.id)
-            and output_file == "./Set_collection_distance_matrix.csv"
-        ):
-            self.output_file = "./{file}_distance_matrix.csv".format(
+        if self.file != "Set_collection_" + str(self.id) and output_file is None:
+            self.output_file = "{file}_distance_matrix.csv".format(
                 file=os.path.splitext(os.path.basename(self.file))[0]
             )
+        elif output_file is None:
+            self.output_file = "Set_collection_distance_matrix_" + str(self.id) + ".csv"
         else:
-            self.output_file = output_file + str(self.id) + ".csv"
+            if output_file[-4:] == ".csv":
+                self.output_file = output_file[:-4] + "_" + str(self.id) + ".csv"
+            else:
+                self.output_file = output_file + "_" + str(self.id) + ".csv"
 
         if isinstance(collection, tree_set):
             self.collection = [collection]
@@ -549,7 +557,9 @@ class set_collection(tree_set):
                 for element in other:
                     assert isinstance(
                         element, tree_set
-                    ), "You can concatenate a set_collection only with another set_collection, a tree_set, or a list of tree_set"
+                    ), "You can concatenate a set_collection \
+                        only with another set_collection, a tree_set,\
+                            or a list of tree_set"
                 return set_collection(self.collection + other)
 
     def __str__(self):
@@ -557,7 +567,10 @@ class set_collection(tree_set):
         if type(self.distance_matrix) != type(None):
             computed = "computed"
 
-        summary = f"─────────────────────────────\n Tree set collection containing {self.n_trees} trees;\n File: {self.file};\n Distance matrix: {computed}.\n───────────────────────────── \n"
+        summary = f"─────────────────────────────\
+            \n Tree set collection containing {self.n_trees} trees;\
+            \n File: {self.file};\n Distance matrix: {computed}.\
+                \n───────────────────────────── \n"
         for key, value in self.data.items():
             summary += f"{key}; Containing {value['n_trees']} trees. \n"
 
@@ -587,5 +600,6 @@ class set_collection(tree_set):
                 for element in other:
                     assert isinstance(
                         element, tree_set
-                    ), "You can concatenate a set_collection only with another set_collection, a tree_set, or a list of tree_set"
+                    ), "You can concatenate a set_collection only with another \
+                        set_collection, a tree_set, or a list of tree_set"
                 return set_collection(self.collection + other)

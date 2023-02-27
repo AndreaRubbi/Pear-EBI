@@ -19,6 +19,7 @@ def parser():
         dest="input",
         metavar="input",
         help="input file : tree set in newic format",
+        nargs="*",  # "?",
     )
     parser.add_argument(
         "-o",
@@ -26,13 +27,6 @@ def parser():
         dest="output",
         metavar="output",
         help="output file : storage of distance matrix",
-        required=False,
-    )
-    parser.add_argument(
-        "-v",
-        dest="verbose",
-        action="store_true",
-        help="print info while running",
         required=False,
     )
     parser.add_argument(
@@ -44,6 +38,8 @@ def parser():
     )
     parser.add_argument(
         "-d",
+        "--d",
+        "-dM",
         type=str,
         dest="distance_matrix",
         metavar="distance_matrix",
@@ -51,7 +47,7 @@ def parser():
         required=False,
     )
     parser.add_argument(
-        "-m",
+        "-meta",
         type=str,
         dest="metadata",
         metavar="metadata",
@@ -59,48 +55,41 @@ def parser():
         required=False,
     )
     parser.add_argument(
-        "-hashrf",
-        "--h",
-        dest="hashrf",
-        action="store_true",
-        help="calculates tree distances using hashrf",
-        required=False,
-    )
-    parser.add_argument(
-        "-hashrf_w",
-        "--hw",
-        dest="hashrf_weighted",
-        action="store_true",
-        help="calculates tree distances using weighted hashrf",
-        required=False,
-    )
-    parser.add_argument(
-        "-daysRF",
-        "--drf",
-        dest="days_RF",
-        action="store_true",
-        help="calculates tree distances using an implementation of Day's algorithm",
+        "-m",
+        "--m",
+        dest="method",
+        type=str,
+        help="calculates tree distances using specified method (hashrf, weighted_hashrf, days_RF, quartet, triplet)",
         required=False,
     )
     parser.add_argument(
         "-pca",
         dest="pca",
         type=int,
-        help="embedding using PCoA: select 2 or 3 principal components",
+        help="embedding using PCoA: select #principal components",
         required=False,
     )
     parser.add_argument(
         "-tsne",
         dest="tsne",
         type=int,
-        help="embedding using t-SNE: select 2 or 3 final dimensions",
+        help="embedding using t-SNE: select #final dimensions",
         required=False,
     )
     parser.add_argument(
         "-plot",
+        "--p",
         dest="plot",
-        type=int,
+        action="store_true",
         help="plot embedding in 2 or 3 dimensions",
+        required=False,
+    )
+    parser.add_argument(
+        "-showplot",
+        "--show",
+        action="store_true",
+        dest="showplot",
+        help="show plot",
         required=False,
     )
     parser.add_argument(
@@ -109,6 +98,44 @@ def parser():
         dest="subset",
         type=int,
         help="extract subset of collection",
+        required=False,
+    )
+    parser.add_argument(
+        "-config",
+        "--c",
+        dest="config",
+        type=str,
+        help="toml config file",
+        required=False,
+    )
+    parser.add_argument(
+        "-report",
+        "--r",
+        action="store_true",
+        dest="report",
+        help="print long quality report of embedding",
+        required=False,
+    )
+    parser.add_argument(
+        "-quality",
+        "--q",
+        action="store_true",
+        dest="quality",
+        help="asess quality of embedding",
+        required=False,
+    )
+    parser.add_argument(
+        "-dir",
+        dest="dir",
+        type=str,
+        help="directory with files",
+        required=False,
+    )
+    parser.add_argument(
+        "-pattern",
+        dest="pattern",
+        type=str,
+        help="pattern of files in directory",
         required=False,
     )
 

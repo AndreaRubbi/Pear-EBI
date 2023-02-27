@@ -9,7 +9,7 @@ from .emb_quality import DRM, pear_correlation
 
 # ──────────────────────────────────────────────────────────────────────────────
 # ─── t-SNE ND ─────────────────────────────────────────────────────────────────
-def tsne(distance_matrix, n_dimensions, metadata=None, quality=False):
+def tsne(distance_matrix, n_dimensions, metadata=None, quality=False, report=False):
     """embed distance_matrix in n_components with t-Stochastic Neighbor Embedding
 
     Args:
@@ -35,13 +35,18 @@ def tsne(distance_matrix, n_dimensions, metadata=None, quality=False):
     Distances_embedded_ND = tsne.fit_transform(distance_matrix.values.astype(np.float32))
     pd.DataFrame(Distances_embedded_ND).to_csv("./t-SNE_Embedding.csv")
 
-    Xr = tsne.inverse_transform(Distances_embedded_ND)
+    if report:
+        # Xr = tsne.inverse_transform(Distances_embedded_ND)
+        Xr = None
+        qu_re = DRM(distance_matrix, Distances_embedded_ND, Xr)
+    else:
+        qu_re = None
 
     if quality:
         return (
             Distances_embedded_ND,
             pear_correlation(distance_matrix, Distances_embedded_ND),
-            DRM(distance_matrix, Distances_embedded_ND, Xr),
+            qu_re,
         )
 
     return Distances_embedded_ND

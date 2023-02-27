@@ -1,5 +1,6 @@
 
-<h1> <font color='green'>P</font>hylogeny <font color='green'>E</font>mbedding and <font color='green'>A</font>pproximate <font color='green'>R</font>epresentation </h1><img src="logos/LOGO_PEAR.png" width="100" height="100">
+ <h1> <font color='green'>P</font>hylogeny <font color='green'>E</font>mbedding  & <br>  <font color='green'>A</font>pproximate <font color='green'>R</font>epresentation </h1>
+ <img src="logos/LOGO_PEAR.png" width="100" height="100" style='position:absolute; left:400px; top:-15px' >
 
 ## Goldman Group - European Bioinformatics Institute <img src="logos/goldman_logo.png" width="30" height="30">
 
