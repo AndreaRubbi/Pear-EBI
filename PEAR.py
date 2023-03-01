@@ -1,6 +1,7 @@
 __author__ = "Andrea Rubbi : andrea.rubbi.98@gmail.com"
 
 import os
+import re
 from collections import defaultdict
 from glob import glob
 
@@ -53,6 +54,7 @@ if __name__ == "__main__":
             interactive.usage()
 
         while args.interactive_mode:
+            control = ""
             try:
                 control = input("Command: ")
                 control = int(control)
@@ -72,6 +74,7 @@ if __name__ == "__main__":
             # if config file is specified,
             # pear looks for it and tries to
             # load the configurations
+            config = defaultdict(lambda: None)
             if args.config is not None:
                 try:
                     config_file = args.config
@@ -94,8 +97,6 @@ if __name__ == "__main__":
             if "config" in globals():  # vars(__builtins__):
                 config = defaultdict(lambda: None, config)
                 # print(config)
-            else:
-                config = defaultdict(lambda: None)
 
             # files is a list that is populated from
             # the config file and the parser,
@@ -268,6 +269,51 @@ if __name__ == "__main__":
                 )
                 if report:
                     SET.emb_quality.report()
+
+            # ─── Highlights ───────────────────────────────────────
+            if config["highlight"] is not None and config["trees"] is not None:
+                config["highlight"] = defaultdict(lambda: None, config["highlight"])
+                highlight = list()
+                tree_files_config = list(
+                    map(
+                        lambda f: os.path.splitext(os.path.basename(f))[0],
+                        config["trees"].values(),
+                    )
+                )
+
+                n_key_tree_config = list(
+                    map(lambda k: re.findall(r"\d+", k)[0], config["trees"].keys())
+                )
+
+                for set_trees in SET.data.keys():
+                    if config["highlight"][set_trees] is not None:
+                        values = np.array(
+                            [0 for i in range(SET.data[set_trees]["n_trees"])]
+                        )
+                        values[config["highlight"][set_trees]] = 1
+                        highlight.extend(values.tolist())
+
+                    elif set_trees in tree_files_config:
+                        idx = tree_files_config.index(set_trees)
+                        if (
+                            config["highlight"][f"trace{n_key_tree_config[idx]}"]
+                            is not None
+                        ):
+                            values = np.array(
+                                [0 for i in range(SET.data[set_trees]["n_trees"])]
+                            )
+                            values[
+                                config["highlight"][f"trace{n_key_tree_config[idx]}"]
+                            ] = 1
+                            highlight.extend(values.tolist())
+
+                        else:
+                            highlight.extend(
+                                [0 for i in range(SET.data[set_trees]["n_trees"])]
+                            )
+
+                SET.metadata["highlight"] = highlight
+
             # ─── Plot Embeddings ──────────────────────────────────────────
             if method_embedding is not None:
                 if args.plot or config["plot"] is not None:

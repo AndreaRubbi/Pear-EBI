@@ -354,6 +354,15 @@ def plot_embedding(
             data.shape[1] == 3
         ), "Embed distance_matrix in 3D before requesting a 3D plot"
 
+        size = np.array([10 for _ in range(metadata.shape[0])])
+        if "highlight" in metadata.keys():
+            shapes = metadata["highlight"].values.astype(str)
+            size[shapes == "1"] = 30
+            shapes[shapes == "1"] = "circle"  # "square"
+            shapes[shapes == "0"] = "circle"
+        else:
+            shapes = np.array(["circle" for _ in range(metadata.shape[0])])
+
         # add a scatter3d trace for each tree_set - i.e. SET-ID unique value
         Sets, nSetID = np.unique(metadata["SET-ID"], return_counts=True)
         # number of sets
@@ -362,18 +371,26 @@ def plot_embedding(
             idx = metadata["SET-ID"] == SetID
             fig.add_trace(
                 go.Scatter3d(
+                    name=SetID,
                     x=data[idx, 0],
                     y=data[idx, 1],
                     z=data[idx, 2],
                     mode="markers",
                     showlegend=False,
                     visible=True,
+                    customdata=metadata["STEP"],
+                    hovertemplate="<b>Trace: %{text}</b><br>"
+                    + "Step: %{customdata}<br>"
+                    + "x: %{x}<br>"
+                    + "y: %{y}<br>"
+                    + "z: %{z}<br>",
+                    marker_symbol=shapes[idx],
                     marker_color=metadata_colors[f"{plot_meta}_color_plot"][i],
                     text=metadata["SET-ID"].values[idx],
                     opacity=0.7,
                     marker=dict(
                         colorscale=metadata_colors[f"{plot_meta}_color_map"][i],
-                        size=10,
+                        size=size[idx],
                         line=dict(
                             # color='MediumPurple',
                             width=10,
@@ -570,6 +587,15 @@ def plot_embedding(
             )
         )
 
+        size = np.array([10 for _ in range(metadata.shape[0])])
+        if "highlight" in metadata.keys():
+            shapes = metadata["highlight"].values.astype(str)
+            size[shapes == "1"] = 30
+            shapes[shapes == "1"] = "circle"  # "square"
+            shapes[shapes == "0"] = "circle"
+        else:
+            shapes = np.array(["circle" for _ in range(metadata.shape[0])])
+
         # for each tree_set add a scatter trace to the figure
         Sets, nSetID = np.unique(metadata["SET-ID"], return_counts=True)
         # number of unique tree_sets
@@ -578,17 +604,24 @@ def plot_embedding(
             idx = metadata["SET-ID"] == SetID
             fig.add_trace(
                 go.Scatter(
+                    name=SetID,
                     x=data[idx, 0],
                     y=data[idx, 1],
                     mode="markers",
                     showlegend=False,
                     visible=True,
+                    customdata=metadata["STEP"],
+                    hovertemplate="<b>Trace: %{text}</b><br>"
+                    + "Step: %{customdata}<br>"
+                    + "x: %{x}<br>"
+                    + "y: %{y}<br>",
+                    marker_symbol=shapes[idx],
                     marker_color=metadata_colors[f"{plot_meta}_color_plot"][i],
                     text=metadata["SET-ID"].values[idx],
                     opacity=0.7,
                     marker=dict(
                         colorscale=metadata_colors[f"{plot_meta}_color_map"][i],
-                        size=10,
+                        size=size[idx],
                         line=dict(
                             # color='MediumPurple',
                             width=2,

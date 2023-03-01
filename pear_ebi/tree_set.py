@@ -56,7 +56,7 @@ sys.path.append(parent)
 # importing other modules
 try:
     from .calculate_distances import hashrf, maple_RF, tqdist
-    from .embeddings import PCA_e, tSNE_e
+    from .embeddings import Isomap_e, LLE_e, PCA_e, tSNE_e
     from .embeddings.graph import graph
     from .interactive_mode import interactive
     from .subsample import subsample
@@ -112,17 +112,17 @@ class tree_set:
             try:
                 pd.read_csv(self.distance_matrix)
             except:
-                print(
+                sys.exit(
                     "There's an error with the Distance Matrix file - please check the correct location and name of the .csv file"
-                ), exit()
+                )
 
         if type(self.metadata) != type(None):
             try:
                 self.metadata = pd.read_csv(self.metadata)
             except:
-                print(
+                sys.exit(
                     "There's an error with the Metadata file - please check the correct location and name of the .csv file"
-                ), exit()
+                )
 
         else:
             self.metadata = pd.DataFrame()
@@ -179,6 +179,8 @@ class tree_set:
         methods = {
             "pca": PCA_e.pca,
             "tsne": tSNE_e.tsne,
+            "isomap": Isomap_e.isomap,
+            "lle": LLE_e.lle,
             "None": None,
         }
 
@@ -186,13 +188,16 @@ class tree_set:
             self.calculate_distances("hashrf")
 
         dim = dimensions if dimensions > 2 else 3
-        embedding = methods[method](
-            self.distance_matrix,
-            dimensions,
-            self.metadata,
-            quality=quality if not report else True,
-            report=report,
-        )
+
+        with self.console.status("[bold green]Embedding distances...") as status:
+            embedding = methods[method](
+                self.distance_matrix,
+                dimensions,
+                self.metadata,
+                quality=quality if not report else True,
+                report=report,
+            )
+        print(f"[bold blue]{method} | Done!")
 
         if quality:
             if method == "pca":
@@ -212,10 +217,27 @@ class tree_set:
             self.embedding_pca2D = embedding[:, :3]
         elif method == "tsne":
             if dimensions > 3:
-                warnings.warn("t-SNE on more than 3 dimensions can be considerably slow")
+                warnings.warn(
+                    "t-SNE with more than 3 dimensions can be considerably slow"
+                )
             self.embedding_tsne = embedding
             self.embedding_tsne3D = embedding[:, :4]
             self.embedding_tsne2D = embedding[:, :3]
+        elif method == "isomap":
+            if dimensions > 3:
+                warnings.warn(
+                    "Isomap with more than 3 dimensions can be considerably slow"
+                )
+            self.embedding_isomap = embedding
+            self.embedding_isomap3D = embedding[:, :4]
+            self.embedding_isomap2D = embedding[:, :3]
+
+        elif method == "lle":
+            if dimensions > 3:
+                warnings.warn("LLE with more than 3 dimensions can be considerably slow")
+            self.embedding_lle = embedding
+            self.embedding_lle3D = embedding[:, :4]
+            self.embedding_lle2D = embedding[:, :3]
 
     # ─── PLOT EMBEDDING ─────────────────────────────────────────────────────────
 
@@ -275,6 +297,42 @@ class tree_set:
                 self.embed("tsne", 2)
             fig = graph.plot_embedding(
                 self.embedding_tsne2D,
+                self.metadata,
+                2,
+                save,
+                name_plot,
+                static,
+                plot_meta,
+                plot_set,
+                select,
+                same_scale,
+            )
+
+        elif method == "isomap":
+            if name_plot == None:
+                name_plot = "ISOMAP_2D"
+            if type(self.embedding_isomap2D) == type(None):
+                self.embed("isomap", 2)
+            fig = graph.plot_embedding(
+                self.embedding_isomap2D,
+                self.metadata,
+                2,
+                save,
+                name_plot,
+                static,
+                plot_meta,
+                plot_set,
+                select,
+                same_scale,
+            )
+
+        elif method == "lle":
+            if name_plot == None:
+                name_plot = "LLE_2D"
+            if type(self.embedding_lle2D) == type(None):
+                self.embed("lle", 2)
+            fig = graph.plot_embedding(
+                self.embedding_lle2D,
                 self.metadata,
                 2,
                 save,
@@ -347,6 +405,42 @@ class tree_set:
                 self.embed("tsne", 3)
             fig = graph.plot_embedding(
                 self.embedding_tsne3D,
+                self.metadata,
+                3,
+                save,
+                name_plot,
+                static,
+                plot_meta,
+                plot_set,
+                select,
+                same_scale,
+            )
+
+        elif method == "isomap":
+            if name_plot == None:
+                name_plot = "ISOMAP_3D"
+            if type(self.embedding_isomap3D) == type(None):
+                self.embed("isomap", 3)
+            fig = graph.plot_embedding(
+                self.embedding_isomap3D,
+                self.metadata,
+                3,
+                save,
+                name_plot,
+                static,
+                plot_meta,
+                plot_set,
+                select,
+                same_scale,
+            )
+
+        elif method == "lle":
+            if name_plot == None:
+                name_plot = "LLE_3D"
+            if type(self.embedding_lle3D) == type(None):
+                self.embed("lle", 3)
+            fig = graph.plot_embedding(
+                self.embedding_lle3D,
                 self.metadata,
                 3,
                 save,
@@ -578,7 +672,6 @@ class set_collection(tree_set):
 
     # concatenate is a more formal method to concatenate collections
     # using this allows for more clarity in the codebase
-    #! less error prone !#
     def concatenate(self, other):
         """Concatenates two collectionsor collection and tree_set
 
