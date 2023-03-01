@@ -36,7 +36,7 @@ void HDT::addToNumList(CountingLinkedList *parent, AddToType list, unsigned int 
 {
 	if (value < 0)
 		cout << "WTF?!? Adding '" << value << "' for #" << num << endl;
-				
+
 	if (value <= 0) return;
 
 	CountingLinkedListNumOnly *theList;

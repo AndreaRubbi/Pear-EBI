@@ -123,7 +123,7 @@ RootedTree* HDT::extractAndGoBackImpl(RootedTree *addToMe, RootedTreeFactory *fa
 				newRight = realNewRight;
 				newRight->addChild(tmp);
 			}
-			
+
 			right->goBackVariable = newRight;
 		}
 		else if (!left->altMarked)

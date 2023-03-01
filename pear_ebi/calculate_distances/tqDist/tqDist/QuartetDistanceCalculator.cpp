@@ -23,7 +23,7 @@ std::vector<INTTYPE_N4> QuartetDistanceCalculator::pairs_quartet_distance(std::v
 
   for(size_t i = 0; i < unrootedTrees1.size(); i++) {
     INTTYPE_N4 dist = calculateQuartetDistance(unrootedTrees1[i], unrootedTrees2[i]);
-    
+
     res.push_back(dist);
   }
 
@@ -32,15 +32,15 @@ std::vector<INTTYPE_N4> QuartetDistanceCalculator::pairs_quartet_distance(std::v
 
 std::vector<INTTYPE_N4> QuartetDistanceCalculator::pairs_quartet_distance(const char *filename1, const char *filename2) {
   NewickParser parser;
-  
-  std::vector<UnrootedTree *> unrootedTrees1  = parser.parseMultiFile(filename1); 
+
+  std::vector<UnrootedTree *> unrootedTrees1  = parser.parseMultiFile(filename1);
   if (unrootedTrees1.size() == 0 || parser.isError()) {
     std::cerr << "Error: Parsing of \"" << filename1 << "\" failed." << endl;
     std::cerr << "Aborting!" << endl;
     std::exit(-1);
   }
 
-  std::vector<UnrootedTree *> unrootedTrees2  = parser.parseMultiFile(filename2); 
+  std::vector<UnrootedTree *> unrootedTrees2  = parser.parseMultiFile(filename2);
   if (unrootedTrees2.size() == 0 || parser.isError()) {
     std::cerr << "Error: Parsing of \"" << filename2 << "\" failed." << endl;
     std::cerr << "Aborting!" << endl;
@@ -53,14 +53,14 @@ std::vector<INTTYPE_N4> QuartetDistanceCalculator::pairs_quartet_distance(const 
 void QuartetDistanceCalculator::pairs_quartet_distance_verbose(std::ostream &out, std::vector<UnrootedTree *> &unrootedTrees1, std::vector<UnrootedTree *> &unrootedTrees2) {
   for(size_t i = 0; i < unrootedTrees1.size(); i++) {
     INTTYPE_N4 dist = calculateQuartetDistance(unrootedTrees1[i], unrootedTrees2[i]);
-    
+
     INTTYPE_N4 resolvedQuartetsAgree = get_resolvedQuartetsAgree();
     INTTYPE_N4 resolvedQuartetsAgreeDiag = get_resolvedQuartetsAgreeDiag();
     INTTYPE_N4 resolvedQuartetsDisagree = get_resolvedQuartetsDisagree();
     INTTYPE_N4 resolvedQuartetsDisagreeDiag = get_resolvedQuartetsDisagreeDiag();
     INTTYPE_N4 resolvedQuartetsAgreeUpper = get_resolvedQuartetsAgreeUpper();
     INTTYPE_N4 resolvedQuartetsDisagreeUpper = get_resolvedQuartetsDisagreeUpper();
-    
+
     INTTYPE_N4 n = get_n();
     INTTYPE_N4 totalNoQuartets = get_totalNoQuartets();
     double dist_norm = double(dist) / double(totalNoQuartets);
@@ -68,7 +68,7 @@ void QuartetDistanceCalculator::pairs_quartet_distance_verbose(std::ostream &out
     double resAgree_norm = double(resAgree) / double(totalNoQuartets);
     INTTYPE_N4 unresolvedQuartetsAgree = get_unresolvedQuartets();
     double unresolvedQuartetsAgree_norm = double(unresolvedQuartetsAgree) / double(totalNoQuartets);
-    
+
     std::cout << n                            << "\t"
 	      << totalNoQuartets              << "\t"
 	      << dist                         << "\t"
@@ -77,14 +77,14 @@ void QuartetDistanceCalculator::pairs_quartet_distance_verbose(std::ostream &out
 	      << resAgree_norm                << "\t"
 	      << unresolvedQuartetsAgree      << "\t"
 	      << unresolvedQuartetsAgree_norm << std::endl;
-    
+
   }
 }
 
 std::vector<std::vector<INTTYPE_N4> > QuartetDistanceCalculator::calculateAllPairsQuartetDistance(const char *filename) {
   NewickParser parser;
 
-  std::vector<UnrootedTree *> unrootedTrees  = parser.parseMultiFile(filename); 
+  std::vector<UnrootedTree *> unrootedTrees  = parser.parseMultiFile(filename);
   if (unrootedTrees.size() == 0 || parser.isError()) {
     std::cerr << "Error: Parsing of \"" << filename << "\" failed." << endl;
     std::cerr << "Aborting!" << endl;
@@ -153,7 +153,7 @@ INTTYPE_N4 QuartetDistanceCalculator::calculateQuartetDistance(UnrootedTree *t1,
 
   this->t1 = t1->convertToRootedTree(NULL);
   this->t2 = t2->convertToRootedTree(this->t1->factory);
-  
+
   this->t1->pairAltWorld(this->t2);
   if (this->t1->isError()) {
     std::cerr << "The two trees do not have the same set of leaves." << std::endl;
@@ -162,16 +162,16 @@ INTTYPE_N4 QuartetDistanceCalculator::calculateQuartetDistance(UnrootedTree *t1,
     delete this->t2->factory;
     return -1;
   }
-  
+
   // Section 3 of Soda13: Counting unresolved triplets and quartets in a single tree
   countChildren(this->t1);
   hdt = HDT::constructHDT(this->t2, this->t1->maxDegree, dummyHDTFactory);
-  
+
   resolvedQuartetsAgree = resolvedQuartetsAgreeDiag = 0;
   resolvedQuartetsDisagree = resolvedQuartetsDisagreeDiag = 0;
   resolvedQuartetsAgreeUpper = resolvedQuartetsDisagreeUpper = 0;
   unresolvedQuartets = 0;
-  
+
   count(this->t1);
 
 #ifndef doExtractAndContract
@@ -184,10 +184,10 @@ INTTYPE_N4 QuartetDistanceCalculator::calculateQuartetDistance(UnrootedTree *t1,
   INTTYPE_N4 e = unresolvedQuartets;
 
   INTTYPE_N4 result = totalNoQuartets - (a + e);
-  
+
   delete this->t1->factory;
   delete this->t2->factory;
-  
+
   // HDT is deleted in count!
   return result;
 }

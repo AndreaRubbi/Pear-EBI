@@ -199,7 +199,7 @@ add_executable(test_triplet test_triplet.cpp
   QuartetDistanceCalculator.cpp
   int_stuff.cpp)
 add_test(
-  NAME test_triplet 
+  NAME test_triplet
   WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
   COMMAND ${EXECUTABLE_OUTPUT_PATH}/test_triplet)
 
@@ -220,7 +220,7 @@ add_executable(test_quartet test_quartet.cpp
   int_stuff.cpp)
 set_target_properties(test_quartet PROPERTIES COMPILE_FLAGS -DquartetsToo)
 add_test(
-  NAME test_quartet 
+  NAME test_quartet
   WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}
   COMMAND ${EXECUTABLE_OUTPUT_PATH}/test_quartet)
 

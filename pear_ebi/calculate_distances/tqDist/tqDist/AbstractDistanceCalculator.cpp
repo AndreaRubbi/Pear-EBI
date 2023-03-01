@@ -7,11 +7,11 @@ void AbstractDistanceCalculator::count(RootedTree *v) {
   if (v->isLeaf() || v->n <= 2) {
     // This will make sure the entire subtree has color 0!
     v->colorSubtree(0);
-    
+
 #ifdef doExtractAndContract
     delete hdt->factory;
 #endif
-    
+
     return;
   }
 
@@ -34,7 +34,7 @@ void AbstractDistanceCalculator::count(RootedTree *v) {
     largest->next = v->children;
     v->children = largest;
   }
-  
+
   // Color i'th subtree (i > 1) with color i
   int c = 2;
   for(TemplatedLinkedList<RootedTree*> *current = v->children->next; current != NULL; current = current->next) {
@@ -45,7 +45,7 @@ void AbstractDistanceCalculator::count(RootedTree *v) {
   // Update counters in the HDT
   hdt->updateCounters();
   updateCounters();
-  
+
 #ifdef doExtractAndContract
   // Extract
   RootedTree** extractedVersions = new RootedTree*[v->numChildren - 1];
@@ -85,7 +85,7 @@ void AbstractDistanceCalculator::count(RootedTree *v) {
     bool hdtTooBig = firstChild->n * CONTRACT_MAX_EXTRA_SIZE < hdt->leafCount();
     if (hdtTooBig) {
       HDT *newHDT;
-      
+
       firstChild->markHDTAlternative();
       RootedTree *extractedT2 = hdt->extractAndGoBack(t1->factory);
       RootedTree *contractedT2 = extractedT2->contract();
@@ -99,7 +99,7 @@ void AbstractDistanceCalculator::count(RootedTree *v) {
     count(firstChild);
     // HDT is deleted in recursive call!
   }
-  
+
   // Color 1 and recurse
   c = 0;
   for(TemplatedLinkedList<RootedTree*> *current = v->children->next; current != NULL; current = current->next) {
@@ -108,15 +108,15 @@ void AbstractDistanceCalculator::count(RootedTree *v) {
       hdt = HDT::constructHDT(extractedVersions[c], t1->maxDegree, dummyHDTFactory, true);
       delete extractedVersions[c]->factory;
 #endif
-      
+
       current->data->colorSubtree(1);
-      
+
       count(current->data);
     }
     c++; // Weee :)
     // HDT is deleted on recursive calls!
   }
-  
+
 #ifdef doExtractAndContract
   delete[] extractedVersions;
 #endif
@@ -127,7 +127,7 @@ void AbstractDistanceCalculator::countChildren(RootedTree *t) {
     t->n = 1;
     return;
   }
-  
+
   int nSum = 0;
   for(TemplatedLinkedList<RootedTree*> *i = t->children; i != NULL; i = i->next) {
     RootedTree *childI = i->data;

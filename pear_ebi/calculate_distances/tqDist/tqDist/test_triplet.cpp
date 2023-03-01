@@ -17,9 +17,9 @@ void test_triplet_distance() {
 
 void test_all_pairs_triplet_distance() {
   TripletDistanceCalculator tripletCalc;
-  
+
   const std::vector<std::vector<INTTYPE_REST> > &result = tripletCalc.calculateAllPairsTripletDistance("../trees/two_trees.new");
-  
+
   assert_equal(result[1][0], (INTTYPE_REST) 26);
   assert_equal(result[0][0], (INTTYPE_REST) 0);
   assert_equal(result[2][1], (INTTYPE_REST) 26);

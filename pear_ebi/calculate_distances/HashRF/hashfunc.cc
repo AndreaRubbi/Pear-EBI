@@ -25,13 +25,13 @@
 #include <cassert>
 #include "RandomLib/Random.hpp"
 
-// constructor	
+// constructor
 CHashFunc::CHashFunc(
-	unsigned int t, 
-	unsigned int n, 
-	unsigned int c) 
+	unsigned int t,
+	unsigned int n,
+	unsigned int c)
 	: _m1(0), _m2(0), _t(t), _n(n), _a1(NULL), _a2(NULL), _c(c)
-{ 
+{
 	UHashfunc_init(t, n, c);
 }
 
@@ -44,72 +44,72 @@ CHashFunc::~CHashFunc()
 
 void
 CHashFunc::UHashfunc_init(
-	unsigned int t, 
-	unsigned int n, 
+	unsigned int t,
+	unsigned int n,
 	unsigned int c)
-{	
+{
 	// Init member variables
 	_t = t;
 	_n = n;
 	_c = c;
-		
-	// Get the prime number which is larger than t*n 
+
+	// Get the prime number which is larger than t*n
 	unsigned long long top = _t*_n;
-	
+
 	unsigned long long p = 0;
 	unsigned int mul = 1;
-	do {		
+	do {
 		unsigned from = 100 * mul;
 		p = GetPrime(top, from);
 		++mul;
 	} while (p == 0);
-		
+
 	_m1 = p;   	// t*n ~~ m1
-	
+
 	unsigned long long top2 = _c*_t*_n;
 	unsigned long long p2 = 0;
 	mul = 1;
-	do {		
+	do {
 		unsigned from = 100 * mul;
 		p2 = GetPrime(top2, from);
 		++mul;
 	} while (p2 == 0);
-	
+
 	_m2 = p2; // m2 > c*t*n --> to avoid double collision ==> I just use _c*top for _m2
 	_a1 = new unsigned long long[_n];
 	_a2 = new unsigned long long[_n];
-	
-	
+
+
 	// generate n random numbers between 0 and m1-1
 	// for hash function1 and hash function2
-	// rand() % 48       
+	// rand() % 48
 	// random number between 0~47
 	RandomLib::Random rnd;		// r created with random seed
-	
+
 	for (unsigned int i=0; i<_n; ++i) {
 		_a1[i] = rnd.Integer<unsigned long long>(_m1-1);
 		_a2[i] = rnd.Integer<unsigned long long>(_m2-1);
-	}			
+	}
 }
 
 
 
 // Generate a prime number right after topNum
-unsigned long long 
+unsigned long long
 CHashFunc::GetPrime(unsigned long long topNum, unsigned from)
 {
 	unsigned long long primeNum=0;
 	unsigned long long candidate=0;
-	
-	if (topNum <= 100) 
+
+	if (topNum <= 100)
 		candidate = 2;
 	else
-		candidate = topNum; 
-	
+		candidate = topNum;
+
 	while (candidate <= topNum+from) {
-		unsigned long long trialDivisor = 2; 
+		unsigned long long trialDivisor = 2;
 		int prime = 1;
-	
+
 		while (trialDivisor * trialDivisor <= candidate) {
 			if (candidate % trialDivisor == 0) {
 				prime = 0;
@@ -121,7 +121,6 @@ CHashFunc::GetPrime(unsigned long long topNum, unsigned from)
 
 		candidate++;
 	}
-	
+
 	return primeNum;
 }
-

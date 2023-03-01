@@ -5,7 +5,7 @@
 #include "int_stuff.h"
 #include "unrooted_tree.h"
 
-class 
+class
 #ifdef _WIN32
 	__declspec(dllexport)
 #endif
@@ -22,7 +22,7 @@ QuartetDistanceCalculator : private AbstractDistanceCalculator {
 
   std::vector<INTTYPE_N4> pairs_quartet_distance(std::vector<UnrootedTree *> &unrootedTrees1, std::vector<UnrootedTree *> &unrootedTrees2);
   void pairs_quartet_distance_verbose(std::ostream &out, std::vector<UnrootedTree *> &unrootedTrees1, std::vector<UnrootedTree *> &unrootedTrees2);
-  std::vector<INTTYPE_N4> pairs_quartet_distance(const char *filename1, const char *filename2);  
+  std::vector<INTTYPE_N4> pairs_quartet_distance(const char *filename1, const char *filename2);
 
 
   // accessors
@@ -35,7 +35,7 @@ QuartetDistanceCalculator : private AbstractDistanceCalculator {
   INTTYPE_N4 get_resolvedQuartetsAgreeUpper() { return resolvedQuartetsAgreeUpper; }
   INTTYPE_N4 get_resolvedQuartetsDisagreeUpper() { return resolvedQuartetsDisagreeUpper; }
   INTTYPE_N4 get_unresolvedQuartets() { return unresolvedQuartets; }
-  
+
  private:
   void updateCounters();
 

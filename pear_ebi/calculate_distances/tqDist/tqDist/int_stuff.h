@@ -29,7 +29,7 @@
 	#else
 	  #define INTTYPE_REST long long
 	#endif
-	
+
 	std::ostream &operator<<(std::ostream &strm, __uint128_t value);
 	std::ostream &operator<<(std::ostream &strm, __int128_t value);
   #else

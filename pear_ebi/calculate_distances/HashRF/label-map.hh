@@ -22,7 +22,7 @@ public:
   		std::string label;
   		AlreadyPushedEx(std::string l) : label(l) {}
     };
-    
+
     struct UnkownLabelEx {
   		std::string label;
   		UnkownLabelEx(std::string l) : label(l) {}

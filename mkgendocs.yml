@@ -1,9 +1,0 @@
-sources_dir: docs
-templates_dir: docs/templates
-repo: https://github.com/AndreaRubbi/Pear-EBI
-version: master
-pages:
-  - page: "scripts/base/emebddings.md"
-    source: "pear_ebi/embeddings/PCA_e.py"
-    functions:
-      - pca

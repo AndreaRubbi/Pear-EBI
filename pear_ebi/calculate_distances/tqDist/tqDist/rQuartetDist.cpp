@@ -60,7 +60,7 @@ extern "C" {
 
     QuartetDistanceCalculator quartetCalc;
     std::vector<INTTYPE_N4> res = quartetCalc.pairs_quartet_distance(filename1, filename2);
-    
+
     SEXP res_sexp;
     PROTECT(res_sexp = allocVector(INTSXP, res.size()));
     int *ians = INTEGER(res_sexp);
@@ -68,7 +68,7 @@ extern "C" {
     for(size_t i = 0; i < res.size(); ++i) {
       ians[i] = res[i];
     }
-   
+
     UNPROTECT(1);
 
     return res_sexp;
@@ -86,7 +86,7 @@ extern "C" {
 
     QuartetDistanceCalculator quartetCalc;
     std::vector<std::vector<INTTYPE_N4> > res = quartetCalc.calculateAllPairsQuartetDistance(filename);
-    
+
     SEXP res_sexp;
     PROTECT(res_sexp = allocMatrix(INTSXP, res.size(), res.size()));
     int *ians = INTEGER(res_sexp);

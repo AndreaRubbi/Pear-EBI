@@ -17,7 +17,7 @@ RootedTreeFactory::RootedTreeFactory(RootedTreeFactory *copyMemAllocFrom)
 	}
 	memRT->numUses++;
 	memTLL->numUses++;
-	
+
 	createdRT = memRT->getMemory();
 	createdRT->altWorldSelf = NULL;
 	currentRT = createdRT;

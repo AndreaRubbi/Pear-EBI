@@ -347,4 +347,3 @@ tqDist/CMakeFiles/triplet_dist.dir/clean:
 tqDist/CMakeFiles/triplet_dist.dir/depend:
 	cd /home/andrear/tqDist && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/andrear/tqDist /home/andrear/tqDist/tqDist /home/andrear/tqDist /home/andrear/tqDist/tqDist /home/andrear/tqDist/tqDist/CMakeFiles/triplet_dist.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : tqDist/CMakeFiles/triplet_dist.dir/depend
-

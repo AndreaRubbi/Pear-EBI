@@ -9,16 +9,16 @@ __author__ = "Andrea Rubbi"
     in order to give information regarding the name of the tree set and the index (or step) of each tree.
     Please note that, once an instance of a class is generated, its metadata dataframe should not be substituted
     as this would invalidate it for the plotting functions. Addition of columns and features is possible by
-    accessing the dataframe and modifying it as a pandas.DataFrame instance. 
+    accessing the dataframe and modifying it as a pandas.DataFrame instance.
     set_collection behaves similarly to set_collection. Matter of fact, it is a subclass of the latter and therefore
-    shares most of its methods. Its purpose is to analyze concurrently multiple instances of tree_sets and plot their 
+    shares most of its methods. Its purpose is to analyze concurrently multiple instances of tree_sets and plot their
     relative distance in a common embedding. Examples of possible applications are present at: ###LINK###"""
 # ──────────────────────────────────────────────────────────────────────────────
 
-__copyright__ = "..."
+__copyright__ = "2023-present Andrea Rubbi and other contributors"
 __credits__ = ["Andrea Rubbi", "Lukas Weilguny", "Nick Goldman", "Nicola de Maio"]
 
-__license__ = "..."
+__license__ = "MIT"
 __version__ = "1.0.1"
 __maintainer__ = "Andrea Rubbi"
 __institute__ = "EMBL-EBI"
@@ -38,7 +38,6 @@ import warnings
 import numpy as np
 import pandas as pd
 from rich import print
-
 # ? rich is a very nice library that allows to
 # ? easily format the output of console
 # ? https://github.com/Textualize/rich
@@ -55,21 +54,12 @@ parent = os.path.dirname(current)
 sys.path.append(parent)
 
 # importing other modules
-# if used as a library
 try:
     from .calculate_distances import hashrf, maple_RF, tqdist
-    from .embeddings import PCA_e, tSNE_e
+    from .embeddings import Isomap_e, LLE_e, PCA_e, tSNE_e
     from .embeddings.graph import graph
     from .interactive_mode import interactive
     from .subsample import subsample
-# if used as a program
-except ImportError:
-    from calculate_distances import hashrf, maple_RF, tqdist
-    from embeddings import PCA_e, tSNE_e
-    from embeddings.graph import graph
-    from interactive_mode import interactive
-    from subsample import subsample
-
 except:
     sys.exit("Error")
 
@@ -122,17 +112,17 @@ class tree_set:
             try:
                 pd.read_csv(self.distance_matrix)
             except:
-                print(
+                sys.exit(
                     "There's an error with the Distance Matrix file - please check the correct location and name of the .csv file"
-                ), exit()
+                )
 
         if type(self.metadata) != type(None):
             try:
                 self.metadata = pd.read_csv(self.metadata)
             except:
-                print(
+                sys.exit(
                     "There's an error with the Metadata file - please check the correct location and name of the .csv file"
-                ), exit()
+                )
 
         else:
             self.metadata = pd.DataFrame()
@@ -144,6 +134,11 @@ class tree_set:
 
     # ─── STR ───────────────────────────────────────────────────────────────────
     def __str__(self):
+        """Returns string representation of tree_set
+
+        Returns:
+            __str__: summary of tree_set
+        """
         computed = "not computed"
         if type(self.distance_matrix) != type(None):
             computed = "computed"
@@ -152,6 +147,11 @@ class tree_set:
 
     # ─── CALCULATE DISTANCES ───────────────────────────────────────────────────
     def calculate_distances(self, method):
+        """Computes tree_set distance matrix with method of choice
+
+        Args:
+            method (str): method/algorithm used to compute distance matrix
+        """
         methods = {
             "hashrf": hashrf.hashrf,
             "hashrf_weighted": hashrf.hashrf_weighted,
@@ -168,45 +168,76 @@ class tree_set:
         print(f"[bold blue]{method} | Done!")
 
     # ─── EMBED ─────────────────────────────────────────────────────────────────
-    def embed(self, method, dimensions, quality=False):
+    def embed(self, method, dimensions, quality=False, report=False):
+        """Compute embedding with n-dimensions and method of choice
+
+        Args:
+            method (str): method of choice to embed data
+            dimensions (_type_): number of dimensions/components
+            quality (bool, optional): returns quality report and self.emb_quality. Defaults to False.
+        """
         methods = {
             "pca": PCA_e.pca,
             "tsne": tSNE_e.tsne,
+            "isomap": Isomap_e.isomap,
+            "lle": LLE_e.lle,
             "None": None,
         }
 
         if type(self.distance_matrix) == type(None):
             self.calculate_distances("hashrf")
-        embedding = methods[method](
-            self.distance_matrix, dimensions, self.metadata, quality=quality
-        )
+
+        dim = dimensions if dimensions > 2 else 3
+
+        with self.console.status("[bold green]Embedding distances...") as status:
+            embedding = methods[method](
+                self.distance_matrix,
+                dimensions,
+                self.metadata,
+                quality=quality if not report else True,
+                report=report,
+            )
+        print(f"[bold blue]{method} | Done!")
 
         if quality:
             if method == "pca":
-                embedding, var, corr = embedding
-                print(var, corr[0, 1])
+                embedding, var, corr, self.emb_quality = embedding
+                print(
+                    f"With {dimensions} components/dimensions, the explained variance is {var:.2f},\n with an estimated correlation {corr[0, 1]:.2f} with the {self.n_trees}-dimensional coordinates"
+                )
             else:
-                embedding, corr = embedding
-                print(corr[0, 1])
+                embedding, corr, self.emb_quality = embedding
+                print(
+                    f"With {dimensions} components/dimensions, the estimated correlation with the {self.n_trees}-dimensional coordinates is {corr[0, 1]:.2f}"
+                )
 
-        # TODO : use exec and string fomratting here!
-        if dimensions == 2:
-            if method == "pca":
-                self.embedding_pca2D = embedding
-            if method == "tsne":
-                self.embedding_tsne2D = embedding
-        if dimensions == 3:
-            if method == "pca":
-                self.embedding_pca3D = embedding
-            if method == "tsne":
-                self.embedding_tsne3D = embedding
+        if method == "pca":
+            self.embedding_pca = embedding
+            self.embedding_pca3D = embedding[:, :4]
+            self.embedding_pca2D = embedding[:, :3]
+        elif method == "tsne":
+            if dimensions > 3:
+                warnings.warn(
+                    "t-SNE with more than 3 dimensions can be considerably slow"
+                )
+            self.embedding_tsne = embedding
+            self.embedding_tsne3D = embedding[:, :4]
+            self.embedding_tsne2D = embedding[:, :3]
+        elif method == "isomap":
+            if dimensions > 3:
+                warnings.warn(
+                    "Isomap with more than 3 dimensions can be considerably slow"
+                )
+            self.embedding_isomap = embedding
+            self.embedding_isomap3D = embedding[:, :4]
+            self.embedding_isomap2D = embedding[:, :3]
 
-        if dimensions > 3:
-            if method == "pca":
-                self.embedding_pca = embedding
-            if method == "tsne":
-                warnings.warn("t-SNE on more than 3 dimensions can be considerably slow")
-                self.embedding_tsne = embedding
+        elif method == "lle":
+            if dimensions > 3:
+                warnings.warn("LLE with more than 3 dimensions can be considerably slow")
+            self.embedding_lle = embedding
+            self.embedding_lle3D = embedding[:, :4]
+            self.embedding_lle2D = embedding[:, :3]
 
     # ─── PLOT EMBEDDING ─────────────────────────────────────────────────────────
 
@@ -221,6 +252,24 @@ class tree_set:
         select=False,
         same_scale=False,
     ):
+        """Plot 2D embedding performed with method of choice
+
+        Args:
+            method (str): embedding method
+            save (bool, optional): save plot HTML. Defaults to False.
+            name_plot (str, optional): name of plot's file. Defaults to None.
+            static (bool, optional): return less interactive plot. Defaults to False.
+            plot_meta (str, optional): meta-variale used to color the points. Defaults to "SET-ID".
+            plot_set (list, optional): list of sets to plot from set_collection. Defaults to None.
+            select (bool, optional): return set of buttons to show or hide specific traces. Defaults to False.
+            same_scale (bool, optional): use same color_scale for all traces when scale is continuous. Defaults to False.
+
+        Raises:
+            ValueError: method can only be either pca or tsne for now
+
+        Returns:
+            plot: either interactive or not
+        """
         if type(plot_set) == type(None):
             plot_set = self.sets
         if method == "pca":
@@ -259,6 +308,42 @@ class tree_set:
                 same_scale,
             )
 
+        elif method == "isomap":
+            if name_plot == None:
+                name_plot = "ISOMAP_2D"
+            if type(self.embedding_isomap2D) == type(None):
+                self.embed("isomap", 2)
+            fig = graph.plot_embedding(
+                self.embedding_isomap2D,
+                self.metadata,
+                2,
+                save,
+                name_plot,
+                static,
+                plot_meta,
+                plot_set,
+                select,
+                same_scale,
+            )
+
+        elif method == "lle":
+            if name_plot == None:
+                name_plot = "LLE_2D"
+            if type(self.embedding_lle2D) == type(None):
+                self.embed("lle", 2)
+            fig = graph.plot_embedding(
+                self.embedding_lle2D,
+                self.metadata,
+                2,
+                save,
+                name_plot,
+                static,
+                plot_meta,
+                plot_set,
+                select,
+                same_scale,
+            )
+
         else:
             raise ValueError("'method' can only be either 'pca' or 'tsne' ")
 
@@ -275,6 +360,24 @@ class tree_set:
         select=False,
         same_scale=False,
     ):
+        """Plot 3D embedding performed with method of choice
+
+        Args:
+            method (str): embedding method
+            save (bool, optional): save plot HTML. Defaults to False.
+            name_plot (str, optional): name of plot's file. Defaults to None.
+            static (bool, optional): return less interactive plot. Defaults to False.
+            plot_meta (str, optional): meta-variale used to color the points. Defaults to "SET-ID".
+            plot_set (list, optional): list of sets to plot from set_collection. Defaults to None.
+            select (bool, optional): return set of buttons to show or hide specific traces. Defaults to False.
+            same_scale (bool, optional): use same color_scale for all traces when scale is continuous. Defaults to False.
+
+        Raises:
+            ValueError: method can only be either pca or tsne for now
+
+        Returns:
+            plot: either interactive or not
+        """
         if type(plot_set) == type(None):
             plot_set = self.sets
         if method == "pca":
@@ -313,6 +416,42 @@ class tree_set:
                 same_scale,
             )
 
+        elif method == "isomap":
+            if name_plot == None:
+                name_plot = "ISOMAP_3D"
+            if type(self.embedding_isomap3D) == type(None):
+                self.embed("isomap", 3)
+            fig = graph.plot_embedding(
+                self.embedding_isomap3D,
+                self.metadata,
+                3,
+                save,
+                name_plot,
+                static,
+                plot_meta,
+                plot_set,
+                select,
+                same_scale,
+            )
+
+        elif method == "lle":
+            if name_plot == None:
+                name_plot = "LLE_3D"
+            if type(self.embedding_lle3D) == type(None):
+                self.embed("lle", 3)
+            fig = graph.plot_embedding(
+                self.embedding_lle3D,
+                self.metadata,
+                3,
+                save,
+                name_plot,
+                static,
+                plot_meta,
+                plot_set,
+                select,
+                same_scale,
+            )
+
         else:
             raise ValueError("'method' can only be either 'pca' or 'tsne' ")
 
@@ -321,6 +460,15 @@ class tree_set:
     # ─── GET SUBSET ───────────────────────────────────────────────────────
 
     def get_subset(self, n_required, method="sequence"):
+        """Gets subset of phylogenetic trees
+
+        Args:
+            n_required (int): number of points to extract
+            method (str, optional): method used to extact points ('sequence', 'random', 'syst'). Defaults to "sequence".
+
+        Returns:
+            subset plots: 2D and 3D embedding plots of subset
+        """
         console = Console()
         with console.status("[bold blue]Extracting subsample...") as status:
             if method == "syst":
@@ -397,9 +545,10 @@ class set_collection(tree_set):
     def __init__(
         self,
         collection=list(),
-        file="Set_collection",
-        output_file="./Set_collection_distance_matrix",
+        file="Set_collection_",
+        output_file=None,
         distance_matrix=None,
+        metadata=None,
     ):
         """Initialize set_collection
 
@@ -420,15 +569,17 @@ class set_collection(tree_set):
         self.embedding_pca3D = None
         self.embedding_tsne3D = None
 
-        if (
-            self.file != "Set_collection" + str(self.id)
-            and output_file == "./Set_collection_distance_matrix.csv"
-        ):
-            self.output_file = "./{file}_distance_matrix.csv".format(
+        if self.file != "Set_collection_" + str(self.id) and output_file is None:
+            self.output_file = "{file}_distance_matrix.csv".format(
                 file=os.path.splitext(os.path.basename(self.file))[0]
             )
+        elif output_file is None:
+            self.output_file = "Set_collection_distance_matrix_" + str(self.id) + ".csv"
         else:
-            self.output_file = output_file + str(self.id) + ".csv"
+            if output_file[-4:] == ".csv":
+                self.output_file = output_file[:-4] + "_" + str(self.id) + ".csv"
+            else:
+                self.output_file = output_file + "_" + str(self.id) + ".csv"
 
         if isinstance(collection, tree_set):
             self.collection = [collection]
@@ -481,6 +632,14 @@ class set_collection(tree_set):
     # the result of addition between two collections
     # is the concatenation of the two collections
     def __add__(self, other):
+        """Concatenates two collectionsor collection and tree_set
+
+        Args:
+            other (tree_set ot set_colletion): tree_set ot set_colletion
+
+        Returns:
+            set_collection: concatenated set_collection
+        """
         try:
             assert isinstance(other, set_collection)
             return set_collection(self.collection + other.collection)
@@ -492,7 +651,9 @@ class set_collection(tree_set):
                 for element in other:
                     assert isinstance(
                         element, tree_set
-                    ), "You can concatenate a set_collection only with another set_collection, a tree_set, or a list of tree_set"
+                    ), "You can concatenate a set_collection \
+                        only with another set_collection, a tree_set,\
+                            or a list of tree_set"
                 return set_collection(self.collection + other)
 
     def __str__(self):
@@ -500,7 +661,10 @@ class set_collection(tree_set):
         if type(self.distance_matrix) != type(None):
             computed = "computed"
 
-        summary = f"─────────────────────────────\n Tree set collection containing {self.n_trees} trees;\n File: {self.file};\n Distance matrix: {computed}.\n───────────────────────────── \n"
+        summary = f"─────────────────────────────\
+            \n Tree set collection containing {self.n_trees} trees;\
+            \n File: {self.file};\n Distance matrix: {computed}.\
+                \n───────────────────────────── \n"
         for key, value in self.data.items():
             summary += f"{key}; Containing {value['n_trees']} trees. \n"
 
@@ -508,8 +672,15 @@ class set_collection(tree_set):
 
     # concatenate is a more formal method to concatenate collections
     # using this allows for more clarity in the codebase
-    #! less error prone !#
     def concatenate(self, other):
+        """Concatenates two collectionsor collection and tree_set
+
+        Args:
+            other (tree_set ot set_colletion): tree_set ot set_colletion
+
+        Returns:
+            set_collection: concatenated set_collection
+        """
         try:
             assert isinstance(other, tree_set)
             return set_collection(self.collection + [other])
@@ -522,5 +693,6 @@ class set_collection(tree_set):
                 for element in other:
                     assert isinstance(
                         element, tree_set
-                    ), "You can concatenate a set_collection only with another set_collection, a tree_set, or a list of tree_set"
+                    ), "You can concatenate a set_collection only with another \
+                        set_collection, a tree_set, or a list of tree_set"
                 return set_collection(self.collection + other)

@@ -71,15 +71,15 @@ int main(int argc, char** argv) {
   std::ostream &out = outFilename != NULL ? fout : std::cout; // redirect to std out if no ouput filename given
 
   NewickParser parser;
-  
-  std::vector<UnrootedTree *> unrootedTrees1 = parser.parseMultiFile(inFilename1); 
+
+  std::vector<UnrootedTree *> unrootedTrees1 = parser.parseMultiFile(inFilename1);
   if(unrootedTrees1.size() == 0 || parser.isError()) {
     std::cerr << "Error: Parsing of \"" << inFilename1 << "\" failed." << endl;
     std::cerr << "Aborting!" << endl;
     std::exit(-1);
   }
 
-  std::vector<UnrootedTree *> unrootedTrees2 = parser.parseMultiFile(inFilename2); 
+  std::vector<UnrootedTree *> unrootedTrees2 = parser.parseMultiFile(inFilename2);
   if(unrootedTrees2.size() == 0 || parser.isError()) {
     std::cerr << "Error: Parsing of \"" << inFilename2 << "\" failed." << endl;
     std::cerr << "Aborting!" << endl;

@@ -10,7 +10,7 @@
 # Newick format
 # Contact
 
-############### Build procedure: ############### 
+############### Build procedure: ###############
 
 To build and install the library, unzip the directory and execute the
 following commands in a terminal:
@@ -82,6 +82,6 @@ For details on how to encode trees in Newick format see
 ################## Contact #####################
 
 If you encounter any problems or have questions about using this
-software, please contact 
+software, please contact
 
 	  Christian N. S. Pedersen : cstorm@birc.au.dk.

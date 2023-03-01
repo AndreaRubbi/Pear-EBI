@@ -1,0 +1,36 @@
+# This is an instance of a config TOML for pear_ebi
+
+[trees]
+file1 = "Pear-EBI/examples_tree_sets/beast_trees/beast_run1.trees"
+file2 = "Pear-EBI/examples_tree_sets/beast_trees/beast_long.trees"
+
+[dir]
+dir1 = "Pear-EBI/examples_tree_sets/beast_trees/" # "path/to/directory"
+pattern = '*run2*'
+
+#[collection]
+# output_file = None
+# distance_matrix = None
+# metadata = None
+
+[highlight]
+trace1 = [0, 100, 200, 300, 1000]
+beast_run2 = [100, 200, 500, 1000]
+beast_long = [0, 400, 500, 1000]
+
+[distance]
+method = "hashrf"
+
+[embedding]
+method = "isomap"
+dimensions = 3
+quality = false
+report = false
+
+[plot]
+# name_plot = None
+# plot_meta = "SET-ID"
+# plot_set = None
+# select = false
+# same_scale = false
+show_plot = true

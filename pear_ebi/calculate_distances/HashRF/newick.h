@@ -7,14 +7,14 @@ typedef struct newicknode
   int Nchildren;              /* number of children (0 for leaves) */
   char *label;                /* node label, can be null */
   double weight;              /* node weight */
-  struct newicknode **child;  /* list of children */ 
+  struct newicknode **child;  /* list of children */
   unsigned long long hv1;
   unsigned long long hv2;
 } NEWICKNODE;
 
 typedef struct
 {
-  NEWICKNODE *root;         
+  NEWICKNODE *root;
 } NEWICKTREE;
 
 NEWICKTREE *loadnewicktree(char *fname, int *error);

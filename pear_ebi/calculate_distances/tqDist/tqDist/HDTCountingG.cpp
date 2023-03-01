@@ -9,7 +9,7 @@ void HDT::handleG()
 	// Not a leaf, i.e. a GG->G
 	HDT *g1 = this->left;
 	HDT *g2 = this->right;
-	
+
 	if (!g1->up2date) g1->updateCounters();
 	if (!g2->up2date) g2->updateCounters();
 
@@ -39,10 +39,10 @@ void HDT::handleG()
 	if (g2Next->num == 0) g2Zero = g2Next->n_i;
 
 	// Not dependent on i (begin)
-	n_0_circ = g1->n_0_circ + g2->n_0_circ + 
+	n_0_circ = g1->n_0_circ + g2->n_0_circ +
 		g1Zero * g2->n_circ +
 		g2Zero * g1->n_circ;
-	
+
 	n_paren_0_circ = g1->n_paren_0_circ + g2->n_paren_0_circ;
 	// Not dependent on i (end)
 
@@ -122,7 +122,7 @@ void HDT::handleG()
 				// Go to next one (there's more!)
 				ourCount->type = CountingLinkedList::Regular;
 				if (ourCount->next == NULL) ourCount->next = factory->getLL();
-				ourCount = ourCount->next;				
+				ourCount = ourCount->next;
 				g1Count = g1Next;
 				g2Count = g2Next;
 			}
@@ -140,30 +140,30 @@ void HDT::handleG()
 		// Quartets
 #ifdef quartetsToo
 		// 2nd group in figure 12 (quartets only)
-		ourCount->n_0_i = g1Count->n_0_i + g2Count->n_0_i + 
+		ourCount->n_0_i = g1Count->n_0_i + g2Count->n_0_i +
 			g1Zero * g2Count->n_i +
 			g2Zero * g1Count->n_i;
 
-		ourCount->n_ii = g1Count->n_ii + g2Count->n_ii + 
+		ourCount->n_ii = g1Count->n_ii + g2Count->n_ii +
 			g1Count->n_i * g2Count->n_i; // and not the other way around too as we should then halve it :)
 
-		ourCount->n_0_paren_ii = g1Count->n_0_paren_ii + g2Count->n_0_paren_ii + 
+		ourCount->n_0_paren_ii = g1Count->n_0_paren_ii + g2Count->n_0_paren_ii +
 			g1Zero * g2Count->n_paren_ii +
 			g2Zero * g1Count->n_paren_ii;
-		
-		ourCount->n_circ_paren_ii = g1Count->n_circ_paren_ii + g2Count->n_circ_paren_ii + 
+
+		ourCount->n_circ_paren_ii = g1Count->n_circ_paren_ii + g2Count->n_circ_paren_ii +
 			(g1->n_circ - g1Count->n_i) * g2Count->n_paren_ii +
 			(g2->n_circ - g2Count->n_i) * g1Count->n_paren_ii;
 
-		ourCount->n_i_paren_0_circ = g1Count->n_i_paren_0_circ + g2Count->n_i_paren_0_circ + 
+		ourCount->n_i_paren_0_circ = g1Count->n_i_paren_0_circ + g2Count->n_i_paren_0_circ +
 			g1Count->n_i * (g2->n_paren_0_circ - g2Count->n_paren_0_i) +
 			g2Count->n_i * (g1->n_paren_0_circ - g1Count->n_paren_0_i);
 
-		ourCount->n_i_paren_circ_circ = g1Count->n_i_paren_circ_circ + g2Count->n_i_paren_circ_circ + 
+		ourCount->n_i_paren_circ_circ = g1Count->n_i_paren_circ_circ + g2Count->n_i_paren_circ_circ +
 			g1Count->n_i * (g2->n_paren_circ_circ - g2Count->n_paren_ii) +
 			g2Count->n_i * (g1->n_paren_circ_circ - g1Count->n_paren_ii);
 
-		ourCount->n_i_paren_circ_square = g1Count->n_i_paren_circ_square + g2Count->n_i_paren_circ_square + 
+		ourCount->n_i_paren_circ_square = g1Count->n_i_paren_circ_square + g2Count->n_i_paren_circ_square +
 			g1Count->n_i * (g2->n_paren_circ_square - g2Count->n_paren_i_circ) +
 			g2Count->n_i * (g1->n_paren_circ_square - g1Count->n_paren_i_circ);
 
@@ -268,7 +268,7 @@ void HDT::handleG()
 		// A
 		ourCount->n_paren_i_paren_circ_circ = g1Count->n_paren_i_paren_circ_circ + g2Count->n_paren_i_paren_circ_circ;
 
-		ourCount->n_bracket_i_paren_circ_circ = g1Count->n_bracket_i_paren_circ_circ + g2Count->n_bracket_i_paren_circ_circ + 
+		ourCount->n_bracket_i_paren_circ_circ = g1Count->n_bracket_i_paren_circ_circ + g2Count->n_bracket_i_paren_circ_circ +
 			g1Count->n_i * (g2->n_paren_circ_circ - g2Count->n_paren_ii) +
 			g2Count->n_i * (g1->n_paren_circ_circ - g1Count->n_paren_ii);
 
@@ -291,14 +291,14 @@ void HDT::handleG()
 		// New counters for calculating E
 		ourCount->n_paren_i_circ_square = g1Count->n_paren_i_circ_square + g2Count->n_paren_i_circ_square;
 
-		ourCount->n_0_i_circ = g1Count->n_0_i_circ + g2Count->n_0_i_circ + 
-			g1Count->n_0_i * (g2->n_circ - g2Count->n_i) + g1Count->n_i * (g2->n_0_circ - g2Count->n_0_i) + g1Count->n_i_circ * g2Zero + 
+		ourCount->n_0_i_circ = g1Count->n_0_i_circ + g2Count->n_0_i_circ +
+			g1Count->n_0_i * (g2->n_circ - g2Count->n_i) + g1Count->n_i * (g2->n_0_circ - g2Count->n_0_i) + g1Count->n_i_circ * g2Zero +
 			g2Count->n_0_i * (g1->n_circ - g1Count->n_i) + g2Count->n_i * (g1->n_0_circ - g1Count->n_0_i) + g2Count->n_i_circ * g1Zero;
 
 		ourCount->n_paren_0_i_circ = g1Count->n_paren_0_i_circ + g2Count->n_paren_0_i_circ;
 
 		ourCount->n_bracket_0_i_circ = g1Count->n_bracket_0_i_circ + g2Count->n_bracket_0_i_circ +
-			g1Count->n_0_i * (g2->n_circ - g2Count->n_i) + g1Count->n_i * (g2->n_0_circ - g2Count->n_0_i) + g1Count->n_i_circ * g2Zero + 
+			g1Count->n_0_i * (g2->n_circ - g2Count->n_i) + g1Count->n_i * (g2->n_0_circ - g2Count->n_0_i) + g1Count->n_i_circ * g2Zero +
 			g2Count->n_0_i * (g1->n_circ - g1Count->n_i) + g2Count->n_i * (g1->n_0_circ - g1Count->n_0_i) + g2Count->n_i_circ * g1Zero;
 #endif
 
@@ -321,7 +321,7 @@ void HDT::handleG()
 		// New sums and stuff for calculating E
 		n_circ_square_triangle += ourCount->n_i_circ_square;
 		n_0_circ_square += ourCount->n_0_i_circ;
-	
+
 		n_bracket_circ_square_triangle += ourCount->n_bracket_i_circ_square;
 		n_bracket_0_circ_square += ourCount->n_bracket_0_i_circ;
 #endif
@@ -344,47 +344,47 @@ void HDT::handleG()
 		// beta & alpha
 		quartResolvedAgree += (INTTYPE_N4) g1Count->n_paren_ii * (g2->n_paren_circ_square - g2Count->n_paren_i_circ);
 		quartResolvedAgree += (INTTYPE_N4) g2Count->n_paren_ii * (g1->n_paren_circ_square - g1Count->n_paren_i_circ);
-		
+
 		// beta & beta (part 1)
 		quartResolvedAgreeDiag += (INTTYPE_N4) g1Count->n_paren_ii * (g2->n_circ_square - g2Count->n_i_circ);
 		quartResolvedAgreeDiag += (INTTYPE_N4) g2Count->n_paren_ii * (g1->n_circ_square - g1Count->n_i_circ);
 		quartResolvedAgreeDiag += (INTTYPE_N4) g1Count->n_i * (g2->n_square_paren_circ_circ - g2Count->n_i_paren_circ_circ - g2Count->n_circ_paren_ii);
 		quartResolvedAgreeDiag += (INTTYPE_N4) g2Count->n_i * (g1->n_square_paren_circ_circ - g1Count->n_i_paren_circ_circ - g1Count->n_circ_paren_ii);
-		
+
 		// beta & beta (part 2)
 		quartResolvedAgreeDiag += (INTTYPE_N4) g1Count->n_ii * (g2->n_paren_circ_square - g2Count->n_paren_i_circ);
 		quartResolvedAgreeDiag += (INTTYPE_N4) g2Count->n_ii * (g1->n_paren_circ_square - g1Count->n_paren_i_circ);
 		quartResolvedAgreeDiag += (INTTYPE_N4) g1Count->n_i * g2Count->n_i_paren_circ_square;
 		quartResolvedAgreeDiag += (INTTYPE_N4) g2Count->n_i * g1Count->n_i_paren_circ_square;
-		
+
 		// gamma & alpha
 		quartResolvedAgree += (INTTYPE_N4) g1Count->n_paren_ii * (g2->n_paren_0_circ - g2Count->n_paren_0_i);
 		quartResolvedAgree += (INTTYPE_N4) g2Count->n_paren_ii * (g1->n_paren_0_circ - g1Count->n_paren_0_i);
-		
+
 		// gamma & beta (part 1) (continued below the loop!)
 		quartResolvedAgree += (INTTYPE_N4) g1Count->n_paren_ii * (g2->n_0_circ - g2Count->n_0_i);
 		quartResolvedAgree += (INTTYPE_N4) g2Count->n_paren_ii * (g1->n_0_circ - g1Count->n_0_i);
 		quartResolvedAgree += (INTTYPE_N4) (g1->n_circ - g1Count->n_i) * g2Count->n_0_paren_ii;
 		quartResolvedAgree += (INTTYPE_N4) (g2->n_circ - g2Count->n_i) * g1Count->n_0_paren_ii;
-		
+
 		// gamma & beta (part 2)
 		quartResolvedAgree += (INTTYPE_N4) g1Count->n_ii * (g2->n_paren_0_circ - g2Count->n_paren_0_i);
 		quartResolvedAgree += (INTTYPE_N4) g2Count->n_ii * (g1->n_paren_0_circ - g1Count->n_paren_0_i);
 		quartResolvedAgree += (INTTYPE_N4) g1Count->n_i * g2Count->n_i_paren_0_circ;
 		quartResolvedAgree += (INTTYPE_N4) g2Count->n_i * g1Count->n_i_paren_0_circ;
-		
+
 		// gamma & gamma (part 1)
 		quartResolvedAgreeDiag += (INTTYPE_N4) g1Zero * g2Count->n_paren_circ_paren_ii;
 		quartResolvedAgreeDiag += (INTTYPE_N4) g2Zero * g1Count->n_paren_circ_paren_ii;
-		
+
 		// gamma & gamma (part 2)
 		quartResolvedAgreeDiag += (INTTYPE_N4) (g1->n_circ - g1Count->n_i) * g2Count->n_paren_0_paren_ii;
 		quartResolvedAgreeDiag += (INTTYPE_N4) (g2->n_circ - g2Count->n_i) * g1Count->n_paren_0_paren_ii;
-		
+
 		// gamma & gamma (part 3)
 		quartResolvedAgreeDiag += (INTTYPE_N4) g1Count->n_i * g2Count->n_paren_i_paren_0_circ;
 		quartResolvedAgreeDiag += (INTTYPE_N4) g2Count->n_i * g1Count->n_paren_i_paren_0_circ;
-		
+
 
 		//
 		// +------------------------------------------+
@@ -427,7 +427,7 @@ void HDT::handleG()
 		// epsilon & delta (continues below)
 		quartSumE += (INTTYPE_N4) g1Count->n_i * (g2->n_0_circ_square - g2Count->n_0_i_circ);
 		quartSumE += (INTTYPE_N4) g2Count->n_i * (g1->n_0_circ_square - g1Count->n_0_i_circ);
-		
+
 		quartSumE += (INTTYPE_N4) g1Count->n_0_i * (g2->n_circ_square - g2Count->n_i_circ);
 		quartSumE += (INTTYPE_N4) g2Count->n_0_i * (g1->n_circ_square - g1Count->n_i_circ);
 

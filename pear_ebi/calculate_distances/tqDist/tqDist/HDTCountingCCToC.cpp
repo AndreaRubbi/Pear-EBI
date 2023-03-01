@@ -88,7 +88,7 @@ void HDT::handleCCToC()
 	if (c2Next->num == 0) c2Zero = c2Next->n_i;
 
 	// Not dependent on i (begin)
-	n_0_arrow_circ = c1->n_0_arrow_circ + c2->n_0_arrow_circ + 
+	n_0_arrow_circ = c1->n_0_arrow_circ + c2->n_0_arrow_circ +
 		c1Zero * c2->n_circ;
 
 	n_circ_arrow_0 = c1->n_circ_arrow_0 + c2->n_circ_arrow_0 +
@@ -145,7 +145,7 @@ void HDT::handleCCToC()
 				// Go to next one (there's more!)
 				ourCount->type = CountingLinkedList::Regular;
 				if (ourCount->next == NULL) ourCount->next = factory->getLL();
-				ourCount = ourCount->next;				
+				ourCount = ourCount->next;
 				c1Count = c1Next;
 				c2Count = c2Next;
 			}
@@ -283,7 +283,7 @@ void HDT::handleCCToC()
 
 		// Added by us for filling out tables
 		// A
-		ourCount->n_bracket_i_paren_circ_circ = c1Count->n_bracket_i_paren_circ_circ + c2Count->n_bracket_i_paren_circ_circ + 
+		ourCount->n_bracket_i_paren_circ_circ = c1Count->n_bracket_i_paren_circ_circ + c2Count->n_bracket_i_paren_circ_circ +
 			(c1->n_bracket_circ_circ - Util::binom2(c1Count->n_i)) * c2Count->n_i + c1Count->n_i * (c2->n_paren_circ_circ - c2Count->n_paren_ii);
 
 		ourCount->n_bracket_i_paren_circ_square = c1Count->n_bracket_i_paren_circ_square + c2Count->n_bracket_i_paren_circ_square +
@@ -391,14 +391,14 @@ void HDT::handleCCToC()
 		ourCount->n_paren_0_i_circ = c1Count->n_paren_0_i_circ + c2Count->n_paren_0_i_circ;
 
 		ourCount->n_bracket_0_i_circ = c1Count->n_bracket_0_i_circ + c2Count->n_bracket_0_i_circ +
-			c1Zero * c2Count->n_i_circ + 
+			c1Zero * c2Count->n_i_circ +
 			c1Count->n_i * (c2->n_0_circ - c2Count->n_0_i) +
 			(c1->n_circ - c1Count->n_i) * c2Count->n_0_i;
 #endif
 
 		// Sums and stuff
 		n_circ_square += ourCount->n_i_circ;
-				
+
 		// Quartets
 #ifdef quartetsToo
 		n_circ_circ += ourCount->n_ii;
@@ -424,7 +424,7 @@ void HDT::handleCCToC()
 		// New sums and stuff for calculating E
 		n_circ_square_arrow_triangle += ourCount->n_circ_square_arrow_i;
 		n_circ_arrow_square_triangle += ourCount->n_i_arrow_circ_square;
-		
+
 		n_0_circ_arrow_square += ourCount->n_0_i_arrow_circ;
 		n_0_arrow_circ_square += ourCount->n_0_arrow_i_circ;
 		n_circ_square_arrow_0 += ourCount->n_i_circ_arrow_0;
@@ -454,50 +454,50 @@ void HDT::handleCCToC()
 		quartResolvedAgree += (INTTYPE_N4) Util::binom2(c1Count->n_i) * (c2->n_paren_circ_square - c2Count->n_paren_i_circ);
 		quartResolvedAgree += (INTTYPE_N4) (c1->n_bracket_circ_square - c1Count->n_bracket_i_circ) * c2Count->n_paren_ii;
 		quartResolvedAgree += (INTTYPE_N4) c1Count->n_i * (c2->n_circ_arrow_paren_square_square - c2Count->n_i_arrow_paren_circ_circ - c2Count->n_circ_arrow_paren_ii);
-		
+
 		// beta & beta (part 1)
 		quartResolvedAgreeDiag += (INTTYPE_N4) c1Count->n_i * c2Count->n_i_arrow_circ_square;
 		quartResolvedAgreeDiag += (INTTYPE_N4) Util::binom2(c1Count->n_i) * (c2->n_circ_square - c2Count->n_i_circ);
 		quartResolvedAgreeDiag += (INTTYPE_N4) c1Count->n_i * (c2->n_square_paren_circ_circ - c2Count->n_i_paren_circ_circ - c2Count->n_circ_paren_ii);
-		
+
 		// beta & beta (part 2)
 		quartResolvedAgreeDiag += (INTTYPE_N4) c1Count->n_i * (c2->n_circ_arrow_square_square - c2Count->n_i_arrow_circ_circ - c2Count->n_circ_arrow_ii);
 		quartResolvedAgreeDiag += (INTTYPE_N4) (c1->n_bracket_circ_square - c1Count->n_bracket_i_circ) * c2Count->n_ii;
 		quartResolvedAgreeDiag += (INTTYPE_N4) c1Count->n_i * c2Count->n_i_paren_circ_square;
-		
+
 		// gamma & alpha
 		quartResolvedAgree += (INTTYPE_N4) c1Count->n_i * c2Count->n_i_arrow_paren_0_circ;
 		quartResolvedAgree += (INTTYPE_N4) Util::binom2(c1Count->n_i) * (c2->n_paren_0_circ - c2Count->n_paren_0_i);
 		quartResolvedAgree += (INTTYPE_N4) c1Zero * (c1->n_circ - c1Count->n_i) * c2Count->n_paren_ii;
 		quartResolvedAgree += (INTTYPE_N4) (c1->n_circ - c1Count->n_i) * c2Count->n_0_arrow_paren_ii;
 		quartResolvedAgree += (INTTYPE_N4) c1Zero * c2Count->n_circ_arrow_paren_ii;
-		
+
 		// gamma & beta (part 1)
 		quartResolvedAgree += (INTTYPE_N4) Util::binom2(c1Count->n_i) * (c2->n_0_circ - c2Count->n_0_i);
 		quartResolvedAgree += (INTTYPE_N4) c1Count->n_i * c2Count->n_i_arrow_0_circ;
 		quartResolvedAgree += (INTTYPE_N4) c1Zero * c2Count->n_circ_paren_ii;
 		quartResolvedAgree += (INTTYPE_N4) (c1->n_circ - c1Count->n_i) * c2Count->n_0_paren_ii;
-		
+
 		// gamma & beta (part 2)
 		quartResolvedAgree += (INTTYPE_N4) (c1->n_circ - c1Count->n_i) * c2Count->n_0_arrow_ii;
 		quartResolvedAgree += (INTTYPE_N4) c1Zero * c2Count->n_circ_arrow_ii;
 		quartResolvedAgree += (INTTYPE_N4) c1Zero * (c1->n_circ - c1Count->n_i) * c2Count->n_ii;
 		quartResolvedAgree += (INTTYPE_N4) c1Count->n_i * c2Count->n_i_paren_0_circ;
-		
+
 		// gamma & gamma (part 1)
 		quartResolvedAgreeDiag += (INTTYPE_N4) c1Count->n_i * c2Count->n_i_arrow_circ_arrow_0;
 		quartResolvedAgreeDiag += (INTTYPE_N4) Util::binom2(c1Count->n_i) * (c2->n_circ_arrow_0 - c2Count->n_i_arrow_0);
 		quartResolvedAgreeDiag += (INTTYPE_N4) (c1->n_circ - c1Count->n_i) * c2Count->n_paren_ii_arrow_0;
 		quartResolvedAgreeDiag += (INTTYPE_N4) c1Count->n_bracket_circ_paren_ii * c2Zero;
 		quartResolvedAgreeDiag += (INTTYPE_N4) c1Zero * c2Count->n_paren_circ_paren_ii;
-		
+
 		// gamma & gamma (part 2)
 		quartResolvedAgreeDiag += (INTTYPE_N4) c1Count->n_i * c2Count->n_i_arrow_0_arrow_circ;
 		quartResolvedAgreeDiag += (INTTYPE_N4) Util::binom2(c1Count->n_i) * (c2->n_0_arrow_circ - c2Count->n_0_arrow_i);
 		quartResolvedAgreeDiag += (INTTYPE_N4) c1Zero * c2Count->n_paren_ii_arrow_circ;
 		quartResolvedAgreeDiag += (INTTYPE_N4) c1Count->n_bracket_0_paren_ii * (c2->n_circ - c2Count->n_i);
 		quartResolvedAgreeDiag += (INTTYPE_N4) (c1->n_circ - c1Count->n_i) * c2Count->n_paren_0_paren_ii;
-		
+
 		// gamma & gamma (part 3) (aka the exiting conclusion)
 		quartResolvedAgreeDiag += (INTTYPE_N4) c1Zero * c2Count->n_circ_arrow_i_arrow_i;
 		quartResolvedAgreeDiag += (INTTYPE_N4) (c1->n_circ - c1Count->n_i) * c2Count->n_0_arrow_i_arrow_i;
@@ -551,7 +551,7 @@ void HDT::handleCCToC()
 		quartSumE += (INTTYPE_N4) c1Count->n_i * (c2->n_circ_square_arrow_triangle - c2Count->n_i_circ_arrow_square - c2Count->n_circ_square_arrow_i);
 		quartSumE += (INTTYPE_N4) (c1->n_bracket_circ_square_triangle - c1Count->n_bracket_i_circ_square) * c2Count->n_i;
 		quartSumE += (INTTYPE_N4) c1Count->n_i * (c2->n_paren_circ_square_triangle - c2Count->n_paren_i_circ_square);
-		
+
 		// epsilon & delta (countinues below)
 		quartSumE += (INTTYPE_N4) c1Count->n_i * (c2->n_0_circ_square - c2Count->n_0_i_circ);
 

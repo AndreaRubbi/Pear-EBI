@@ -25,15 +25,15 @@
 
 #include <iostream>
 #include <fstream>
- 
+
 
 typedef struct {
 	unsigned long long hv1;
 	unsigned long long hv2;
-} HV_STRUCT_T;	
+} HV_STRUCT_T;
 
 class CHashFunc {
-	
+
 	unsigned long long    _m1; // prime number1 for hash function1
 	unsigned long long    _m2; // prime number1 for hash function2
 	unsigned int          _t;  // number of trees
@@ -41,17 +41,17 @@ class CHashFunc {
 	unsigned long long *  _a1; // random numbers for hash function1
 	unsigned long long *  _a2; // random numbers for hash function2
 	unsigned int		      _c;	 // double collision factor: constant for c*t*n of hash function2;
-	
+
 public:
 	CHashFunc() : _m1(0), _m2(0), _t(0), _n(0), _a1(NULL), _a2(NULL), _c(0) {}
 	CHashFunc(unsigned int t, unsigned int n, unsigned int c);
   ~CHashFunc();
 
 	void UHashfunc_init(unsigned int t, unsigned int n, unsigned int c);
-	void UHashFunc(HV_STRUCT_T &hv, uint64_t bs64, unsigned numBits); 
+	void UHashFunc(HV_STRUCT_T &hv, uint64_t bs64, unsigned numBits);
 
 	unsigned long long GetPrime(unsigned long long topNum, unsigned from);
-	
+
 	// Implicit bp
 	unsigned long long getA1(unsigned idx) { return (_a1[idx]); }
 	unsigned long long getA2(unsigned idx) { return (_a2[idx]); }

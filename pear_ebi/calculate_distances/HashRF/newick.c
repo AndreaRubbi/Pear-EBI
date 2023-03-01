@@ -11,15 +11,15 @@ typedef struct newicknode
   int Nchildren;              /* number of children (0 for leaves) */
   char *label;                /* node label, can be null */
   double weight;              /* node weight */
-  struct newicknode **child;  /* list of children */ 
+  struct newicknode **child;  /* list of children */
   unsigned long long hv1;
   unsigned long long hv2;
-  
+
 } NEWICKNODE;
 
 typedef struct
 {
-  NEWICKNODE *root;         
+  NEWICKNODE *root;
 } NEWICKTREE;
 
 NEWICKTREE *loadnewicktree(char *fname, int *error);
@@ -73,7 +73,7 @@ NEWICKTREE *loadnewicktree(char *fname, int *error)
   if(error)
     *error = err;
   return 0;
-    
+
 }
 
 
@@ -100,7 +100,7 @@ NEWICKTREE *loadnewicktree2(FILE *fp, int *error)
   if(error)
     *error = err;
   return 0;
-    
+
 }
 
 /*
@@ -110,7 +110,7 @@ NEWICKTREE *loadnewicktree2(FILE *fp, int *error)
   Returns: pointer to object, 0 on fail
   Error codes -1 out of memory
               -2 parse error
-  Notes: format allows several trees to be stroed in a file 
+  Notes: format allows several trees to be stroed in a file
  */
 NEWICKTREE *floadnewicktree(FILE *fp, int *error)
 {
@@ -137,9 +137,9 @@ NEWICKTREE *floadnewicktree(FILE *fp, int *error)
   if(ch != ';')
   {
     err = -2;
-    goto error_exit;    
+    goto error_exit;
   }
-  
+
   if(error)
     *error = 0;
   return answer;
@@ -218,7 +218,7 @@ char *makenewicklabel(const char *str)
       if(*vptr == ' ' )
  	*vptr = '_';
       vptr++;
-    }   
+    }
   }
 
   return answer;
@@ -316,7 +316,7 @@ static NEWICKNODE *loadnode(FILE *fp, int *error)
     err = -2;
     goto error_exit;
   }
-  
+
   if(error)
     *error = 0;
   return answer;
@@ -351,11 +351,11 @@ static int addchild(NEWICKNODE *parent, NEWICKNODE *child)
 
 
 /*
-  load a leaf node 
+  load a leaf node
   Params: fp - the input stream
           error - return for error
   Returns: node object
- 
+
  */
 static NEWICKNODE *loadleaf(FILE *fp, int *error)
 {
@@ -455,7 +455,7 @@ static char *readlabel(FILE *fp)
 /*
   read a quoted label from stream
   Params: fp - the input stream
-  Returns: the label. null string is "" 
+  Returns: the label. null string is ""
  */
 static char *readquotedlabel(FILE *fp)
 {
@@ -651,6 +651,6 @@ int newickmain(int argc, char **argv)
   label = makenewicklabel("My name is \'Fred()\'");
   printf("***%s***\n", label);
   free(label);
- 
+
   return 0;
 }

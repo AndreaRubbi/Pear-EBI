@@ -17,9 +17,9 @@ void test_quartet_distance() {
 
 void test_all_pairs_quartet_distance() {
   QuartetDistanceCalculator quartetCalc;
-  
+
   const std::vector<std::vector<INTTYPE_N4> > &result = quartetCalc.calculateAllPairsQuartetDistance("../trees/five_trees.new");
-  
+
   assert_equal(result[1][0], (INTTYPE_N4) 1);
   assert_equal(result[0][0], (INTTYPE_N4) 0);
   assert_equal(result[2][1], (INTTYPE_N4) 1);
