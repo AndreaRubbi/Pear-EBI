@@ -25,6 +25,7 @@ def plot_embedding(
     plot_set=None,
     select=False,
     same_scale=False,
+    z_axis=None,
 ):
     """Plot embedding of distance matrix - in 2D or 3D
 
@@ -351,7 +352,7 @@ def plot_embedding(
     # ─── 3D Plot ──────────────────────────────────────────────────────────
     if dimensions == 3:  # if input dimension is 3
         assert (
-            data.shape[1] == 3
+            data.shape[1] >= 3
         ), "Embed distance_matrix in 3D before requesting a 3D plot"
 
         size = np.array([10 for _ in range(metadata.shape[0])])
@@ -968,6 +969,15 @@ def plot_embedding(
     #! plotly - ipywidgets - jupyter versions are incompatible
     if static:
         return no_widget_fig
+
+    if z_axis is not None:
+        assert z_axis in metadata.columns, f"{z_axis} not in metadata"
+        SETS = np.unique(metadata["SET-ID"])
+        for i in range(len(SETS)):  # number of different traces in plot
+            idx_meta = metadata["SET-ID"] == SETS[i]
+            no_widget_fig.data[i].z = metadata[z_axis][idx_meta]
+        return no_widget_fig
+
     # check if we are working in an interactive environment
     # hence ok using widgets
     if hasattr(builtins, "__IPYTHON__"):

@@ -63,6 +63,13 @@ try:
 except:
     sys.exit("Error")
 
+# silencing some warnings
+from scipy.sparse import SparseEfficiencyWarning
+
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=SparseEfficiencyWarning)
+
 
 # ────────────────────────────────────────────────────────── TREE_SET CLASS ─────
 class tree_set:
@@ -192,7 +199,7 @@ class tree_set:
         with self.console.status("[bold green]Embedding distances...") as status:
             embedding = methods[method](
                 self.distance_matrix,
-                dimensions,
+                dim,
                 self.metadata,
                 quality=quality if not report else True,
                 report=report,
@@ -215,6 +222,7 @@ class tree_set:
             self.embedding_pca = embedding
             self.embedding_pca3D = embedding[:, :4]
             self.embedding_pca2D = embedding[:, :3]
+
         elif method == "tsne":
             if dimensions > 3:
                 warnings.warn(
@@ -223,6 +231,7 @@ class tree_set:
             self.embedding_tsne = embedding
             self.embedding_tsne3D = embedding[:, :4]
             self.embedding_tsne2D = embedding[:, :3]
+
         elif method == "isomap":
             if dimensions > 3:
                 warnings.warn(
@@ -359,6 +368,7 @@ class tree_set:
         plot_set=None,
         select=False,
         same_scale=False,
+        z_axis=None,
     ):
         """Plot 3D embedding performed with method of choice
 
@@ -396,6 +406,7 @@ class tree_set:
                 plot_set,
                 select,
                 same_scale,
+                z_axis,
             )
 
         elif method == "tsne":
@@ -414,6 +425,7 @@ class tree_set:
                 plot_set,
                 select,
                 same_scale,
+                z_axis,
             )
 
         elif method == "isomap":
@@ -432,6 +444,7 @@ class tree_set:
                 plot_set,
                 select,
                 same_scale,
+                z_axis,
             )
 
         elif method == "lle":
@@ -450,6 +463,7 @@ class tree_set:
                 plot_set,
                 select,
                 same_scale,
+                z_axis,
             )
 
         else:
@@ -590,10 +604,29 @@ class set_collection(tree_set):
                 trees.close()
 
         elif len(collection) > 0:
-            for element in collection:
-                assert isinstance(
-                    element, tree_set
-                ), "Every element in a set_collection must be a tree_set"
+            remove = list()
+            for i, element in enumerate(collection):
+                if not isinstance(element, tree_set):
+                    if isinstance(element, str):
+                        try:
+                            file = os.path.splitext(os.path.basename(element))[0]
+                            exec(f"{file} = tree_set('{element}')")
+                            remove.append(i)
+                        except FileNotFoundError:
+                            sys.exit(f"File {element} not found")
+                        except TypeError:
+                            sys.exit(
+                                f"Set collection can be initialized only with set_collection, tree_set, or file path elements"
+                            )
+                        exec(f"collection.append({file})")
+
+                    else:
+                        sys.exit(
+                            f"Set collection can be initialized only with set_collection, tree_set, or file path elements"
+                        )
+            for i in remove[::-1]:
+                collection.pop(i)
+
             self.collection = collection
             with open(self.file, "w") as trees:
                 for set in collection:
@@ -640,21 +673,40 @@ class set_collection(tree_set):
         Returns:
             set_collection: concatenated set_collection
         """
-        try:
-            assert isinstance(other, set_collection)
+        if isinstance(other, set_collection):
             return set_collection(self.collection + other.collection)
-        except:
-            try:
-                assert isinstance(other, tree_set)
-                return set_collection(self.collection + [other])
-            except:
-                for element in other:
-                    assert isinstance(
-                        element, tree_set
-                    ), "You can concatenate a set_collection \
+        elif isinstance(other, tree_set):
+            return set_collection(self.collection + [other])
+        else:
+            remove = list()
+            for i, element in enumerate(other):
+                if not isinstance(element, tree_set):
+                    if isinstance(element, str):
+                        try:
+                            file = os.path.splitext(os.path.basename(element))[0]
+                            exec(f"{file} = tree_set('{element}')")
+                            remove.append(i)
+                        except FileNotFoundError:
+                            sys.exit(f"File {element} not found")
+                        except TypeError:
+                            sys.exit(
+                                "You can concatenate a set_collection \
                         only with another set_collection, a tree_set,\
                             or a list of tree_set"
-                return set_collection(self.collection + other)
+                            )
+
+                        exec(f"other.append({file})")
+
+                    else:
+                        sys.exit(
+                            "You can concatenate a set_collection \
+                        only with another set_collection, a tree_set,\
+                            or a list of tree_set"
+                        )
+            for i in remove[::-1]:
+                other.pop(i)
+
+            return set_collection(self.collection + other)
 
     def __str__(self):
         computed = "not computed"
@@ -681,18 +733,37 @@ class set_collection(tree_set):
         Returns:
             set_collection: concatenated set_collection
         """
-        try:
-            assert isinstance(other, tree_set)
+        if isinstance(other, set_collection):
+            return set_collection(self.collection + other.collection)
+        elif isinstance(other, tree_set):
             return set_collection(self.collection + [other])
+        else:
+            remove = list()
+            for i, element in enumerate(other):
+                if not isinstance(element, tree_set):
+                    if isinstance(element, str):
+                        try:
+                            file = os.path.splitext(os.path.basename(element))[0]
+                            exec(f"{file} = tree_set('{element}')")
+                            remove.append(i)
+                        except FileNotFoundError:
+                            sys.exit(f"File {element} not found")
+                        except TypeError:
+                            sys.exit(
+                                "You can concatenate a set_collection \
+                        only with another set_collection, a tree_set,\
+                            or a list of tree_set"
+                            )
 
-        except:
-            try:
-                assert isinstance(other, set_collection)
-                return set_collection(self.collection + other.collection)
-            except:
-                for element in other:
-                    assert isinstance(
-                        element, tree_set
-                    ), "You can concatenate a set_collection only with another \
-                        set_collection, a tree_set, or a list of tree_set"
-                return set_collection(self.collection + other)
+                        exec(f"other.append({file})")
+
+                    else:
+                        sys.exit(
+                            "You can concatenate a set_collection \
+                        only with another set_collection, a tree_set,\
+                            or a list of tree_set"
+                        )
+            for i in remove[::-1]:
+                other.pop(i)
+
+            return set_collection(self.collection + other)
