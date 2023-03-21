@@ -11,8 +11,8 @@ def parser():
         prog="PEAR",
         description="PEAR-EBI | \
         Phylogeny Embedding and Approximate Representation \n \
-        Calculates RF distances between large set of trees",
-        epilog="Author: Andrea Rubbi - Goldman Group",
+        Calculates Robison-Foulds distances between large set of trees",
+        epilog="Author: Andrea Rubbi - Goldman Group | European Bioinformatics Institute",
     )
     parser.add_argument(
         type=str,

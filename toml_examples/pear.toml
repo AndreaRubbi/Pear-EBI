@@ -1,32 +1,57 @@
 # This is an instance of a config TOML for pear_ebi
 
+# specify multiple files containing trees in newick format;
+# each tree_file has to be associated to a filen,
+# where n is in N (natural number)
 [trees]
 file1 = "Pear-EBI/examples_tree_sets/beast_trees/beast_run1.trees"
 file2 = "Pear-EBI/examples_tree_sets/beast_trees/beast_long.trees"
 
+
+# one may specify multiple directories
+# to be parsed, looking for every file
+# or files with specific patterns
+# in their names
 [dir]
 dir1 = "Pear-EBI/examples_tree_sets/beast_trees/" # "path/to/directory"
 pattern = '*run2*'
 
+# here one can define the output file name,
+# a csv file containing the distance matrix,
+# and/or a csv file containing metadata.
 #[collection]
 # output_file = None
 # distance_matrix = None
 # metadata = None
 
+
+# select trace by either specifying the relative
+# file in trees or by specifying the file name
+# without extension
 [highlight]
 trace1 = [0, 100, 200, 300, 1000]
 beast_run2 = [100, 200, 500, 1000]
 beast_long = [0, 400, 500, 1000]
 
+# select distance method among those available
 [distance]
 method = "hashrf"
 
+# select embedding method among those available,
+# select number of dimensions,
+# if fast and short quality assessment is required, set quality to true,
+# if long quality report is required, set report to true
 [embedding]
 method = "isomap"
 dimensions = 3
 quality = false
 report = false
 
+# define plot features,
+# NB: if [plot] is uncommented, this already tells
+# pear_ebi that it should plot the embedding
+# if one wants to see the produced plot
+# as soon as produced, set show_plot to true
 [plot]
 # name_plot = None
 # plot_meta = "SET-ID"

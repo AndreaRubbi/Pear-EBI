@@ -520,19 +520,43 @@ def calculate_distance_matrix(file, n_trees, output_file):
         pckl = open("Trees.pckl", "wb")
         pickle.dump(trees, pckl)
         pckl.close()
+        workers = os.cpu_count()
+        if "sched_getaffinity" in dir(os):
+            workers = len(os.sched_getaffinity(0))
+        try:
+            with mp.Pool(workers) as pool:
+                arg_pool = list(range(len(trees)))
+                results = list(pool.imap(func_pool, arg_pool))
+            distance_matrix_upper = list(
+                map(lambda res: eval(res.split("\n")[1].strip()), results)
+            )
 
-        with mp.Pool() as pool:
-            arg_pool = list(range(len(trees)))
-            results = list(pool.imap(func_pool, arg_pool))
-        distance_matrix_upper = list(
-            map(lambda res: eval(res.split("\n")[1].strip()), results)
-        )
+            distance_matrix = np.zeros((n_trees, n_trees))
+            for i, line in enumerate(distance_matrix_upper):
+                distance_matrix[i, i + 1 :] = line
 
-        distance_matrix = np.zeros((n_trees, n_trees))
-        for i, line in enumerate(distance_matrix_upper):
-            distance_matrix[i, i + 1 :] = line
+            distance_matrix_lower = distance_matrix.transpose()
+        except:
+            print("Multiprocessing failed - trying on single core")
+            print(
+                "Suggestion: compute the distance matrix on a computing unit with more cores or analyze a smaller dataset"
+            )
 
-        distance_matrix_lower = distance_matrix.transpose()
+            distance_matrix = np.zeros((n_trees, n_trees))
+            for i, tree in enumerate(trees):
+                # status.update(f"[bold red]{i+1}/{len(trees)} [bold blue]Computing Robison Foulds distances...")
+                inputTree = trees[i : i + 1]
+                inputRFtrees = trees[i + 1 :]
+                tree1 = readNewick(inputTree)[0]
+                tree1_prep = prepareTreeComparison(tree1, rooted=False)
+                otherTrees = readNewick(inputRFtrees)
+                RF_distances = list()
+                for tree in otherTrees:
+                    res = RobinsonFouldsWithDay1985(tree, tree1_prep, rooted=False)
+                    RF_distances.append(res[0])
+                distance_matrix[i, i + 1 :] = RF_distances
+
+            distance_matrix_lower = distance_matrix.transpose()
 
     else:
         distance_matrix = np.zeros((n_trees, n_trees))
