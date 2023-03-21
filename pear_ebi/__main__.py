@@ -249,14 +249,14 @@ def main():
             if args.pca is not None:
                 method_embedding = "pca"
                 dimensions = args.pca
-            elif config["embedding"] is None:
+            elif config["embedding"] is None and args.tsne is None:
                 method_embedding = None
                 dimensions = None
 
             if args.tsne is not None:
                 method_embedding = "tsne"
                 dimensions = args.tsne
-            elif config["embedding"] is None:
+            elif config["embedding"] is None and args.pca is None:
                 method_embedding = None
                 dimensions = None
 
@@ -318,7 +318,11 @@ def main():
             # ─── Plot Embeddings ──────────────────────────────────────────
             if method_embedding is not None:
                 if args.plot or config["plot"] is not None:
-                    config["plot"] = defaultdict(lambda: None, config["plot"])
+                    config["plot"] = (
+                        defaultdict(lambda: None, config["plot"])
+                        if config["plot"] is not None
+                        else defaultdict(lambda: None)
+                    )
                     name_plot = config["plot"]["name"]
                     plot_meta = (
                         config["plot"]["plot_meta"]
@@ -383,7 +387,9 @@ def main():
 
             # ─── Get Subset ───────────────────────────────────────────────
             if args.subset != None:
-                SET.get_subset(args.subset)
+                fig2, fig3 = SET.get_subset(args.subset)
+                fig2.show()
+                fig3.show()
     except KeyboardInterrupt:
         print("[orange1]\n- Leaving PEAR -")
 
