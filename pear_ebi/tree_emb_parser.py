@@ -1,5 +1,7 @@
 import argparse
 
+import pear_ebi
+
 
 def parser():
     """Generates parser for PEAR program
@@ -9,11 +11,20 @@ def parser():
     """
     parser = argparse.ArgumentParser(
         prog="PEAR",
-        description="PEAR-EBI | \
+        description=f"PEAR-EBI v{pear_ebi.__version__} | \
         Phylogeny Embedding and Approximate Representation \n \
         Calculates Robison-Foulds distances between large set of trees",
         epilog="Author: Andrea Rubbi - Goldman Group | European Bioinformatics Institute",
     )
+
+    parser.add_argument(
+        "-v",
+        dest="version",
+        action="store_true",
+        help="version of PEAR",
+        required=False,
+    )
+
     parser.add_argument(
         type=str,
         dest="input",
@@ -84,14 +95,7 @@ def parser():
         help="plot embedding in 2 or 3 dimensions",
         required=False,
     )
-    parser.add_argument(
-        "-showplot",
-        "--show",
-        action="store_true",
-        dest="showplot",
-        help="show plot",
-        required=False,
-    )
+
     parser.add_argument(
         "-subset",
         "--s",

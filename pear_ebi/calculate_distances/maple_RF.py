@@ -576,5 +576,5 @@ def calculate_distance_matrix(file, n_trees, output_file):
         distance_matrix_lower = distance_matrix.transpose()
 
     distance_matrix = pd.DataFrame(distance_matrix + distance_matrix_lower)
-    distance_matrix.to_csv(output_file)
-    return distance_matrix
+    distance_matrix.to_csv(output_file, header=False, index=False)
+    return distance_matrix.values

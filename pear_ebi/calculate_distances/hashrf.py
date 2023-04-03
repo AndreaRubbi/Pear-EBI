@@ -70,6 +70,13 @@ def hashrf(file, n_trees, output_file):
     # Runs command
     bash_command(cmd)
 
+    with open("hashrf_err.txt", "r") as err_mess:
+        err = err_mess.read()
+        err_mess.close()
+        bash_command("rm hashrf_err.txt")
+        if len(err) > 0:
+            sys.exit(err)
+
     # Reads output file and creates numpy array
     # which is used to create a pandas dataframe
     try:
@@ -78,10 +85,10 @@ def hashrf(file, n_trees, output_file):
             out.close()
 
         distance_matrix.drop(distance_matrix.columns[-1], axis=1, inplace=True)
-        distance_matrix.to_csv(output_file)
-        return distance_matrix
+        distance_matrix.to_csv(output_file, header=False, index=False)
+        return distance_matrix.values
     except:
-        print("hashrf failed! check errors in hashrf_err.txt")
+        sys.exit("hashrf failed!")
 
 
 # HashRF calculating weighted RF distances
@@ -106,6 +113,14 @@ def hashrf_weighted(file, n_trees, output_file):
 
     # Runs command
     bash_command(cmd)
+
+    with open("hashrf_err.txt", "r") as err_mess:
+        err = err_mess.read()
+        err_mess.close()
+        bash_command("rm hashrf_err.txt")
+        if len(err) > 0:
+            sys.exit(err)
+
     bash_command(
         f"tr -s \" \" < {output_file} | sed 's/^[ \t]*//' > ./tmp_file && cat ./tmp_file > {output_file} && rm ./tmp_file"
     )  # removes double spaces in file and spaces at the beginning of lines
@@ -118,7 +133,7 @@ def hashrf_weighted(file, n_trees, output_file):
             out.close()
 
         distance_matrix.drop(distance_matrix.columns[-1], axis=1, inplace=True)
-        distance_matrix.to_csv(output_file)
-        return distance_matrix
+        distance_matrix.to_csv(output_file, header=False, index=False)
+        return distance_matrix.values
     except:
-        print("hashrf failed! check errors in hashrf_err.txt")
+        sys.exit("hashrf failed!")

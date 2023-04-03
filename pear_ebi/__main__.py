@@ -1,27 +1,39 @@
-__author__ = "Andrea Rubbi : andrea.rubbi.98@gmail.com"
-
-import os
-import re
-import sys
-from collections import defaultdict
-from glob import glob
-
-import numpy as np
-import pandas as pd
-import toml
-from rich import print
-
-import pear_ebi.tree_emb_parser
-from pear_ebi.calculate_distances import hashrf
-from pear_ebi.embeddings import PCA_e, tSNE_e
-from pear_ebi.interactive_mode import interactive
-from pear_ebi.tree_set import set_collection, tree_set
-
-
 def main():
+    __author__ = "Andrea Rubbi : andrea.rubbi.98@gmail.com"
+
+    import os
+    import re
+    import sys
+    from collections import defaultdict
+    from glob import glob
+
+    import numpy as np
+    import pandas as pd
+    import toml
+    from rich import print
+
+    # getting the name of the directory
+    current = os.path.dirname(os.path.realpath(__file__))
+
+    # Getting the parent directory name
+    parent = os.path.dirname(current)
+
+    # adding the parent directory to
+    # the sys.path.
+    sys.path.append(parent)
+
+    import pear_ebi.tree_emb_parser
+    from pear_ebi.calculate_distances import hashrf
+    from pear_ebi.embeddings import PCA_e, tSNE_e
+    from pear_ebi.interactive_mode import interactive
+    from pear_ebi.tree_set import set_collection, tree_set
+
     try:
         # Retrieves args from parser
         args = pear_ebi.tree_emb_parser.parser()
+
+        if args.version:
+            print(f"[blue]PEAR v{pear_ebi.__version__}")
 
         # ─── Interactive Mode ─────────────────────────────────────────────────
         if args.interactive_mode:
@@ -41,12 +53,21 @@ def main():
             output_file = args.output
             metadata = args.metadata
 
-            SET = set_collection(
-                collection=tree_set(file[0]),
-                output_file=output_file,
-                distance_matrix=distance_matrix,
-                metadata=metadata,
-            )
+            if len(file) == 1:
+                SET = tree_set(
+                    file[0],
+                    output_file=output_file,
+                    distance_matrix=distance_matrix,
+                    metadata=metadata,
+                )
+
+            else:
+                SET = set_collection(
+                    collection=file,
+                    output_file=output_file,
+                    distance_matrix=distance_matrix,
+                    metadata=metadata,
+                )
 
             # shows set specifics
             print("[bright_magenta]Your input:")
@@ -184,13 +205,22 @@ def main():
             metadata = args.metadata if args.metadata is not None else metadata
 
             # we can now define our set_collection
-            # (even if there's just one tree set)
-            SET = set_collection(
-                collection=list(map(lambda f: tree_set(f), files)),
-                output_file=output_file,
-                distance_matrix=distance_matrix,
-                metadata=metadata,
-            )
+            if len(files) == 1:
+                SET = tree_set(
+                    files[0],
+                    output_file=output_file,
+                    distance_matrix=distance_matrix,
+                    metadata=metadata,
+                )
+
+            else:
+                SET = set_collection(
+                    collection=list(map(lambda f: tree_set(f), files)),
+                    output_file=output_file,
+                    distance_matrix=distance_matrix,
+                    metadata=metadata,
+                )
+
             # shows set specifics
             print("[bright_magenta]Your input:")
             print(SET)
@@ -340,15 +370,6 @@ def main():
                         if config["plot"]["same_scale"] is not None
                         else False
                     )
-                    show_plot = (
-                        config["plot"]["show_plot"]
-                        if config["plot"]["show_plot"] is not None
-                        else False
-                    )
-
-                    if not show_plot:
-                        if args.showplot:
-                            show_plot = True
 
                     if dimensions > 2:
                         np = (
@@ -366,8 +387,7 @@ def main():
                             save=True,
                         )
 
-                        if show_plot:
-                            fig.show()
+                        fig.show()
                     np = (
                         name_plot + "2D"
                         if name_plot is not None
@@ -382,8 +402,8 @@ def main():
                         same_scale=same_scale,
                         save=True,
                     )
-                    if show_plot:
-                        fig.show()
+
+                    fig.show()
 
             # ─── Get Subset ───────────────────────────────────────────────
             if args.subset != None:

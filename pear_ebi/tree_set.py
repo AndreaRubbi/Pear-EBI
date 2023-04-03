@@ -19,7 +19,6 @@ __copyright__ = "2023-present Andrea Rubbi and other contributors"
 __credits__ = ["Andrea Rubbi", "Lukas Weilguny", "Nick Goldman", "Nicola de Maio"]
 
 __license__ = "MIT"
-__version__ = "1.0.1"
 __maintainer__ = "Andrea Rubbi"
 __institute__ = "EMBL-EBI"
 __email__ = "andrear@ebi.ac.uk"
@@ -53,18 +52,20 @@ parent = os.path.dirname(current)
 # the sys.path.
 sys.path.append(parent)
 
-# importing other modules
-try:
-    from .calculate_distances import hashrf, maple_RF, tqdist
-    from .embeddings import Isomap_e, LLE_e, PCA_e, tSNE_e
-    from .embeddings.graph import graph
-    from .interactive_mode import interactive
-    from .subsample import subsample
-except:
-    sys.exit("Error")
-
 # silencing some warnings
 from scipy.sparse import SparseEfficiencyWarning
+
+# importing other modules
+# try:
+from .calculate_distances import hashrf, maple_RF, tqdist
+from .embeddings import Isomap_e, LLE_e, PCA_e, tSNE_e
+from .embeddings.graph import graph
+from .interactive_mode import interactive
+from .subsample import subsample
+
+# except:
+#    sys.exit("Error")
+
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -117,7 +118,13 @@ class tree_set:
 
         if type(self.distance_matrix) != type(None):
             try:
-                pd.read_csv(self.distance_matrix)
+                self.distance_matrix = pd.read_csv(
+                    self.distance_matrix,
+                ).values
+                #    header=0,
+                #    index_col=0,
+                #    dtype=np.float32,
+                # self.distance_matrix.columns = list(range(self.distance_matrix.shape[1]))
             except:
                 sys.exit(
                     "There's an error with the Distance Matrix file - please check the correct location and name of the .csv file"
@@ -279,6 +286,8 @@ class tree_set:
         Returns:
             plot: either interactive or not
         """
+
+        # you can surely write something better here @andrear
         if type(plot_set) == type(None):
             plot_set = self.sets
         if method == "pca":
@@ -574,7 +583,9 @@ class set_collection(tree_set):
         self.id = uuid.uuid4()
         self.file = file + str(self.id)
         self.distance_matrix = (
-            pd.read_csv(distance_matrix, header=None).values
+            pd.read_csv(
+                distance_matrix,
+            ).values  # header=0, index_col=0
             if distance_matrix
             else distance_matrix
         )
@@ -628,24 +639,14 @@ class set_collection(tree_set):
                 collection.pop(i)
 
             self.collection = collection
-            with open(self.file, "w") as trees:
-                for set in collection:
-                    with open(set.file, "r") as file:
-                        trees.write(file.read())
-                        file.close()
-                trees.close()
 
         else:
             self.collection = collection
 
-        with open(self.file, "r") as f:
-            self.n_trees = len(f.readlines())
-            f.close()
-
         self.data = dict()
 
         self.metadata = pd.DataFrame()
-
+        self.n_trees = 0
         for set in self.collection:
             key = os.path.splitext(os.path.basename(set.file))[0]
 
@@ -657,10 +658,45 @@ class set_collection(tree_set):
             self.metadata = pd.concat([self.metadata, metadata])
 
             self.data[key] = {"metadata": metadata, "n_trees": set.n_trees}
+            self.n_trees += set.n_trees
 
         self.metadata.reset_index(drop=True, inplace=True)
 
         self.sets = np.unique(self.metadata["SET-ID"])
+
+    # ─── CALCULATE DISTANCES ───────────────────────────────────────────────────
+    def calculate_distances(self, method):
+        """Computes tree_set distance matrix with method of choice
+
+        Args:
+            method (str): method/algorithm used to compute distance matrix
+        """
+        methods = {
+            "hashrf": hashrf.hashrf,
+            "hashrf_weighted": hashrf.hashrf_weighted,
+            "days_RF": maple_RF.calculate_distance_matrix,
+            "quartet": tqdist.quartet,
+            "triplet": tqdist.triplet,
+            "None": None,
+        }
+
+        if method in ("hashrf", "hashrf_weighted", "quartet", "triplet"):
+            with open(self.file, "w") as trees:
+                for set in self.collection:
+                    with open(set.file, "r") as file:
+                        trees.write(file.read())
+                        file.close()
+                trees.close()
+
+        with self.console.status("[bold green]Calculating distances...") as status:
+            self.distance_matrix = methods[method](
+                self.file, self.n_trees, self.output_file
+            )
+
+        if method in ("hashrf", "hashrf_weighted", "quartet", "triplet"):
+            hashrf.bash_command(f"rm {self.file}")
+
+        print(f"[bold blue]{method} | Done!")
 
     # the result of addition between two collections
     # is the concatenation of the two collections
