@@ -17,13 +17,13 @@ def parser():
         epilog="Author: Andrea Rubbi - Goldman Group | European Bioinformatics Institute",
     )
 
-    parser.add_argument(
+    """parser.add_argument(
         "-v",
         dest="version",
         action="store_true",
         help="version of PEAR",
         required=False,
-    )
+    )"""
 
     parser.add_argument(
         type=str,
@@ -96,14 +96,14 @@ def parser():
         required=False,
     )
 
-    parser.add_argument(
+    """parser.add_argument(
         "-subset",
         "--s",
         dest="subset",
         type=int,
         help="extract subset of collection",
         required=False,
-    )
+    )"""
     parser.add_argument(
         "-config",
         "--c",
@@ -112,14 +112,14 @@ def parser():
         help="toml config file",
         required=False,
     )
-    parser.add_argument(
+    """parser.add_argument(
         "-report",
         "--r",
         action="store_true",
         dest="report",
         help="print long quality report of embedding",
         required=False,
-    )
+    )"""
     parser.add_argument(
         "-quality",
         "--q",

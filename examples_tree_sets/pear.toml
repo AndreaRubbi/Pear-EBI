@@ -1,7 +1,12 @@
 # This is an instance of a config TOML for pear_ebi
 
-[trees]
-#file1 = "Pear-EBI/examples_tree_sets/beast_trees/beast_run1.trees"
+# [trees] and [dir] sections allow one to specify the files
+# containing the set of trees in newick format.
+# They can be used at the same time, the file
+# selected are going to be compared all together.
+
+[trees] # file entries specify the path to a single file
+#file1 = "Pear-EBI/examples_tree_sets/beast_trees/beast_run1.trees" # filen = "path/to/file"
 #file2 = "Pear-EBI/examples_tree_sets/beast_trees/beast_long.trees"
 file1 = "Pear-EBI/examples_tree_sets/bootstrap_mammals/bootstrap_6086"
 file2 = "Pear-EBI/examples_tree_sets/bootstrap_mammals/bootstrap_5261"
@@ -10,34 +15,30 @@ file4 = "Pear-EBI/examples_tree_sets/bootstrap_mammals/bootstrap_281"
 file5 = "Pear-EBI/examples_tree_sets/bootstrap_mammals/bootstrap_11289"
 file6 = "Pear-EBI/examples_tree_sets/bootstrap_mammals/bootstrap_10409"
 
-
-#[dir]
+#[dir] # specify the path to a directory
 #dir1 = "Pear-EBI/examples_tree_sets/beast_trees/" # "path/to/directory"
-#pattern = '*run2*'
+#pattern = '*run2*' # pattern of files to be analyzed
 
 #[collection]
-# output_file = None
-# distance_matrix = None
-# metadata = None
+# output_file = None # name of output file where the distance matrix is written
+# distance_matrix = None # file with distance matrix if this has been precomputed
+# metadata = None # file with dataframe containing metadata compatible with the collection
 
-#[highlight]
-#trace1 = [0, 100, 200, 300, 1000]
-#beast_run2 = [100, 200, 500, 1000]
-#beast_long = [0, 400, 500, 1000]
+#[highlight] # allows one to highlight specific trees in the sets
+#trace1 = [0, 1001] # trace1 refers to tree1 | the list highlights the 1st and 1001th trees
+#beast_run2 = [100, 200, 500] # beast_run2 is the file name (no extension) of one of the sets in the collection
 
-[distance]
+[distance] # specify the method used to compute the distances
 method = "hashrf"
 
 [embedding]
-method = "isomap"
-dimensions = 3
-quality = false
-report = false
+method = "isomap" # embedding method
+dimensions = 3 # number of dimensions
+quality = false # display quality | default is false
 
-[plot]
-# name_plot = None
-# plot_meta = "SET-ID"
-# plot_set = None
-# select = false
-# same_scale = false
-show_plot = true
+[plot] # specify some plot qualities
+# name_plot = None # name of the plot
+# plot_meta = "SET-ID" # metadata used to color the points
+# select = false # display buttons to hide or show different sets of trees | default is true
+# same_scale = false # use the same colorscale to color the sets | default to false
+show = true # show the plots when created | default to false

@@ -1,3 +1,7 @@
+import os
+import sys
+
+
 def main():
     __author__ = "Andrea Rubbi : andrea.rubbi.98@gmail.com"
 
@@ -347,7 +351,7 @@ def main():
 
             # ─── Plot Embeddings ──────────────────────────────────────────
             if method_embedding is not None:
-                if args.plot or config["plot"] is not None:
+                if config["plot"] is not None:
                     config["plot"] = (
                         defaultdict(lambda: None, config["plot"])
                         if config["plot"] is not None
@@ -371,15 +375,21 @@ def main():
                         else False
                     )
 
+                    show = (
+                        config["plot"]["show"]
+                        if config["plot"]["show"] is not None
+                        else False
+                    )
+
                     if dimensions > 2:
-                        np = (
+                        name_plot = (
                             name_plot + "3D"
                             if name_plot is not None
                             else f"{method_embedding.upper()}_3D"
                         )
                         fig = SET.plot_3D(
                             method_embedding,
-                            name_plot=np,
+                            name_plot=name_plot,
                             plot_meta=plot_meta,
                             plot_set=plot_set,
                             select=select,
@@ -387,15 +397,17 @@ def main():
                             save=True,
                         )
 
-                        fig.show()
-                    np = (
+                        if show:
+                            fig.show()
+
+                    name_plot = (
                         name_plot + "2D"
                         if name_plot is not None
                         else f"{method_embedding.upper()}_2D"
                     )
                     fig = SET.plot_2D(
                         method_embedding,
-                        name_plot=np,
+                        name_plot=name_plot,
                         plot_meta=plot_meta,
                         plot_set=plot_set,
                         select=select,
@@ -403,7 +415,31 @@ def main():
                         save=True,
                     )
 
-                    fig.show()
+                    if show:
+                        fig.show()
+
+                else:
+                    if dimensions > 2:
+                        name_plot = f"{method_embedding.upper()}_3D"
+                        fig = SET.plot_3D(
+                            method_embedding,
+                            name_plot=name_plot,
+                            save=True,
+                        )
+
+                        if args.plot:
+                            fig.show()
+
+                        fig.show()
+                    name_plot = f"{method_embedding.upper()}_2D"
+                    fig = SET.plot_2D(
+                        method_embedding,
+                        name_plot=name_plot,
+                        save=True,
+                    )
+
+                    if args.plot:
+                        fig.show()
 
             # ─── Get Subset ───────────────────────────────────────────────
             if args.subset != None:

@@ -119,7 +119,7 @@ class tree_set:
         if type(self.distance_matrix) != type(None):
             try:
                 self.distance_matrix = pd.read_csv(
-                    self.distance_matrix,
+                    self.distance_matrix, header=None, index_col=None
                 ).values
                 #    header=0,
                 #    index_col=0,
@@ -583,9 +583,7 @@ class set_collection(tree_set):
         self.id = uuid.uuid4()
         self.file = file + str(self.id)
         self.distance_matrix = (
-            pd.read_csv(
-                distance_matrix,
-            ).values  # header=0, index_col=0
+            pd.read_csv(distance_matrix, header=None, index_col=None).values  #
             if distance_matrix
             else distance_matrix
         )
