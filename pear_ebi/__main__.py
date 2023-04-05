@@ -36,8 +36,7 @@ def main():
         # Retrieves args from parser
         args = pear_ebi.tree_emb_parser.parser()
 
-        if args.version:
-            print(f"[blue]PEAR v{pear_ebi.__version__}")
+        print(f"[blue]PEAR v{pear_ebi.__version__}")
 
         # ─── Interactive Mode ─────────────────────────────────────────────────
         if args.interactive_mode:
@@ -272,13 +271,14 @@ def main():
             if args.quality:
                 quality = True
 
-            if config["embedding"] is None:
-                report = args.report
-                if report:
-                    quality = True
-            if args.report:
-                quality = True
-                report = True
+            # if config["embedding"] is None:
+            #    report = args.report
+            #    if report:
+            #        quality = True
+            # if args.report:
+            #    quality = True
+            #    report = True
+            report = False
 
             if args.pca is not None:
                 method_embedding = "pca"
@@ -442,10 +442,11 @@ def main():
                         fig.show()
 
             # ─── Get Subset ───────────────────────────────────────────────
-            if args.subset != None:
-                fig2, fig3 = SET.get_subset(args.subset)
-                fig2.show()
-                fig3.show()
+            # if args.subset != None:
+            #    fig2, fig3 = SET.get_subset(args.subset)
+            #    fig2.show()
+            #    fig3.show()
+
     except KeyboardInterrupt:
         print("[orange1]\n- Leaving PEAR -")
 

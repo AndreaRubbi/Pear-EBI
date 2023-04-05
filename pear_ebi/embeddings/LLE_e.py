@@ -23,7 +23,7 @@ def lle(distance_matrix, n_components, metadata=None, quality=False, report=Fals
     embedding, _err_ = locally_linear_embedding(
         distance_matrix, n_neighbors=5, n_components=n_components
     )
-    pd.DataFrame(embedding).to_csv("./ISOMAP_Embedding.csv")
+    pd.DataFrame(embedding).to_csv("./ISOMAP_Embedding.csv", header=False, index=False)
 
     if report:
         Xr = None

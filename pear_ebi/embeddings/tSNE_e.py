@@ -33,7 +33,9 @@ def tsne(distance_matrix, n_dimensions, metadata=None, quality=False, report=Fal
     )
 
     Distances_embedded_ND = tsne.fit_transform(distance_matrix.values.astype(np.float32))
-    pd.DataFrame(Distances_embedded_ND).to_csv("./t-SNE_Embedding.csv")
+    pd.DataFrame(Distances_embedded_ND).to_csv(
+        "./t-SNE_Embedding.csv", header=False, index=False
+    )
 
     if report:
         # Xr = tsne.inverse_transform(Distances_embedded_ND)
