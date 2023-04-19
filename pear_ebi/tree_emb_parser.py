@@ -70,7 +70,7 @@ def parser():
         "--m",
         dest="method",
         type=str,
-        help="calculates tree distances using specified method (hashrf, weighted_hashrf, days_RF, quartet, triplet)",
+        help="calculates tree distances using specified method (hashrf_RF, hashrf_wRF, smart_RF, tqdist_quartet, tqdist_triplet)",
         required=False,
     )
     parser.add_argument(

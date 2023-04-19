@@ -167,11 +167,11 @@ class tree_set:
             method (str): method/algorithm used to compute distance matrix
         """
         methods = {
-            "hashrf": hashrf.hashrf,
-            "hashrf_weighted": hashrf.hashrf_weighted,
-            "days_RF": maple_RF.calculate_distance_matrix,
-            "quartet": tqdist.quartet,
-            "triplet": tqdist.triplet,
+            "hashrf_RF": hashrf.hashrf,
+            "hashrf_wRF": hashrf.hashrf_weighted,
+            "smart_RF": maple_RF.calculate_distance_matrix,
+            "tqdist_quartet": tqdist.quartet,
+            "tqdist_triplet": tqdist.triplet,
             "None": None,
         }
 
