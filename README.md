@@ -57,13 +57,13 @@ Using the config file allows one to use all the features of PEAR, including addi
 this script launches the program in the interactive mode. Once the program starts, it is going to guide you through its usage thanks to an intuitive interface.
 
 
- {::comment} ### Additional Dependencies
+ <!--- ### Additional Dependencies
  In order to get the complete report on the quality of embeddings, it may be necessary to
  run the following command to install additional dependencies:
 
  `sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev`
 
- It may be necessary to also install `libgcc` and remove old versions of `libstdc++` from the interpreter libraries. {:/comment}
+ It may be necessary to also install `libgcc` and remove old versions of `libstdc++` from the interpreter libraries. --->
 ________________________
 
 ## Licensing
