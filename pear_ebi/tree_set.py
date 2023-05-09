@@ -199,7 +199,7 @@ class tree_set:
         }
 
         if type(self.distance_matrix) == type(None):
-            self.calculate_distances("hashrf")
+            self.calculate_distances("hashrf_RF")
 
         dim = dimensions if dimensions > 2 else 3
 
@@ -670,15 +670,15 @@ class set_collection(tree_set):
             method (str): method/algorithm used to compute distance matrix
         """
         methods = {
-            "hashrf": hashrf.hashrf,
-            "hashrf_weighted": hashrf.hashrf_weighted,
-            "days_RF": maple_RF.calculate_distance_matrix,
-            "quartet": tqdist.quartet,
-            "triplet": tqdist.triplet,
+            "hashrf_RF": hashrf.hashrf,
+            "hashrf_wRF": hashrf.hashrf_weighted,
+            "smart_RF": maple_RF.calculate_distance_matrix,
+            "tqdist_quartet": tqdist.quartet,
+            "tqdist_triplet": tqdist.triplet,
             "None": None,
         }
 
-        if method in ("hashrf", "hashrf_weighted", "quartet", "triplet"):
+        if method in ("hashrf_RF", "hashrf_wRF", "tqdist_quartet", "tqdist_triplet"):
             with open(self.file, "w") as trees:
                 for set in self.collection:
                     with open(set.file, "r") as file:
@@ -691,7 +691,7 @@ class set_collection(tree_set):
                 self.file, self.n_trees, self.output_file
             )
 
-        if method in ("hashrf", "hashrf_weighted", "quartet", "triplet"):
+        if method in ("hashrf_RF", "hashrf_wRF", "tqdist_quartet", "tqdist_triplet"):
             hashrf.bash_command(f"rm {self.file}")
 
         print(f"[bold blue]{method} | Done!")

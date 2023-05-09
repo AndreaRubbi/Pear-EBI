@@ -13,6 +13,9 @@ import plotly.graph_objects as go
 from ipywidgets import widgets
 from pylab import cm
 
+random.seed(123)
+np.random.seed(123)
+
 
 def plot_embedding(
     data,
@@ -254,27 +257,36 @@ def plot_embedding(
             "ylorrd",
         ]
 
-        # single colors for interpretability
+        # single colors (colorscales) for interpretability
         colorscales_GO = [
             "blues",
             "darkmint",
-            "gray",
-            "greens",
             "greys",
-            "hot",
-            "ice",
             "magenta",
             "mint",
             "oranges",
             "peach",
             "purples",
             "reds",
+            "greens",
         ]
 
+        colors_nick_goldman = [
+            "#a6cee3",
+            "#1f78b4",
+            "#b2df8a",
+            "#33a02c",
+            "#fb9a99",
+            "#e31a1c",
+            "#fdbf6f",
+            "#ff7f00",
+            "#cab2d6",
+            "#6a3d9a",
+        ]
         colorscale_cont = random.sample(colorscales, 1)[0]
         cmap = cm.get_cmap(colorscale_cont, max(20, len(elements)))
-        # here we generate a color map --> if there are more than 1000 unique elements,
-        # we assume that the variable is some sort of common parameter. e.g. likelihood, step, parsimony...
+        # here we generate a color map --> if there are more than 10 unique elements,
+        # we assume that the variable is some sort of continuous parameter. e.g. likelihood, step, parsimony...
         cont_colorsc = False
         if len(elements) > 10:
             cont_colorsc = True
@@ -298,13 +310,19 @@ def plot_embedding(
             color_plot_set = color_plot[idx]
             if cont_colorsc:
                 col_list = (
-                    random.sample(colorscales_GO, 1)[0] if not same_scale else "jet"
+                    colorscales_GO[i % len(colorscales_GO)] if not same_scale else "jet"
                 )
             color = col_list
             if len(np.unique(color_plot_set)) == 1:
-                color = random.sample(
-                    [mcolors.rgb2hex(cmap(i)[:3]) for i in range(cmap.N)], 10
-                )
+                if i > len(Sets):
+                    color = random.sample(
+                        [mcolors.rgb2hex(cmap(i)[:3]) for i in range(cmap.N)], 10
+                    )
+                else:
+                    color = [
+                        colors_nick_goldman[i % len(colors_nick_goldman)]
+                        for j in range(3)
+                    ]  # for some reason plotly wants a list of colors to sample from
             metadata_colors[f"{meta}_color_plot"].append(color_plot_set.tolist())
             metadata_colors[f"{meta}_color_map"].append(color)
 
@@ -338,6 +356,24 @@ def plot_embedding(
                 fig.data[i + traces_start_at].marker["colorscale"] = metadata_colors[
                     f"{meta_widget.value}_color_map"
                 ][i]
+                cmin = (
+                    min(metadata[meta_widget.value])
+                    - (
+                        max(metadata[meta_widget.value])
+                        - min(metadata[meta_widget.value])
+                    )
+                    / len(metadata[meta_widget.value])
+                    * 50
+                    if type(metadata[meta_widget.value].iloc[0]) in ("float", "int")
+                    else 0
+                )
+                cmax = (
+                    max(metadata[meta_widget.value])
+                    if type(metadata[meta_widget.value].iloc[0]) in ("float", "int")
+                    else 0
+                )
+                fig.data[i + traces_start_at].marker["cmin"] = cmin
+                fig.data[i + traces_start_at].marker["cmax"] = cmax
 
     # bind widget to function response_metadata
     meta_widget.observe(response_meta, names="value")
@@ -369,6 +405,19 @@ def plot_embedding(
         # number of sets
         nUnique = len(Sets)
         for i, SetID in enumerate(Sets):
+            cmin = (
+                min(metadata[plot_meta])
+                - (max(metadata[plot_meta]) - min(metadata[plot_meta]))
+                / len(metadata[plot_meta])
+                * 50
+                if type(metadata[plot_meta].iloc[0]) in ("float", "int")
+                else 0
+            )
+            cmax = (
+                max(metadata[plot_meta])
+                if type(metadata[plot_meta].iloc[0]) in ("float", "int")
+                else 0
+            )
             idx = metadata["SET-ID"] == SetID
             fig.add_trace(
                 go.Scatter3d(
@@ -392,6 +441,8 @@ def plot_embedding(
                     marker=dict(
                         colorscale=metadata_colors[f"{plot_meta}_color_map"][i],
                         size=size[idx],
+                        cmin=cmin,
+                        cmax=cmax,
                         line=dict(
                             # color='MediumPurple',
                             width=10,
@@ -455,7 +506,7 @@ def plot_embedding(
                     )
 
         # buttons_meta define the metadata variable used to color the traces
-        # TODO : this is currently not working for some reson - coming back to it asap
+        # TODO : this is currently not working for some reason - coming back to it asap
         buttons_meta = [
             dict(
                 args=[
@@ -602,6 +653,19 @@ def plot_embedding(
         # number of unique tree_sets
         nUnique = len(Sets)
         for i, SetID in enumerate(Sets):
+            cmin = (
+                min(metadata[plot_meta])
+                - (max(metadata[plot_meta]) - min(metadata[plot_meta]))
+                / len(metadata[plot_meta])
+                * 50
+                if type(metadata[plot_meta].iloc[0]) in ("float", "int")
+                else 0
+            )
+            cmax = (
+                max(metadata[plot_meta])
+                if type(metadata[plot_meta].iloc[0]) in ("float", "int")
+                else 0
+            )
             idx = metadata["SET-ID"] == SetID
             fig.add_trace(
                 go.Scatter(
@@ -623,6 +687,8 @@ def plot_embedding(
                     marker=dict(
                         colorscale=metadata_colors[f"{plot_meta}_color_map"][i],
                         size=size[idx],
+                        cmin=cmin,
+                        cmax=cmax,
                         line=dict(
                             # color='MediumPurple',
                             width=2,
