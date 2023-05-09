@@ -1,8 +1,12 @@
 
  <h1> <font color='green'>P</font>hylogeny <font color='green'>E</font>mbedding  & <br>  <font color='green'>A</font>pproximate <font color='green'>R</font>epresentation </h1>
- <img src="logos/LOGO_PEAR.png" width="100" height="100" style='position:absolute; left:400px; top:-15px' >
+ <img src="https://github.com/AndreaRubbi/Pear-EBI/raw/pear_ebi/logos/LOGO_PEAR.png" width="100" height="100" style='position:absolute; left:400px; top:-15px' >
 
-## Goldman Group - European Bioinformatics Institute <img src="logos/goldman_logo.png" width="30" height="30">
+ <img src="https://img.shields.io/github/license/AndreaRubbi/Pear-EBI?color=red&label=License&style=plastic"> <img src="https://img.shields.io/pypi/v/pear_ebi?color=purple&label=version&style=plastic"> <img src="https://img.shields.io/pypi/implementation/pear_ebi?style=plastic"> <img src="https://img.shields.io/pypi/pyversions/pear_ebi?color=green&style=plastic">
+
+
+
+## Goldman Group - European Bioinformatics Institute <img src="https://github.com/AndreaRubbi/Pear-EBI/raw/pear_ebi/logos/goldman_logo.png" width="30" height="30">
 
 PEAR can:
 1. Compute the distance matrix given a set of phylogenetic trees;
