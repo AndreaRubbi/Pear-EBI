@@ -23,7 +23,7 @@ PEAR as a program
 Run `pear_ebi --help` to see the complete list of arguments and flags.
 ### Simple usage
 
-`pear_ebi examples_trees_sets/beast_trees/beast_run1.trees -m hashrf`
+`pear_ebi examples_trees_sets/beast_trees/beast_run1.trees -m hashrf_RF`
 
 this script calculates the unweighted <a href='https://doi.org/10.1016/0025-5564(81)90043-2'>Robison Foulds</a> distances between the trees in the file "beast_run1.trees", which contains 1001 phylogenetic trees.
 
@@ -31,21 +31,19 @@ the flag *-m* indicates the method used to compute the dissimilarity between phy
 
 To embed these distances in a lower-dimensional space, we can use PCoA (MDS) or tSNE:
 
-`pear_ebi examples_trees_sets/beast_trees/beast_run1.trees -m hashrf -pca 2`
+`pear_ebi examples_trees_sets/beast_trees/beast_run1.trees -m hashrf_RF -pca 2`
 
-we therefore embedded the distance matrix in 2 dimensions. Using the flag *-quality* one can assess the correlation between the distances in the N-dimensional space and in the embedding; while *-report* computes more insightful metrics such as the trustworthiness and continuity of the embedding.
+we therefore embedded the distance matrix in 2 dimensions. Using the flag *-quality* one can assess the correlation between the distances in the N-dimensional space and in the embedding.
 
-`pear_ebi examples_trees_sets/beast_trees/beast_run1.trees -m hashrf -pca 2 -plot --show`
+`pear_ebi examples_trees_sets/beast_trees/beast_run1.trees -m hashrf_RF -pca 2 -plot`
 
-The flags *-plot* and *--show* indicate that PEAR has to plot the embeddings and show them, respectively. *-plot* doesn't require any indication on the number of dimensions as it plots the embeddings in 2 dimensions if the distances are embedded in 2 dimensions, while it plots on 2 and 3 dimensions in any other case.
+The flag *-plot* indicates that PEAR has to plot the embeddings and show them, respectively. If an embedding method is specified the plots are produced anyway. Plotting doesn't require any indication on the number of dimensions as the embeddings are represented in 2 dimensions if the distances are embedded in 2 dimensions, while it plots on 2 and 3 dimensions in any other case.
 
-One can specify any number of files containing trees. Moreover, it is possible to specify a directory using *-dir*, and possibly a pattern using *-pattern*, in order to select multiple files.
-
-`pear_ebi examples_trees_sets/beast_trees/beast_run1.trees -subset 100` shows the 3D and 2D embedding of a subset of 100 trees from the original collection.
+One can specify any number of files containing trees. Moreover, it is possible to specify a single directory using *-dir*, and possibly a pattern using *-pattern*, in order to select multiple files.
 
 #### Tree Set
 
-It's possible to compute the distance matrix and re-use it in future runs of PEAR by specifying the distance matrix file with the flag *-d*. Additionally, it's possible to define the name of the output file (*-o*).
+It's possible to compute the distance matrix and re-use it in subsequent runs of PEAR by specifying the distance matrix file with the flag *-d*. Additionally, it's possible to define the name of the output file (*-o*).
 
 If any additional metadata is available, this may be specified by indicating a *.csv* file containing a dataframe of compatible shape.
 
@@ -59,12 +57,13 @@ Using the config file allows one to use all the features of PEAR, including addi
 this script launches the program in the interactive mode. Once the program starts, it is going to guide you through its usage thanks to an intuitive interface.
 
 
-### Additional Dependencies
-In order to get the complete report on the quality of embeddings, it may be necessary to run the following command to install additional dependencies:
+ {::comment} ### Additional Dependencies
+ In order to get the complete report on the quality of embeddings, it may be necessary to
+ run the following command to install additional dependencies:
 
-`sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev`
+ `sudo apt-get install '^libxcb.*-dev' libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev libxkbcommon-dev libxkbcommon-x11-dev`
 
-It may be necessary to also install `libgcc` and remove old versions of `libstdc++` from the interpreter libraries.
+ It may be necessary to also install `libgcc` and remove old versions of `libstdc++` from the interpreter libraries. {:/comment}
 ________________________
 
 ## Licensing

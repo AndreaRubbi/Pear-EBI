@@ -29,10 +29,11 @@ file6 = "Pear-EBI/examples_tree_sets/bootstrap_mammals/bootstrap_10409"
 #beast_run2 = [100, 200, 500] # beast_run2 is the file name (no extension) of one of the sets in the collection
 
 [distance] # specify the method used to compute the distances
+# available methods are: hashrf_RF, hashrf_wRF, smart_RF, tqdist_quartet, tqdist_triplet
 method = "hashrf"
 
 [embedding]
-method = "isomap" # embedding method
+method = "isomap" # embedding method between: pca, tsne, isomap, lle
 dimensions = 3 # number of dimensions
 quality = false # display quality | default is false
 
