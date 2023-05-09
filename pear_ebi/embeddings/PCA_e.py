@@ -23,7 +23,7 @@ def pca(distance_matrix, n_components, metadata=None, quality=False, report=Fals
     pca = PCA(n_components=n_components)
     components = pca.fit_transform(distance_matrix)
     total_var = pca.explained_variance_ratio_.sum() * 100
-    pd.DataFrame(components).to_csv("./PCA_Embedding.csv")
+    pd.DataFrame(components).to_csv("./PCA_Embedding.csv", header=False, index=False)
 
     if report:
         Xr = pca.inverse_transform(components)

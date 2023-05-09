@@ -22,7 +22,7 @@ def isomap(distance_matrix, n_components, metadata=None, quality=False, report=F
     """
     embedding = Isomap(n_components=n_components)
     components = embedding.fit_transform(distance_matrix)
-    pd.DataFrame(components).to_csv("./ISOMAP_Embedding.csv")
+    pd.DataFrame(components).to_csv("./ISOMAP_Embedding.csv", header=False, index=False)
 
     if report:
         Xr = None

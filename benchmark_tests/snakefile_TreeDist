@@ -1,0 +1,19 @@
+import itertools
+numbers = list(range(1000, 10001, 1000))
+couples = list(itertools.permutations(numbers, 2))
+N = [n[0]  for n in couples]
+M = [m[1] for m in couples]
+
+rule all:
+	input:
+		expand("random_{N}_trees_{M}_tips.out", N=N, M=M),
+
+rule TreeDist:
+	resources:
+		mem_mb=50000,
+		disk_mb=50000
+	input: "random_trees/random_{N}_trees_{M}_tips"
+	output: "random_{N}_trees_{M}_tips.out"
+	shell:
+		"module load r-4.1.1-gcc-9.3.0-jkdw35f && "
+		"Rscript TreeDist.R {input} {wildcards.N} > {output}"

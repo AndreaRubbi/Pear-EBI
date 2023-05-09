@@ -1,27 +1,42 @@
-__author__ = "Andrea Rubbi : andrea.rubbi.98@gmail.com"
-
 import os
-import re
 import sys
-from collections import defaultdict
-from glob import glob
-
-import numpy as np
-import pandas as pd
-import toml
-from rich import print
-
-import pear_ebi.tree_emb_parser
-from pear_ebi.calculate_distances import hashrf
-from pear_ebi.embeddings import PCA_e, tSNE_e
-from pear_ebi.interactive_mode import interactive
-from pear_ebi.tree_set import set_collection, tree_set
 
 
 def main():
+    __author__ = "Andrea Rubbi : andrea.rubbi.98@gmail.com"
+
+    import os
+    import re
+    import sys
+    from collections import defaultdict
+    from glob import glob
+
+    import numpy as np
+    import pandas as pd
+    import toml
+    from rich import print
+
+    # getting the name of the directory
+    current = os.path.dirname(os.path.realpath(__file__))
+
+    # Getting the parent directory name
+    parent = os.path.dirname(current)
+
+    # adding the parent directory to
+    # the sys.path.
+    sys.path.append(parent)
+
+    import pear_ebi.tree_emb_parser
+    from pear_ebi.calculate_distances import hashrf
+    from pear_ebi.embeddings import PCA_e, tSNE_e
+    from pear_ebi.interactive_mode import interactive
+    from pear_ebi.tree_set import set_collection, tree_set
+
     try:
         # Retrieves args from parser
         args = pear_ebi.tree_emb_parser.parser()
+
+        print(f"[blue]PEAR v{pear_ebi.__version__}")
 
         # ─── Interactive Mode ─────────────────────────────────────────────────
         if args.interactive_mode:
@@ -41,12 +56,21 @@ def main():
             output_file = args.output
             metadata = args.metadata
 
-            SET = set_collection(
-                collection=tree_set(file[0]),
-                output_file=output_file,
-                distance_matrix=distance_matrix,
-                metadata=metadata,
-            )
+            if len(file) == 1:
+                SET = tree_set(
+                    file[0],
+                    output_file=output_file,
+                    distance_matrix=distance_matrix,
+                    metadata=metadata,
+                )
+
+            else:
+                SET = set_collection(
+                    collection=file,
+                    output_file=output_file,
+                    distance_matrix=distance_matrix,
+                    metadata=metadata,
+                )
 
             # shows set specifics
             print("[bright_magenta]Your input:")
@@ -184,13 +208,22 @@ def main():
             metadata = args.metadata if args.metadata is not None else metadata
 
             # we can now define our set_collection
-            # (even if there's just one tree set)
-            SET = set_collection(
-                collection=list(map(lambda f: tree_set(f), files)),
-                output_file=output_file,
-                distance_matrix=distance_matrix,
-                metadata=metadata,
-            )
+            if len(files) == 1:
+                SET = tree_set(
+                    files[0],
+                    output_file=output_file,
+                    distance_matrix=distance_matrix,
+                    metadata=metadata,
+                )
+
+            else:
+                SET = set_collection(
+                    collection=list(map(lambda f: tree_set(f), files)),
+                    output_file=output_file,
+                    distance_matrix=distance_matrix,
+                    metadata=metadata,
+                )
+
             # shows set specifics
             print("[bright_magenta]Your input:")
             print(SET)
@@ -238,13 +271,14 @@ def main():
             if args.quality:
                 quality = True
 
-            if config["embedding"] is None:
-                report = args.report
-                if report:
-                    quality = True
-            if args.report:
-                quality = True
-                report = True
+            # if config["embedding"] is None:
+            #    report = args.report
+            #    if report:
+            #        quality = True
+            # if args.report:
+            #    quality = True
+            #    report = True
+            report = False
 
             if args.pca is not None:
                 method_embedding = "pca"
@@ -317,7 +351,7 @@ def main():
 
             # ─── Plot Embeddings ──────────────────────────────────────────
             if method_embedding is not None:
-                if args.plot or config["plot"] is not None:
+                if config["plot"] is not None:
                     config["plot"] = (
                         defaultdict(lambda: None, config["plot"])
                         if config["plot"] is not None
@@ -340,25 +374,22 @@ def main():
                         if config["plot"]["same_scale"] is not None
                         else False
                     )
-                    show_plot = (
-                        config["plot"]["show_plot"]
-                        if config["plot"]["show_plot"] is not None
+
+                    show = (
+                        config["plot"]["show"]
+                        if config["plot"]["show"] is not None
                         else False
                     )
 
-                    if not show_plot:
-                        if args.showplot:
-                            show_plot = True
-
                     if dimensions > 2:
-                        np = (
+                        name_plot = (
                             name_plot + "3D"
                             if name_plot is not None
                             else f"{method_embedding.upper()}_3D"
                         )
                         fig = SET.plot_3D(
                             method_embedding,
-                            name_plot=np,
+                            name_plot=name_plot,
                             plot_meta=plot_meta,
                             plot_set=plot_set,
                             select=select,
@@ -366,30 +397,56 @@ def main():
                             save=True,
                         )
 
-                        if show_plot:
+                        if show:
                             fig.show()
-                    np = (
+
+                    name_plot = (
                         name_plot + "2D"
                         if name_plot is not None
                         else f"{method_embedding.upper()}_2D"
                     )
                     fig = SET.plot_2D(
                         method_embedding,
-                        name_plot=np,
+                        name_plot=name_plot,
                         plot_meta=plot_meta,
                         plot_set=plot_set,
                         select=select,
                         same_scale=same_scale,
                         save=True,
                     )
-                    if show_plot:
+
+                    if show:
+                        fig.show()
+
+                else:
+                    if dimensions > 2:
+                        name_plot = f"{method_embedding.upper()}_3D"
+                        fig = SET.plot_3D(
+                            method_embedding,
+                            name_plot=name_plot,
+                            save=True,
+                        )
+
+                        if args.plot:
+                            fig.show()
+
+                        fig.show()
+                    name_plot = f"{method_embedding.upper()}_2D"
+                    fig = SET.plot_2D(
+                        method_embedding,
+                        name_plot=name_plot,
+                        save=True,
+                    )
+
+                    if args.plot:
                         fig.show()
 
             # ─── Get Subset ───────────────────────────────────────────────
-            if args.subset != None:
-                fig2, fig3 = SET.get_subset(args.subset)
-                fig2.show()
-                fig3.show()
+            # if args.subset != None:
+            #    fig2, fig3 = SET.get_subset(args.subset)
+            #    fig2.show()
+            #    fig3.show()
+
     except KeyboardInterrupt:
         print("[orange1]\n- Leaving PEAR -")
 

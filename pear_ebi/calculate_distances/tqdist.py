@@ -74,6 +74,14 @@ def quartet(file, n_trees, output_file):
 
     # Runs command
     bash_command(cmd)
+
+    with open("tqdist_err.txt", "r") as err_mess:
+        err = err_mess.read()
+        err_mess.close()
+        bash_command("rm tqdist_err.txt")
+        if len(err) > 0:
+            sys.exit(err)
+
     bash_command(
         f"tr -s \" \" < {output_file} | sed 's/\s/_/g' > ./tmp_file && cat ./tmp_file > {output_file} && rm ./tmp_file"
     )
@@ -90,10 +98,10 @@ def quartet(file, n_trees, output_file):
 
         distance_matrix_upper = distance_matrix.transpose()
         distance_matrix = pd.DataFrame(distance_matrix + distance_matrix_upper)
-        distance_matrix.to_csv(output_file)
-        return distance_matrix
+        distance_matrix.to_csv(output_file, header=False, index=False)
+        return distance_matrix.values
     except:
-        print("quartet failed! check errors in hashrf_err.txt")
+        sys.exit("quartet failed!")
 
 
 def triplet(file, n_trees, output_file):
@@ -117,6 +125,14 @@ def triplet(file, n_trees, output_file):
 
     # Runs command
     bash_command(cmd)
+
+    with open("tqdist_err.txt", "r") as err_mess:
+        err = err_mess.read()
+        err_mess.close()
+        bash_command("rm tqdist_err.txt")
+        if len(err) > 0:
+            sys.exit(err)
+
     bash_command(
         f"tr -s \" \" < {output_file} | sed 's/\s/_/g' > ./tmp_file && cat ./tmp_file > {output_file} && rm ./tmp_file"
     )
@@ -133,7 +149,7 @@ def triplet(file, n_trees, output_file):
 
         distance_matrix_upper = distance_matrix.transpose()
         distance_matrix = pd.DataFrame(distance_matrix + distance_matrix_upper)
-        distance_matrix.to_csv(output_file)
-        return distance_matrix
+        distance_matrix.to_csv(output_file, header=False, index=False)
+        return distance_matrix.values
     except:
-        print("triplet failed! check errors in hashrf_err.txt")
+        sys.exit("triplet failed!")
