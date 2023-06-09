@@ -70,12 +70,15 @@ def hashrf(file, n_trees, output_file):
     # Runs command
     bash_command(cmd)
 
-    with open("hashrf_err.txt", "r") as err_mess:
-        err = err_mess.read()
-        err_mess.close()
-        bash_command("rm hashrf_err.txt")
-        if len(err) > 0:
-            sys.exit(err)
+    try:
+        with open("hashrf_err.txt", "r") as err_mess:
+            err = err_mess.read()
+            err_mess.close()
+            bash_command("rm hashrf_err.txt")
+            if len(err) > 0:
+                sys.exit(err)
+    except:
+        pass
 
     # Reads output file and creates numpy array
     # which is used to create a pandas dataframe
@@ -114,12 +117,15 @@ def hashrf_weighted(file, n_trees, output_file):
     # Runs command
     bash_command(cmd)
 
-    with open("hashrf_err.txt", "r") as err_mess:
-        err = err_mess.read()
-        err_mess.close()
-        bash_command("rm hashrf_err.txt")
-        if len(err) > 0:
-            sys.exit(err)
+    try:
+        with open("hashrf_err.txt", "r") as err_mess:
+            err = err_mess.read()
+            err_mess.close()
+            bash_command("rm hashrf_err.txt")
+            if len(err) > 0:
+                sys.exit(err)
+    except:
+        pass
 
     bash_command(
         f"tr -s \" \" < {output_file} | sed 's/^[ \t]*//' > ./tmp_file && cat ./tmp_file > {output_file} && rm ./tmp_file"
