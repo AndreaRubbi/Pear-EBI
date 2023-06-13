@@ -1,0 +1,6 @@
+### Examples and Data
+Pear_EX notebook guides you through the examples produced in the PEAR article and the main functionalities of the library.
+beat_trees contains the trees produced with BEAST
+MAPLE_res contains the results obtained from the MAPLE runs.
+bootstrap_mammals contains the results from RAxML.
+DATA.tar.gz contains some of the original files used to get these results.

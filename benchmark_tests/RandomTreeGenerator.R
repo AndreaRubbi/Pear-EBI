@@ -1,5 +1,5 @@
-library("ape", lib.loc="path/to/libloc")
-setwd("random_trees")
+library("ape", lib.loc="path/to/lib")
+setwd("trees/")
 
 args = commandArgs(trailingOnly=TRUE)
 
@@ -10,7 +10,7 @@ for (idx in 1:length(num_trees_list)){
 for (jdx in 1:length(num_tips_list)){
 num_trees = num_trees_list[idx]
 num_tips = num_tips_list[jdx]
-file_name = paste0("random_",toString(num_trees),"_trees_",toString(num_tips),"_tips")
+file_name = paste0("random_",toString(num_trees),"_trees_",toString(num_tips),"_tips.txt")
 
 start_time<-Sys.time()
 tree<-rmtree(num_trees, num_tips)

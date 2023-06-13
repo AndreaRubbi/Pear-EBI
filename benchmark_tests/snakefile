@@ -1,0 +1,48 @@
+import itertools
+numbers = list(range(1000, 9001, 1000))
+couples = list(itertools.permutations(numbers, 2))
+N = [n[0]  for n in couples]
+M = [m[1] for m in couples]
+methods = ['pear_ebi', 'tree_space', 'tree_dist']
+
+rule all:
+	input:
+		expand("trees/random_{N}_trees_{M}_tips.txt", N=N, M=M),
+		expand("random_{N}_trees_{M}_tips_{method}.out", N=N, M=M, method=methods)
+
+rule random_tree:
+	resources:
+		mem_mb=100000,
+		disk_mb=100000
+	output: "trees/random_{N}_trees_{M}_tips.txt"
+	shell:
+		"module load r-4.0.3-gcc-9.3.0-4l6eluj && "
+		"Rscript gen_tree.R {wildcards.N} {wildcards.M}"
+
+rule PEAR:
+	resources:
+		mem_mb=50000,
+		disk_mb=50000
+	input: "trees/random_{N}_trees_{M}_tips.txt"
+	output: "random_{N}_trees_{M}_tips_pear_ebi.out"
+	shell: "python PE.py {input} > {output}"
+
+rule TreeDist:
+	resources:
+		mem_mb=50000,
+		disk_mb=50000
+	input: "trees/random_{N}_trees_{M}_tips.txt"
+	output: "random_{N}_trees_{M}_tips_tree_dist.out"
+	shell:
+		"module load r-4.1.1-gcc-9.3.0-jkdw35f && "
+		"Rscript TreeDist.R {input} {wildcards.N} > {output}"
+
+rule TreeSpace:
+	resources:
+		mem_mb=50000,
+		disk_mb=50000
+	input: "trees/random_{N}_trees_{M}_tips.txt"
+	output: "random_{N}_trees_{M}_tips_tree_space.out"
+	shell:
+		"module load r-4.1.1-gcc-9.3.0-jkdw35f && "
+		"Rscript TreeSpace.R {input} {wildcards.N} > {output}"

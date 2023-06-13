@@ -1,0 +1,8 @@
+### Benchmarking with Snakemake
+we used snakemake to define the following pipeline:
+    - 1. Random tree set generation with N trees and M tips;
+    - 2. Analysis with Pear;
+    - 3. Analysis with TreeDist;
+    - 4. Analysis with TreeSpace.
+
+Snakemake submits the jobs on available cores, and the workload manager of the hpc autogenerates reports for space and time usage.

@@ -40,7 +40,7 @@ def exit_program():
 
 
 def calculate_distances(SET):
-    methods = ["hashrf", "hashrf_weighted", "days_RF", "quartet", "triplet"]
+    methods = ["hashrf_RF", "hashrf_wRF", "days_RF", "tqdist_quartet", "tqdist_triplet"]
     while True:
         try:
             method = int(
