@@ -12,9 +12,8 @@ def parser():
     parser = argparse.ArgumentParser(
         prog="PEAR",
         description=f"PEAR-EBI v{pear_ebi.__version__} | \
-        Phylogeny Embedding and Approximate Representation \n \
-        Calculates Robison-Foulds distances between large set of trees",
-        epilog="Author: Andrea Rubbi - Goldman Group | European Bioinformatics Institute",
+        Phylogeny Embedding and Approximate Representation",
+        epilog="Author: Andrea Rubbi & others - Goldman Group | EMBL-European Bioinformatics Institute",
     )
 
     """parser.add_argument(
@@ -29,7 +28,7 @@ def parser():
         type=str,
         dest="input",
         metavar="input",
-        help="input file : tree set in newic format",
+        help="input file : one or more tree sets in Newick format",
         nargs="*",  # "?",
     )
     parser.add_argument(
@@ -41,8 +40,8 @@ def parser():
         required=False,
     )
     parser.add_argument(
-        "--interactive",
         "-i",
+        "--interactive",
         dest="interactive_mode",
         help="run the program in interactive mode - only the input file, distance matrix, output file, and metadata arguments will be considered",
         required=False,
@@ -76,20 +75,22 @@ def parser():
     parser.add_argument(
         "--pcoa",
         dest="pcoa",
+        metavar="N",
         type=int,
-        help="embedding using PCoA: select number of components (int) to be calculated",
+        help="embedding using PCoA: specify number of coordinate dimensions N (int) to be calculated",
         required=False,
     )
     parser.add_argument(
         "--tsne",
         dest="tsne",
+        metavar="N",
         type=int,
-        help="embedding using t-SNE: select number of components (int) to be calculated",
+        help="embedding using t-SNE: specify number of coordinate dimensions N (int) to be calculated",
         required=False,
     )
     parser.add_argument(
-        "--plot",
         "-p",
+        "--plot",
         dest="plot",
         action="store_true",
         help="plot embedding in 2 or 3 dimensions",
@@ -105,8 +106,8 @@ def parser():
         required=False,
     )"""
     parser.add_argument(
-        "--config",
         "-c",
+        "--config",
         dest="config",
         type=str,
         help="toml config file",
@@ -121,11 +122,11 @@ def parser():
         required=False,
     )"""
     parser.add_argument(
-        "--quality",
         "-q",
+        "--quality",
         action="store_true",
         dest="quality",
-        help="asess quality of embedding",
+        help="assess quality of embedding",
         required=False,
     )
     parser.add_argument(

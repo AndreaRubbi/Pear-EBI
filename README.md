@@ -20,7 +20,7 @@ Pear is both a python software and library. It can be installed with `python -m 
 
 PEAR as a python library
 ------------------------
-Once installed, Pear can be used to upload newick trees in python and represent them in embedded spaces. We recommend to use it on either jupyter notebook or lab, as these tools allow for more interaction with the graphs. On these platforms, the user is allowed to interact with widgets that allows to modify several parameteres of the plots. For specific uses and applications, see the <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_tree_sets'>examples</a>.
+Once installed, Pear can be used to upload Newick trees in python and represent them in embedded spaces. We recommend to use it on either jupyter notebook or lab, as these tools allow for more interaction with the graphs. On these platforms, the user is allowed to interact with widgets that allows to modify several parameteres of the plots. For specific uses and applications, see the <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_tree_sets'>examples</a>.
 
 PEAR as a program
 -----------------
@@ -29,9 +29,9 @@ Run `pear_ebi --help` to see the complete list of arguments and flags.
 
 `pear_ebi examples_tree_sets/beast_trees/beast_run1.trees -m hashrf_RF`
 
-this script calculates the unweighted <a href='https://doi.org/10.1016/0025-5564(81)90043-2'>Robison Foulds</a> distances between the trees in the file "beast_run1.trees", which contains 1001 phylogenetic trees.
+this script calculates the unweighted <a href='https://doi.org/10.1016/0025-5564(81)90043-2'>Robinson Foulds</a> distances between the trees in the file "beast_run1.trees", which contains 1001 phylogenetic trees.
 
-the flag *-m* indicates the method used to compute the dissimilarity between phylogeneic trees. In this case, [HasRF](https://code.google.com/archive/p/hashrf/) has been used.
+the flag *-m* indicates the method used to compute the dissimilarity between phylogeneic trees. In this case, [HashRF](https://code.google.com/archive/p/hashrf/) has been used.
 
 To embed these distances in a lower-dimensional space, we can use PCoA (MDS) or tSNE:
 
@@ -43,7 +43,7 @@ we therefore embedded the distance matrix in 2 dimensions. Using the flag *-qual
 
 The flag *-plot* indicates that PEAR has to plot the embeddings and show them, respectively. If an embedding method is specified the plots are produced anyway. Plotting doesn't require any indication on the number of dimensions as the embeddings are represented in 2 dimensions if the distances are embedded in 2 dimensions, while it plots on 2 and 3 dimensions in any other case.
 
-One can specify any number of files containing trees. Moreover, it is possible to specify a single directory using *-dir*, and possibly a pattern using *-pattern*, in order to select multiple files.
+One can specify any number of files containing trees. Moreover, it is possible to specify a single directory using *--dir*, and possibly a pattern using *--pattern*, in order to select multiple files.
 
 #### Tree Set
 

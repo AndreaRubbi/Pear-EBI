@@ -11,7 +11,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from ipywidgets import widgets
-from pylab import cm
 
 random.seed(123)
 np.random.seed(123)
@@ -297,7 +296,7 @@ def plot_embedding(
             max_value = np.max(elements)
 
             norm = mcolors.Normalize(vmin=min_value, vmax=max_value)
-            scalar_map = cm.ScalarMappable(norm=norm, cmap=cmap)
+            scalar_map = plt.cm.ScalarMappable(norm=norm, cmap=cmap)
 
             if same_scale:
                 for i, elem in enumerate(metadata[meta]):

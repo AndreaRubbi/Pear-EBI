@@ -4,7 +4,7 @@ __credits__ = {
     "Myrthe Willemsen": "Freie Universitat Berlin",
 }
 """ maple_RF is the adapted version of the implementation of the Day's algorithm
-	for the Robison Foulds computation originally designed by Nicola de Maio for MAPLE.
+	for the Robinson Foulds computation originally designed by Nicola de Maio for MAPLE.
 	Further improvements thanks to Myrthe's work made the implementation more flexible.
 	MAPLE code is available on GitHub: https://github.com/NicolaDM/MAPLE"""
 
@@ -330,7 +330,7 @@ def prepareTreeComparison(t1, rooted=False, minimumBLen=0.000006):
 # Example usage: leafNameDict, nodeTable, leafCount, numBranches = prepareTreeComparison(phyloTrue,rooted=False)
 # numDiffs, normalisedRF, leafCount, foundBranches, missedBranches, notFoundBranches = RobinsonFouldsWithDay1985(phyloEstimated,leafNameDict,nodeTable,leafCount,numBranches,rooted=False)
 def RobinsonFouldsWithDay1985(t2, t1, rooted=False, minimumBLen=0.000006):
-    """Computes Robison Foulds distances using Day's algorithm
+    """Computes Robinson Foulds distances using Day's algorithm
 
     Args:
         t2 (string): newick tree to be compared to t1
@@ -544,7 +544,7 @@ def calculate_distance_matrix(file, n_trees, output_file):
 
             distance_matrix = np.zeros((n_trees, n_trees))
             for i, tree in enumerate(trees):
-                # status.update(f"[bold red]{i+1}/{len(trees)} [bold blue]Computing Robison Foulds distances...")
+                # status.update(f"[bold red]{i+1}/{len(trees)} [bold blue]Computing Robinson Foulds distances...")
                 inputTree = trees[i : i + 1]
                 inputRFtrees = trees[i + 1 :]
                 tree1 = readNewick(inputTree)[0]
@@ -561,7 +561,7 @@ def calculate_distance_matrix(file, n_trees, output_file):
     else:
         distance_matrix = np.zeros((n_trees, n_trees))
         for i, tree in enumerate(trees):
-            # status.update(f"[bold red]{i+1}/{len(trees)} [bold blue]Computing Robison Foulds distances...")
+            # status.update(f"[bold red]{i+1}/{len(trees)} [bold blue]Computing Robinson Foulds distances...")
             inputTree = trees[i : i + 1]
             inputRFtrees = trees[i + 1 :]
             tree1 = readNewick(inputTree)[0]
