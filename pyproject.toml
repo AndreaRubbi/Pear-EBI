@@ -2,17 +2,24 @@
 profile = "black"
 [tool.black]
 line-length = 90
-include = '\\.pyi?$'
+include = '\.pyi?$'
 exclude = '''
 /(
-    \\.git
-  | \\.hg
-  | \\.mypy_cache
-  | \\.tox
-  | \\.venv
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
   | _build
   | buck-out
   | build
   | dist
 )/
 '''
+
+[build-system]
+requires = [
+  "setuptools>=61",
+  "wheel"
+]
+build-backend = "setuptools.build_meta"

@@ -1,13 +1,11 @@
 [trees]
 file1 = "../MAPLE_res/IQtreeStartingTree_Trees"
-file2 = "../MAPLE_res/MapleStartingTree_Trees"
-file3 = "../MAPLE_res/ParsimonyRAxMLStartingTree_GTRmodel_Trees"
-file4 = "../MAPLE_res/RAxMLNGStartingTree_Trees"
-file5 = "../MAPLE_res/UshERStartingTree_Trees"
-file6 = "../MAPLE_res/TrueTreeSimulations"
+file2 = "../MAPLE_res/ParsimonyRAxMLStartingTree_GTRmodel_Trees"
+file3 = "../MAPLE_res/RAxMLNGStartingTree_Trees"
+file4 = "../MAPLE_res/UshERStartingTree_Trees"
 
 [collection]
-distance_matrix = "../MAPLE_res/DistMat_Maple.csv"
+distance_matrix = "../MAPLE_res/smart_RF_DistMat_Maple.csv"
 metadata = "../MAPLE_res/Likelihoods.csv"
 
 [embedding]
@@ -20,6 +18,3 @@ z_axis = "LK"
 select = false
 same_scale = true
 show = true
-
-[highlight]
-trace6=[0]
