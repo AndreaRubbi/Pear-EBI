@@ -1,0 +1,3 @@
+HashRF is a tool for calculating the Robinson-Foulds distance between binary
+trees (i.e. the number of splits present in the one tree but not the
+other).

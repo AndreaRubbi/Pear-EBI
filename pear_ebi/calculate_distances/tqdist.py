@@ -49,6 +49,29 @@ def bash_command(cmd):
     return 0
 
 
+def _bin_dir():
+    """Return the directory containing packaged tqDist binaries for this platform.
+    Uses linux_bin or mac_bin under calculate_distances.
+    """
+    try:
+        here = os.path.dirname(os.path.abspath(__file__))
+    except Exception:
+        here = "."
+
+    if sys.platform.startswith("linux"):
+        cand = os.path.join(here, "linux_bin", "tqDist")
+    elif sys.platform == "darwin":
+        cand = os.path.join(here, "mac_bin", "tqDist")
+    else:
+        cand = None
+
+    if cand is not None and os.path.isdir(cand):
+        return cand
+
+    # Fallback to original directory layout
+    return os.path.join(here, "tqDist", "bin")
+
+
 def _run_process(cmd_list, *, capture_stdout=False):
     """Run external command and return (returncode, stdout, stderr).
 
@@ -92,12 +115,11 @@ def quartet(file, n_trees, output_file):
     Returns:
         distance_matrix (pandas.DataFrame): computed distance matrix
     """
-    try:
-        path = os.path.dirname(os.path.abspath(__file__))
-    except:
-        path = "."
-
-    pkg_bin = os.path.join(path, "tqDist", "bin", "all_pairs_quartet_dist")
+    bin_dir = _bin_dir()
+    # Support two possible layouts: binaries directly under tqDist/ or under tqDist/bin/
+    candidate1 = os.path.join(bin_dir, "all_pairs_quartet_dist")
+    candidate2 = os.path.join(bin_dir, "bin", "all_pairs_quartet_dist")
+    pkg_bin = candidate1 if os.path.exists(candidate1) else candidate2
     system_bin = shutil.which("all_pairs_quartet_dist")
 
     if system_bin:
@@ -174,12 +196,10 @@ def triplet(file, n_trees, output_file):
     Returns:
         distance_matrix (pandas.DataFrame): computed distance matrix
     """
-    try:
-        path = os.path.dirname(__file__)
-    except:
-        path = "."
-
-    pkg_bin = os.path.join(path, "tqDist", "bin", "all_pairs_triplet_dist")
+    bin_dir = _bin_dir()
+    candidate1 = os.path.join(bin_dir, "all_pairs_triplet_dist")
+    candidate2 = os.path.join(bin_dir, "bin", "all_pairs_triplet_dist")
+    pkg_bin = candidate1 if os.path.exists(candidate1) else candidate2
     system_bin = shutil.which("all_pairs_triplet_dist")
 
     if system_bin:

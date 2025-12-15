@@ -9,80 +9,25 @@ import shutil
 
 
 def build_native_tools(package_root: str):
-    """Attempt to build native tools (HashRF, tqDist) in the package during
-    the build step. This runs `make` in HashRF and runs CMake/make in tqDist if
-    available. If these tools are not available the commands will raise and the
-    build will fail (which is appropriate when a platform-native binary must be
-    compiled).
-
-    Args:
-        package_root: path to package directory containing `calculate_distances`.
     """
-    cd = os.getcwd()
-    try:
-        calc_dir = os.path.join(package_root, "calculate_distances")
-
-        # Build HashRF (has a Makefile)
-        hashrf_dir = os.path.join(calc_dir, "HashRF")
-        if os.path.exists(hashrf_dir):
-            print(f"Building native HashRF in {hashrf_dir}")
-            # run make; allow parallelism
-            try:
-                subprocess.run(["make", "-C", hashrf_dir], check=True)
-            except subprocess.CalledProcessError as e:
-                print(
-                    "Warning: Failed to build HashRF. Ensure build tools (make, gcc/clang) are installed if you need the HashRF executable."
-                )
-                # continue without raising; wheel can still be built and include sources
-
-        # Build tqDist (uses CMake)
-        tq_dir = os.path.join(calc_dir, "tqDist")
-        if os.path.exists(tq_dir):
-            print(f"Building native tqDist in {tq_dir}")
-            # Prefer using the package helper if available for a clearer
-            # cross-platform build flow and better error messages.
-            try:
-                # Import from source tree; this is safe during sdist/wheel builds
-                import pear_ebi._install_helpers as _ih
-
-                ok, message = _ih.build_tqdist(package_root)
-                if ok:
-                    print("tqDist build succeeded:", message)
-                else:
-                    print("tqDist build helper reported failure:", message)
-                    # fall back to the legacy steps below
-                    raise RuntimeError(message)
-            except Exception:
-                # Legacy fallback: try to configure/build with cmake or make.
-                build_subdir = os.path.join(tq_dir, "build")
-                os.makedirs(build_subdir, exist_ok=True)
-                # prefer cmake if available
-                cmake = shutil.which("cmake")
-                if cmake:
+    Ensure all binaries in linux_bin/HashRF, linux_bin/tqDist, mac_bin/HashRF, mac_bin/tqDist are executable.
+    This is the only install-time action; no moving or copying is performed.
+    """
+    for folder in [
+        os.path.join(package_root, "calculate_distances", "linux_bin", "HashRF"),
+        os.path.join(package_root, "calculate_distances", "linux_bin", "tqDist"),
+        os.path.join(package_root, "calculate_distances", "mac_bin", "HashRF"),
+        os.path.join(package_root, "calculate_distances", "mac_bin", "tqDist"),
+    ]:
+        if os.path.isdir(folder):
+            for root, dirs, files in os.walk(folder):
+                for fname in files:
+                    fpath = os.path.join(root, fname)
                     try:
-                        subprocess.run([cmake, ".."], cwd=build_subdir, check=True)
-                        subprocess.run(["cmake", "--build", "."], cwd=build_subdir, check=True)
-                    except subprocess.CalledProcessError:
-                        print("Warning: CMake build for tqDist failed. Will try plain make as fallback.")
-                        try:
-                            subprocess.run(["make", "-C", tq_dir], check=True)
-                        except subprocess.CalledProcessError:
-                            print(
-                                "Warning: Failed to build tqDist. Install CMake or make and a C++ compiler if you need the tqDist executables."
-                            )
-                            # continue without raising
-                else:
-                    # fallback to running make in tqDist
-                    try:
-                        subprocess.run(["make", "-C", tq_dir], check=True)
-                    except subprocess.CalledProcessError:
-                        print(
-                            "Warning: Failed to build tqDist (no cmake available). Install cmake or make + compiler if you need the tqDist executables."
-                        )
-                        # continue without raising
+                        os.chmod(fpath, 0o755)
+                    except Exception as e:
+                        print(f"Warning: could not set executable permission for {fpath}: {e}")
 
-    finally:
-        os.chdir(cd)
 
 
 class build_py(_build_py):
@@ -104,7 +49,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="pear_ebi",
-    version="1.0.1.5",
+    version="1.0.1.6",
     license="MIT License",
     description="Embeds phylogenetic tree distances and produce representations",
     long_description=long_description,
@@ -124,6 +69,10 @@ setup(
             "calculate_distances/HashRF/*/*",
             "calculate_distances/tqDist/*",
             "calculate_distances/tqDist/*/*",
+            "calculate_distances/linux_bin/*",
+            "calculate_distances/linux_bin/*/*",
+            "calculate_distances/mac_bin/*",
+            "calculate_distances/mac_bin/*/*",
         ]
     },
     cmdclass={

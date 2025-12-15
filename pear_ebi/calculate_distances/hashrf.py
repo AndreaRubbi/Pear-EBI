@@ -48,6 +48,29 @@ def bash_command(cmd):
     return 0
 
 
+def _bin_dir():
+    """Return the directory containing the packaged hashrf binary for this platform.
+    Uses linux_bin or mac_bin under calculate_distances.
+    """
+    try:
+        here = os.path.dirname(os.path.abspath(__file__))
+    except Exception:
+        here = "."
+
+    if sys.platform.startswith("linux"):
+        cand = os.path.join(here, "linux_bin", "HashRF")
+    elif sys.platform == "darwin":
+        cand = os.path.join(here, "mac_bin", "HashRF")
+    else:
+        cand = None
+
+    if cand is not None and os.path.isdir(cand):
+        return cand
+
+    # Fallback to the original HashRF directory inside the package
+    return os.path.join(here, "HashRF")
+
+
 def _parse_hashrf_stdout(text, n_trees, output_file):
     """Attempt to extract the RF matrix from hashrf stdout text.
 
@@ -150,12 +173,9 @@ def hashrf(file, n_trees, output_file):
 
     # Prefer a system-wide `hashrf` if present (user may have built it).
     system_bin = shutil.which("hashrf")
-    try:
-        path = os.path.dirname(os.path.abspath(__file__))
-    except Exception:
-        path = "."
 
-    packaged_bin = os.path.join(path, "HashRF", "hashrf")
+    bin_dir = _bin_dir()
+    packaged_bin = os.path.join(bin_dir, "hashrf")
 
     # If packaged binary exists, make sure it's executable
     if os.path.exists(packaged_bin) and not os.access(packaged_bin, os.X_OK):
@@ -283,12 +303,9 @@ def hashrf_weighted(file, n_trees, output_file):
     """
     # Prefer a system-wide `hashrf` if present.
     system_bin = shutil.which("hashrf")
-    try:
-        path = os.path.dirname(os.path.abspath(__file__))
-    except Exception:
-        path = "."
 
-    packaged_bin = os.path.join(path, "HashRF", "hashrf")
+    bin_dir = _bin_dir()
+    packaged_bin = os.path.join(bin_dir, "hashrf")
     if os.path.exists(packaged_bin) and not os.access(packaged_bin, os.X_OK):
         try:
             os.chmod(packaged_bin, os.stat(packaged_bin).st_mode | 0o111)

@@ -1,0 +1,87 @@
+################## Content ##################
+
+# Build procedure
+# Getting started
+# Executables
+### triplet_distance
+### quartet_distance
+### all_pairs_triplet_distance
+### all_pairt_quartet_distance
+# Newick format
+# Contact
+
+############### Build procedure: ###############
+
+To build and install the library, unzip the directory and execute the
+following commands in a terminal:
+
+$ cd <path to library>/tq-1.0.1/
+tqDist-1.0.0 $ cmake .
+tqDist-1.0.0 $ make
+tqDist-1.0.0 $ make test
+tqDist-1.0.0 $ make install
+
+################ Executables ###################
+
+## triplet_distance
+
+Usage: bin/triplet_dist <filename1> <filename2>
+
+Where <filename1> and <filename2> point to two files each containing one
+tree in Newick format. In both trees all leaves should be labeled and the
+two trees should have the same set of leaf labels.
+The triplet distance between the two trees will be printed to stdout.
+
+## quartet_distance
+
+Usage: bin/quartet_dist <filename1> <filename2>
+
+Where: <filename1> and <filename2> point to two files each containing
+one tree in Newick format. In both trees all leaves should be labeled
+and the two trees should have the same set of leaf labels.
+The quartet distance between the two trees will be printed to stdout.
+
+## all_pairs_triplet_distance
+
+Usage: bin/all_pairs_triplet_dist <input filename> [output filename]
+
+Where:
+	<input filename> is the name of a file containing multiple trees in
+	Newick format. Each tree should be on a seperate line. In each tree
+	all leaves should be labeled and all trees should have the same set
+	of leaf labels.
+	If [output filename] is specified the output is written to the file
+	pointed to (if the file already exists the current content is deleted
+	first), otherwise the output is written to stdout.
+	The output is a lower triangular matrix in which the i, j'th entry
+	is the pairwise triplet distance between the tree on line i and the
+	tree on line j in <input filename>.
+
+## all_pairs_quartet_distance
+
+Usage: bin/all_pairs_quartet_dist <input filename> [output filename]
+
+Where:
+	<input filename> is the name of a file containing multiple trees in
+	Newick format. Each tree should be on a seperate line. In each tree
+	all leaves should be labeled and all trees should have the same set
+	of leaf labels.
+	If [output filename] is specified the output is written to the file
+	pointed to (if the file already exists the current content is deleted
+	first), otherwise the output is written to stdout.
+	The output is a lower triangular matrix in which the i, j'th entry
+	is the pairwise quartet distance between the tree on line i and the
+	tree on line j in <input filename>.
+
+################ Newick format: ################
+
+For details on how to encode trees in Newick format see
+
+    http://en.wikipedia.org/wiki/Newick_format
+
+################## Contact #####################
+
+If you encounter any problems or have questions about using this
+software, please contact
+
+	  Christian N. S. Pedersen : cstorm@birc.au.dk.
