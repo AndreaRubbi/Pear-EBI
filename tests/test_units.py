@@ -172,6 +172,41 @@ class TestMainInProcess(unittest.TestCase):
         self.assertIn(code, (0, None))
         self.assertIn("tqdist_quartet", output)
 
+    def test_highlight_with_a_single_file(self):
+        """A single [trees] file makes a tree_set, which has no .data attribute, so
+        this documented feature used to die with AttributeError."""
+        with open("h.toml", "w") as fh:
+            fh.write('[trees]\nfile1 = "twelve_trees.nwk"\n\n'
+                     '[distance]\nmethod = "hashrf_RF"\n\n'
+                     '[embedding]\nmethod = "pcoa"\ndimensions = 2\n\n'
+                     '[highlight]\ntrace1 = [0, 5]\n')
+        code, output = self.main("--config", "h.toml")
+        self.assertIn(code, (0, None), output[-800:])
+        self.assertIn("2 highlighted", output)
+
+    def test_highlight_with_a_collection(self):
+        shutil.copy("twelve_trees.nwk", "second.nwk")
+        with open("h2.toml", "w") as fh:
+            fh.write('[trees]\nfile1 = "twelve_trees.nwk"\nfile2 = "second.nwk"\n\n'
+                     '[distance]\nmethod = "hashrf_RF"\n\n'
+                     '[embedding]\nmethod = "pcoa"\ndimensions = 2\n\n'
+                     '[highlight]\ntrace1 = [0, 5]\ntrace2 = [1]\n')
+        code, output = self.main("--config", "h2.toml")
+        self.assertIn(code, (0, None), output[-800:])
+        self.assertIn("highlighted", output)
+
+    def test_highlight_indices_outside_the_range_are_ignored(self):
+        """template_pear.toml ships trace1 = [0, 1001] for a 1001-tree set, where the
+        valid range is 0-1000."""
+        with open("h3.toml", "w") as fh:
+            fh.write('[trees]\nfile1 = "twelve_trees.nwk"\n\n'
+                     '[distance]\nmethod = "hashrf_RF"\n\n'
+                     '[embedding]\nmethod = "pcoa"\ndimensions = 2\n\n'
+                     '[highlight]\ntrace1 = [0, 9999]\n')
+        code, output = self.main("--config", "h3.toml")
+        self.assertIn(code, (0, None), output[-800:])
+        self.assertIn("1 highlighted", output)
+
     def test_embedding_run(self):
         code, output = self.main("twelve_trees.nwk", "-m", "hashrf_RF", "--pcoa", "2")
         self.assertIn(code, (0, None))

@@ -102,6 +102,17 @@ Follow <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_t
  It may be necessary to also install `libgcc` and remove old versions of `libstdc++` from the interpreter libraries. --->
 ________________________
 
+## How to cite
+
+If you use PEAR in published work, please cite the software. `CITATION.cff` in the
+repository root carries the metadata, and GitHub turns it into a formatted citation
+via the "Cite this repository" button.
+
+The tutorials refer to an associated manuscript in several places. There is no DOI or
+preprint reference in this repository yet, so `CITATION.cff` currently describes the
+software only; once the paper is available it should gain a `preferred-citation` entry
+so that citing PEAR cites the paper.
+
 ## Licensing
 
 This project is released under the terms of the MIT Open Source License. View

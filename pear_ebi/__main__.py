@@ -358,6 +358,20 @@ def main():
 
                 highlight = []
 
+                # SET.data only exists on set_collection. A config naming a single
+                # [trees] file produces a tree_set, so this whole block used to die
+                # with "'tree_set' object has no attribute 'data'" -- a documented
+                # feature (see template_pear.toml) that crashed on the single-file
+                # case. Build the same {name: {"n_trees": n}} shape either way.
+                if hasattr(SET, "data"):
+                    set_sizes = {
+                        name: info["n_trees"] for name, info in SET.data.items()
+                    }
+                else:
+                    set_sizes = {
+                        os.path.splitext(os.path.basename(SET.file))[0]: SET.n_trees
+                    }
+
                 # Helper to normalize index containers to list of ints
                 def _to_int_list(v):
                     if v is None:
@@ -372,8 +386,7 @@ def main():
                 # Case A: global list -> apply to every set
                 if isinstance(raw_highlight, (list, tuple)):
                     global_idxs = _to_int_list(raw_highlight)
-                    for set_trees in SET.data.keys():
-                        n = SET.data[set_trees]["n_trees"]
+                    for set_trees, n in set_sizes.items():
                         values = [0] * n
                         for idx in global_idxs:
                             if 0 <= idx < n:
@@ -383,8 +396,7 @@ def main():
                 else:
                     # Treat as mapping; wrap into defaultdict-like behaviour
                     config["highlight"] = defaultdict(lambda: None, raw_highlight)
-                    for set_trees in SET.data.keys():
-                        n = SET.data[set_trees]["n_trees"]
+                    for set_trees, n in set_sizes.items():
                         values = [0] * n
                         # Direct key by set name
                         if config["highlight"][set_trees] is not None:

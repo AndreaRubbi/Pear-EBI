@@ -1,0 +1,51 @@
+# Citation metadata for the PEAR-EBI software.
+#
+# GitHub renders a "Cite this repository" button from this file. The documentation
+# refers to an associated manuscript in five places without ever citing it, and no
+# DOI, preprint or journal reference exists anywhere in the repository, so this file
+# describes the *software* only.
+#
+# TO DO (needs the maintainer): once the paper is available, add a
+# `preferred-citation:` block so that citing the repository cites the paper. The
+# author list below was taken from __credits__ in pear_ebi/__init__.py and its order
+# and completeness should be confirmed; ORCIDs are omitted rather than guessed.
+#
+#   preferred-citation:
+#     type: article
+#     title: "..."
+#     authors: [...]
+#     journal: "..."
+#     year: ...
+#     doi: "..."
+
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "PEAR: Phylogeny Embedding and Approximate Representation"
+abstract: >-
+  PEAR computes pairwise distances between phylogenetic trees and embeds them in a
+  low-dimensional space for visualisation, using Robinson-Foulds, quartet and triplet
+  distances together with PCoA, t-SNE, Isomap and locally linear embedding.
+type: software
+license: MIT
+version: 1.0.1.6
+repository-code: "https://github.com/AndreaRubbi/Pear-EBI"
+url: "https://andrearubbi.github.io/Pear-EBI/"
+keywords:
+  - phylogenetics
+  - phylogenetic trees
+  - tree distances
+  - Robinson-Foulds
+  - dimensionality reduction
+authors:
+  - family-names: Rubbi
+    given-names: Andrea
+    affiliation: "EMBL-European Bioinformatics Institute"
+  - family-names: Weilguny
+    given-names: Lukas
+    affiliation: "EMBL-European Bioinformatics Institute"
+  - family-names: Goldman
+    given-names: Nick
+    affiliation: "EMBL-European Bioinformatics Institute"
+  - family-names: De Maio
+    given-names: Nicola
+    affiliation: "EMBL-European Bioinformatics Institute"
