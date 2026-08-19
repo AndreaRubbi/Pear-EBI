@@ -15,3 +15,10 @@ __pycache__/
 #.gitignore
 #setup.cfg
 #setup.py
+
+# Graphify knowledge graph — regenerable, kept out of git deliberately
+# (upstream suggests committing graphify-out/, but this repo's .git is already ~533 MB).
+# NOTE: must be "graphify-out/", never "graph*" — pear_ebi/embeddings/graph/ is real source.
+graphify-out/
+.graphify/
+
