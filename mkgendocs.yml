@@ -1,7 +1,6 @@
 sources_dir: docs
-templates_dir: docs/templates
 repo: https://github.com/AndreaRubbi/Pear-EBI
-version: master
+version: pear_ebi
 
 pages:
   - page: "modules/gendoc.md"

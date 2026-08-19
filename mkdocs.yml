@@ -1,7 +1,7 @@
 site_name: PEAR-EBI
 repo_name: "PEAR-EBI"
 repo_url: "https://github.com/AndreaRubbi/Pear-EBI"
-site_url: "https://pypi.org/project/pear-ebi/0.1.1.10/"
+site_url: "https://andrearubbi.github.io/Pear-EBI/"
 copyright: "Made by Andrea Rubbi"
 
 extra:
@@ -17,14 +17,24 @@ theme:
   name: material
   custom_dir: docs_assets/theme/
   palette:
-    # scheme: preference uses dark or light mode based on user (OS) preference
-    scheme: preference
-    primary: green
-    accent: indigo
+    # "preference" was removed in mkdocs-material 5, so no scheme was applied at all.
+    # A two-entry palette with a toggle is the modern equivalent.
+    - scheme: default
+      primary: green
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: green
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   icon:
     logo: fontawesome/solid/code
   #logo: "logos/goldman_logo.ico"
-  favicon: "https://github.com/AndreaRubbi/Pear-EBI/raw/pear_ebi/logos/LOGO_PEAR.png" # "/docs_assets/images/favicon.ico"
+  favicon: "docs_assets/images/favicon.ico"
   language: "en"
 
 plugins:
@@ -80,16 +90,23 @@ markdown_extensions:
   - pymdownx.tilde
 
 # Lots of other settings
-edit_uri: edit/MkDocs/docs/
+edit_uri: edit/pear_ebi/docs/
 use_directory_urls: false
 
 # Better PDF styling for when you create PDFs using mkdocs-pdf-export-plugin
 extra_css:
-  - docs_assets/stylesheets/pdf-export.css
+  - docs_assets/stylesheets/pdf-export.css  # under docs/, see note below
 
 # Setup mathjax, see
 # https://squidfunk.github.io/mkdocs-material/reference/mathjax/
 extra_javascript:
-  - javascripts/config.js
-  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  # Paths here resolve relative to docs_dir, not to this file. They used to point at
+  # javascripts/config.js and docs_assets/... in the repo root, neither of which
+  # exists under docs/, so the MathJax delimiter config never loaded and every $...$
+  # in the tutorials rendered as literal LaTeX.
+  - docs_assets/javascripts/config.js
+  # polyfill.io REMOVED. That domain was sold in February 2024 and began serving
+  # malware to visitors in June 2024; it must not be loaded. It only supplied ES6
+  # polyfills for browsers that MathJax 3 no longer supports anyway, so nothing is
+  # lost by dropping it. Do not reinstate it.
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
