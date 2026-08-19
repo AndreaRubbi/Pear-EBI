@@ -1,0 +1,37 @@
+# Conda environment for PEAR-EBI.
+#
+# Channel policy: conda-forge only. `nodefaults` is what actually enforces this --
+# listing conda-forge first merely gives it priority, whereas nodefaults removes
+# Anaconda's `defaults` channel from consideration entirely. EMBL-EBI is no longer
+# licensed to use `defaults`, so packages must not be resolved from it.
+#
+# Scope: this file provides the interpreter and the toolchain needed to rebuild the
+# bundled native tools (HashRF, tqDist) if you ever have to. The Python packages
+# themselves are managed by Poetry, so after creating and activating this
+# environment, run:
+#
+#     mamba env create -f environment.yml     # or: conda env create -f environment.yml
+#     mamba activate pear_env
+#     poetry install
+#
+# That keeps a single source of truth for Python dependencies (pyproject.toml +
+# poetry.lock) instead of duplicating them here, where they would inevitably drift.
+
+name: pear_env
+
+channels:
+  - conda-forge
+  - nodefaults
+
+dependencies:
+  # PEAR supports 3.9-3.12; 3.11 is the recommended default.
+  - python=3.11
+  - pip
+  - poetry>=2.0
+
+  # Only needed to rebuild the vendored native tools from source
+  # (pear_ebi/_install_helpers.py:build_tqdist). The published wheels already
+  # contain prebuilt binaries for Linux x86-64 and macOS arm64.
+  - cmake
+  - make
+  - cxx-compiler

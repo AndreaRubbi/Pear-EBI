@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-from pyDRMetrics.pyDRMetrics import DRMetrics
 
 
 def euclidean_distance(distances):
@@ -43,5 +42,12 @@ def DRM(distance_matrix, embedding, inverse_emb):
     Returns:
         DRM: DRM object with quality metrics
     """
+    # Imported here rather than at module scope on purpose. pyDRMetrics 0.0.7 is
+    # unmaintained and declares no dependencies, so an import failure in it used to
+    # break `import pear_ebi.tree_set` outright -- every embedding module imports
+    # this one. DRM() is the only thing that needs it, and it is reached only when
+    # quality reporting is requested.
+    from pyDRMetrics.pyDRMetrics import DRMetrics
+
     drm = DRMetrics(distance_matrix, embedding, inverse_emb)
     return drm

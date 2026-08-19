@@ -2,33 +2,38 @@
 This tutorial goes through the basic features of pear_ebi and how to use them
 _____
 ## Setup ##
-First of all, check that you have a python version that is supported (python 3.7, 3.8, 3.9). We strongly encourage the creation of a dedicated virtual environment in order to avoid potential conflicts with other libraries due to the mismatch of dependencies' versions. We also support the use of mamba as a more efficient version of conda.
+First of all, check that you have a supported python version (python 3.9 to 3.12). We strongly encourage the creation of a dedicated virtual environment in order to avoid potential conflicts with other libraries due to the mismatch of dependencies' versions. We also support the use of mamba as a more efficient version of conda.
 
 <b>In your terminal:</b><br><br>
-Download and install mamba: <br>
-<a href="https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html">See documentation</a>
+Download and install <b>Miniforge</b>, which provides mamba and uses conda-forge by default: <br>
+<a href="https://github.com/conda-forge/miniforge#install">See documentation</a>
 <br>Create new environment with one of the supported versions of python:<br>
-```mamba create -n pear_env python=3.9```
+```mamba create -n pear_env -c conda-forge python=3.11```
 <br>Activate environment:<br>
-```mamba activate pear_ev```
+```mamba activate pear_env```
 <br>Install pear:<br>
 ```python -m pip install pear_ebi```
 
+<font color='red'><b>Note on channels:</b></font> the <code>-c conda-forge</code> flag above is deliberate. Some institutes (EMBL-EBI among them) are no longer licensed to use Anaconda's <code>defaults</code> channel, so packages must come from conda-forge. Miniforge is configured that way out of the box; if you use Miniconda or Anaconda instead, keep passing <code>-c conda-forge</code> explicitly.
+
 <br><font color='red'><b>Alternatively:</b></font><br>
-<br>Install virtualenv:<br>
-```pip install virtualenv```
 <br>Create new environment with one of the supported versions of python:<br>
-```python3.9 -m venv pear_env```
+```python3.11 -m venv pear_env```
 <br>Activate environment:<br>
 ```source pear_env/bin/activate```
 <br>Install pear:<br>
 ```python -m pip install pear_ebi```
 
 ### Optional ###
-If you're planning on performing more advanced analyses, such as the ones described in the <b><i>"Advanced Examples"</b></i>, you should install the extended requirements:<br>
-```python -m pip intall -r requirements.txt```
+If you're planning on performing more advanced analyses, such as the ones described in the <b><i>"Advanced Examples"</b></i>, install pear with the <code>notebook</code> extra, which adds Jupyter and JupyterLab:<br>
+```python -m pip install "pear_ebi[notebook]"```
 <br>and also install the new jupyter kernel:<br>
 ```python -m ipykernel install --user --name=pear_ebi```
+
+### Working from a checkout ###
+If you cloned the repository rather than installing from PyPI, dependencies are managed with <a href="https://python-poetry.org/">Poetry</a> and the exact versions are recorded in <code>poetry.lock</code>:<br>
+```poetry install```
+<br>which reproduces a known-good environment. Add <code>--with docs</code> to also install the documentation toolchain.
 ****
 
 ## Basic Use ##

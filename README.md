@@ -16,7 +16,25 @@ See also the <a href="https://andrearubbi.github.io/Pear-EBI/index.html"> autoge
 
 PEAR usage
 ==========
-Pear is both a python software and library. It can be installed with `python -m pip install pear_ebi` or downloaded from <a href="https://github.com/AndreaRubbi/Pear-EBI">Github</a>. Pear is currently compatible only with Linux.
+Pear is both a python software and library. It can be installed with `python -m pip install pear_ebi` or downloaded from <a href="https://github.com/AndreaRubbi/Pear-EBI">Github</a>. Pear requires **Python 3.9 - 3.12** and runs on **Linux (x86-64)** and **macOS (Apple silicon)**; it ships prebuilt HashRF and tqDist binaries for both.
+
+Reproducible environments
+-------------------------
+Dependencies are managed with <a href="https://python-poetry.org/">Poetry</a>. From a checkout:
+
+`poetry install`
+
+installs the exact versions recorded in `poetry.lock`, which is the authoritative record of a
+known-good environment. Add `--with docs` for the documentation toolchain, or install the
+`notebook` extra (`pip install "pear_ebi[notebook]"`) for Jupyter.
+
+PEAR requires **NumPy < 2.0**; this is enforced both by the dependency metadata and by a check
+at import time, so a NumPy 2.x environment fails immediately with an explanatory message rather
+than deep inside a dependency.
+
+If you use conda, note that packages must come from **conda-forge** (EMBL-EBI is no longer
+licensed for Anaconda's `defaults` channel). <a href="https://github.com/conda-forge/miniforge#install">Miniforge</a>
+is configured that way by default.
 
 PEAR as a python library
 ------------------------

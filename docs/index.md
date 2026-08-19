@@ -16,7 +16,7 @@ See also the <a href="https://andrearubbi.github.io/Pear-EBI/index.html"> autoge
 
 PEAR usage
 ==========
-Pear is both a python software and library. It can be installed with `python -m pip install pear_ebi` or downloaded from <a href="https://github.com/AndreaRubbi/Pear-EBI">Github</a>. Pear is currently compatible only with Linux.
+Pear is both a python software and library. It can be installed with `python -m pip install pear_ebi` or downloaded from <a href="https://github.com/AndreaRubbi/Pear-EBI">Github</a>. Pear requires **Python 3.9 - 3.12** and runs on **Linux (x86-64)** and **macOS (Apple silicon)**; it ships prebuilt HashRF and tqDist binaries for both.
 
 PEAR as a python library
 ------------------------

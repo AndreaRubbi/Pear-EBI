@@ -1,25 +1,162 @@
+[project]
+name = "pear_ebi"
+version = "1.0.1.6"
+description = "Embeds phylogenetic tree distances and produce representations"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE.txt"]
+authors = [{ name = "Andrea Rubbi", email = "andrea.rubbi.98@gmail.com" }]
+maintainers = [{ name = "Andrea Rubbi", email = "andrear@ebi.ac.uk" }]
+keywords = ["phylogenetics", "phylogenetic-trees", "embedding", "robinson-foulds", "newick"]
+
+# Was absent entirely, so pip would install on any interpreter and fail at runtime.
+# The dependency floors below (pandas, scipy, scikit-learn) all require >= 3.9,
+# which is why the old 3.7/3.8 classifiers were never actually installable.
+requires-python = ">=3.9,<4.0"
+
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS :: MacOS X",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+
+# Runtime dependencies: only packages actually imported by pear_ebi/.
+# Every entry has a floor as well as a ceiling -- the previous "<=X" style pins
+# left the lower bound wide open (e.g. "pandas<=2.3.3" permitted pandas 0.1).
+dependencies = [
+  "numpy>=1.21,<2.0",
+  "pandas>=1.3,<2.4",
+  "matplotlib>=3.4,<4",
+  "scikit-learn>=1.0,<1.7",
+  "scipy>=1.7,<1.14",
+  "rich>=12,<15",
+  "toml>=0.10,<0.11",
+  "plotly>=5.11,<6",
+  # kaleido 1.x removed kaleido.scopes.plotly, which plotly 5.x's write_image
+  # imports; the old "kaleido==1.2.0" with "plotly==5.11.0" made the PDF export
+  # at embeddings/graph/graph.py raise on a fresh install. Staying on kaleido 0.x
+  # keeps plotly 5 working; moving to plotly >=6.1 + kaleido 1.x is the follow-up.
+  # Exact pin, not a range: 0.2.1.post1 -- the highest 0.x -- publishes only an
+  # armv7l wheel, so any range ending below 1.0 resolves to something that cannot
+  # install on x86_64 or arm64. 0.2.1 is the last release with real platform wheels.
+  "kaleido==0.2.1",
+  "ipywidgets>=7.7,<9",
+  "pyDRMetrics==0.0.7",
+  # Required transitively, NOT by pear_ebi itself: pyDRMetrics 0.0.7 declares no
+  # dependencies at all (its Requires-Dist is empty) while importing numpy, pandas,
+  # matplotlib, scipy, sklearn and tqdm. Everything but tqdm is already listed
+  # above, so tqdm has to stay here even though nothing in pear_ebi imports it --
+  # dropping it makes `import pear_ebi.tree_set` fail with ModuleNotFoundError.
+  "tqdm>=4.60",
+]
+
+[project.optional-dependencies]
+# The Jupyter stack was previously declared as hard runtime dependencies with
+# exact pins, although none of it is imported anywhere in pear_ebi/. It is only
+# needed to *run* the notebooks, so it is optional now. This also drops the
+# unpinned-below, EOL notebook 6.5.6 / jupyterlab 3.5.0 pair, whose pyzmq 24
+# dependency is the usual fresh-install failure on modern interpreters.
+notebook = [
+  "jupyter>=1.0",
+  "jupyterlab>=4.0",
+  "notebook>=7.0",
+  "ipykernel>=6.17",
+  "ipython>=8.6",
+]
+
+[project.urls]
+# setup.py pointed at the old repo name (AndreaRubbi/TreeEmbedding), which is
+# the URL PyPI showed as "Homepage".
+Homepage = "https://github.com/AndreaRubbi/Pear-EBI"
+Repository = "https://github.com/AndreaRubbi/Pear-EBI"
+Documentation = "https://andrearubbi.github.io/Pear-EBI/index.html"
+
+[project.scripts]
+pear_ebi = "pear_ebi.__main__:main"
+
+# ─── Poetry-specific packaging ────────────────────────────────────────────────
+[tool.poetry]
+# Naming pear_ebi explicitly stops the root test/ directory being picked up.
+# setup.py used a bare find_packages(), which installed a top-level "test"
+# package into site-packages, shadowing the CPython stdlib "test" module.
+packages = [{ include = "pear_ebi" }]
+
+# Vendored native tools. Listed explicitly (rather than MANIFEST.in's four graft
+# lines, two of which pointed at directories that no longer exist) so what ships
+# is reviewable. NOTE: this currently carries the full upstream build trees --
+# object files, CMake caches and sample datasets -- which is why the wheel is
+# ~118 MB. Narrowing these globs to just the executables is a separate change.
+include = [
+  { path = "pear_ebi/calculate_distances/linux_bin/**/*", format = ["sdist", "wheel"] },
+  { path = "pear_ebi/calculate_distances/mac_bin/**/*", format = ["sdist", "wheel"] },
+]
+
+[tool.poetry.group.dev.dependencies]
+# Previously undeclared: pytest appeared only in versions.txt.
+pytest = ">=7.0"
+pytest-timeout = ">=2.0"
+black = ">=23.1"
+isort = ">=5.10"
+pre-commit = ">=3.5"
+
+[tool.poetry.group.docs.dependencies]
+# Every plugin mkdocs.yml requires. None of these were declared anywhere before,
+# so `mkdocs build` was not reproducible.
+mkdocs = ">=1.4"
+mkdocs-material = ">=9.0"
+mkdocstrings = ">=0.20"
+mkdocs-minify-plugin = ">=0.6"
+mkdocs-git-revision-date-localized-plugin = ">=1.2"
+mkdocs-git-authors-plugin = ">=0.7"
+mkdocs-table-reader-plugin = ">=2.0"
+mkdocs-img2fig-plugin = ">=0.9"
+mknotebooks = ">=0.8"
+mkdocs-awesome-pages-plugin = ">=2.9"
+mkdocs-print-site-plugin = ">=2.3"
+mkgendocs = ">=0.9"
+nbconvert = ">=7.0"
+PyYAML = ">=6.0"        # imported by gendoc.py, declared nowhere before
+
+[build-system]
+requires = ["poetry-core>=2.0"]
+build-backend = "poetry.core.masonry.api"
+
+# ─── Tooling ──────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+# The suite lives in test/test.py, which matches neither of pytest's default
+# python_files patterns (test_*.py, *_test.py), so `pytest` collected 0 items.
+testpaths = ["test"]
+python_files = ["test*.py"]
+
 [tool.isort]
 profile = "black"
+line_length = 90
+# Consolidated from .isort.cfg, whose known_third_party list omitted scipy,
+# toml, pyDRMetrics and yaml.
+known_third_party = [
+  "ipywidgets", "matplotlib", "numpy", "pandas", "plotly", "pyDRMetrics",
+  "pylab", "rich", "sklearn", "scipy", "toml", "yaml",
+]
+
 [tool.black]
 line-length = 90
 include = '\.pyi?$'
-exclude = '''
+extend-exclude = '''
 /(
     \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
   | \.venv
   | _build
-  | buck-out
   | build
   | dist
+  | site
+  | graphify-out
+  | pear_ebi/calculate_distances/linux_bin
+  | pear_ebi/calculate_distances/mac_bin
 )/
 '''
-
-[build-system]
-requires = [
-  "setuptools>=61",
-  "wheel"
-]
-build-backend = "setuptools.build_meta"
