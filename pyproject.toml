@@ -131,7 +131,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 # The suite lives in test/test.py, which matches neither of pytest's default
 # python_files patterns (test_*.py, *_test.py), so `pytest` collected 0 items.
-testpaths = ["test"]
+testpaths = ["tests"]
 python_files = ["test*.py"]
 
 [tool.isort]

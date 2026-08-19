@@ -1,6 +1,19 @@
-minimum_pre_commit_version: 2.13.0
-default_stages: [commit, push]
-exclude: "^$"
+minimum_pre_commit_version: 3.2.0
+# "commit"/"push" were renamed in pre-commit 3.2 and are rejected outright by
+# pre-commit 4.x, which meant this config failed to load and none of the hooks
+# below actually ran.
+default_stages: [pre-commit, pre-push]
+
+# tests/fixtures/ holds deliberately malformed inputs. Two of them have no trailing
+# newline on purpose -- that is the exact condition the regression tests exercise --
+# so end-of-file-fixer must not "repair" them, or the tests pass for the wrong
+# reason. The vendored native build trees are third-party and not ours to reformat.
+exclude: |
+  (?x)^(
+    tests/fixtures/.*
+    |pear_ebi/calculate_distances/(linux_bin|mac_bin)/.*
+    |site/.*
+  )$
 #default_language_version:
 #  python: python3.10
 
@@ -11,12 +24,14 @@ repos:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
-      - id: double-quote-string-fixer
+      # double-quote-string-fixer removed: it converts " to ', which black then
+      # converts straight back, so the two hooks fought on every commit.
       - id: name-tests-test
       #- id: detect-aws-credentials
       - id: detect-private-key
       - id: check-added-large-files
-        types: ["python"]
+        # Was types: ["python"], which is why 90 MB .trees files were committable.
+        args: ["--maxkb=2048"]
   - repo: https://github.com/psf/black
     rev: 23.1.0
     hooks:

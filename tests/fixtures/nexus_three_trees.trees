@@ -1,0 +1,12 @@
+#NEXUS
+Begin trees;
+	Translate
+		1 taxon_a,
+		2 taxon_b,
+		3 taxon_c,
+		4 taxon_d
+		;
+tree STATE_0 = [&R] ((1:0.1,2:0.2):0.3,3:0.4,4:0.5);
+tree STATE_1 = [&R] ((1:0.1,3:0.2):0.3,2:0.4,4:0.5);
+tree STATE_2 = [&R] ((1:0.1,4:0.2):0.3,2:0.4,3:0.5);
+End;
