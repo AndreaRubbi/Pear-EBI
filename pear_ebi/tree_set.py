@@ -56,7 +56,7 @@ sys.path.append(parent)
 # silencing some warnings
 from scipy.sparse import SparseEfficiencyWarning
 
-from .calculate_distances import hashrf, maple_RF, tqdist
+from .calculate_distances import _exec, hashrf, maple_RF, tqdist
 from .embeddings import Isomap_e, LLE_e, PCoA_e, tSNE_e
 from .embeddings.graph import graph
 # from .interactive_mode import interactive
@@ -953,8 +953,18 @@ class set_collection(tree_set):
                 self.file, self.n_trees, self.output_file
             )
 
-        if method in ("hashrf_RF", "hashrf_wRF", "tqdist_quartet", "tqdist_triplet"):
-            hashrf.bash_command(f"rm {self.file}")
+        # smart_RF was missing from this list although it is in the write list
+        # above, so its combined Set_collection_<uuid> file was left behind in the
+        # working directory. remove_file() also replaces a shell `rm` with an
+        # unquoted path whose failures were sent to DEVNULL.
+        if method in (
+            "hashrf_RF",
+            "hashrf_wRF",
+            "smart_RF",
+            "tqdist_quartet",
+            "tqdist_triplet",
+        ):
+            _exec.remove_file(self.file)
 
         print(f"[bold blue]{method} | Done!")
 

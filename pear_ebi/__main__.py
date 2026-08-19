@@ -32,6 +32,7 @@ def main():
 
     import pear_ebi.tree_emb_parser
     from pear_ebi.calculate_distances import hashrf
+    from pear_ebi.calculate_distances._exec import PearExecutableError
     from pear_ebi.embeddings import PCoA_e, tSNE_e
     from pear_ebi.interactive_mode import interactive
     from pear_ebi.tree_set import set_collection, tree_set
@@ -538,6 +539,14 @@ def main():
     except KeyboardInterrupt:
         print("[orange1]\n- Leaving PEAR -")
         return
+
+    except PearExecutableError as exc:
+        # Raised when a bundled native tool (hashrf, tqDist) cannot be run or fails.
+        # The library used to call sys.exit() directly, which is fine for the CLI but
+        # kills the kernel when PEAR is used from a notebook -- the documented primary
+        # interface. It raises now, and the CLI turns it back into a non-zero exit.
+        print(f"[bold red]Error: {exc}")
+        return 1
 
     print("[orange1]\n- Leaving PEAR -")
 

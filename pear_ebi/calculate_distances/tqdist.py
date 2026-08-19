@@ -1,107 +1,118 @@
 import os
-import subprocess
-import sys
-import shutil
-import errno
+import re
+import warnings
 
 import numpy as np
 import pandas as pd
-import re
 
-# Set the value Display variable
-os.environ.setdefault("DISPLAY", ":0.0")
+from .._install_helpers import tqdist_bin_dir
+from ._exec import (
+    PearExecutableError,
+    raise_for_launch_failure,
+    resolve_binary,
+    run_process,
+)
 
-# Simple function to perform bash operations
-
-
-def bash_command(cmd):
-    """Executes bash command in subprocess
-
-    Args:
-        cmd (str): bash command to be runned in subprocess
-
-    Returns:
-        0: returns 0 if everything's alright
-    """
-    if os.name == "nt":
-        try:
-            subprocess.run(
-                ["C:\\cygwin64\\bin\\bash.exe", "-l", cmd],
-                stderr=subprocess.DEVNULL,
-                stdout=subprocess.DEVNULL,
-            )
-        except:
-            try:
-                subprocess.run(
-                    ["C:\\cygwin\\bin\\bash.exe", "-l", cmd],
-                    stderr=subprocess.DEVNULL,
-                    stdout=subprocess.DEVNULL,
-                )
-            except:
-                sys.exit("Windows platforms need cygwin64/cygwin to run this subprocess")
-
-    elif os.name == "posix":
-        subprocess.run(
-            ["/bin/bash", "-c", cmd], stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL
-        )
-    else:
-        sys.exit("Could not verify OS")
-    return 0
-
-
-def _bin_dir():
-    """Return the directory containing packaged tqDist binaries for this platform.
-    Uses linux_bin or mac_bin under calculate_distances.
-    """
-    try:
-        here = os.path.dirname(os.path.abspath(__file__))
-    except Exception:
-        here = "."
-
-    if sys.platform.startswith("linux"):
-        cand = os.path.join(here, "linux_bin", "tqDist")
-    elif sys.platform == "darwin":
-        cand = os.path.join(here, "mac_bin", "tqDist")
-    else:
-        cand = None
-
-    if cand is not None and os.path.isdir(cand):
-        return cand
-
-    # Fallback to original directory layout
-    return os.path.join(here, "tqDist", "bin")
-
-
-def _run_process(cmd_list, *, capture_stdout=False):
-    """Run external command and return (returncode, stdout, stderr).
-
-    Provide helpful diagnostics for common failures (missing binary,
-    permission denied, exec-format / arch mismatch).
-    """
-    try:
-        completed = subprocess.run(
-            cmd_list,
-            stdout=subprocess.PIPE if capture_stdout else subprocess.DEVNULL,
-            stderr=subprocess.PIPE,
-            check=False,
-            text=True,
-        )
-        return completed.returncode, completed.stdout if capture_stdout else "", completed.stderr
-    except FileNotFoundError:
-        return 127, "", f"executable not found: {cmd_list[0]}"
-    except PermissionError:
-        return 126, "", f"permission denied when trying to execute: {cmd_list[0]}"
-    except OSError as e:
-        if getattr(e, "errno", None) == errno.ENOEXEC or getattr(e, "errno", None) == errno.EFAULT:
-            return 8, "", f"exec format error when trying to run: {cmd_list[0]} ({e})"
-        return 1, "", f"os error when running {cmd_list[0]}: {e}"
-
-
-# ──────────────────────────────── RUNNING HASHRF RETURNING CLEANED OUTPUT ─────
-# ? From: "tqDist: a library for computing the quartet and triplet distances between binary or general trees"
+# ──────────────────────────────── RUNNING TQDIST RETURNING CLEANED OUTPUT ─────
+# ? From: "tqDist: a library for computing the quartet and triplet distances
+# ?        between binary or general trees"
 # ? by A. Sand, C. N. S. Pedersen et al - 2014
 # ? https://www.birc.au.dk/~cstorm/software/tqdist/
 # ──────────────────────────────────────────────────────────────────────────────
+
+# tqDist treats every Newick parse problem as a *warning on stderr* and still
+# exits 0 (see NewickParser.cpp: "Parse error! String ended! Continuing anyways...",
+# "Parse error! Expected '(' here..."). Its parser is also strictly line-based, so
+# a file whose last line has no trailing newline silently loses its last tree.
+# Either way the output file ends up short, the untouched rows of the zero-filled
+# matrix stay zero, and the result used to be returned as a success. Scanning for
+# this marker is what turns that into an error.
+_PARSE_ERROR_MARKER = "parse error"
+
+
+def _resolve(system_name, tool_label):
+    bin_dir = tqdist_bin_dir()
+    packaged = os.path.join(bin_dir, system_name) if bin_dir else None
+    return resolve_binary(system_name, packaged, tool_label=tool_label)
+
+
+def _read_matrix(output_file, n_trees, run, label):
+    """Read tqDist's lower-triangular output into a symmetric matrix.
+
+    Raises PearExecutableError with both of tqDist's streams attached if the file
+    is short, unparsable, or if tqDist logged a parse error while exiting 0.
+    """
+    parse_warned = _PARSE_ERROR_MARKER in run.stderr.lower()
+
+    if not os.path.exists(output_file):
+        raise PearExecutableError(
+            f"{label} exited successfully but wrote no output file ({output_file}).\n"
+            f"  Tree count passed to {label}: {n_trees}\n"
+            f"{run.streams()}"
+        )
+
+    matrix = np.zeros((n_trees, n_trees))
+    rows_seen = 0
+    with open(output_file, "r") as out:
+        for i, line in enumerate(out):
+            if i >= n_trees:
+                break
+            tokens = [t for t in re.split(r"[,\s]+", line.strip()) if t != ""]
+            if not tokens:
+                continue
+            try:
+                vals = [float(t) for t in tokens]
+            except ValueError as exc:
+                raise PearExecutableError(
+                    f"{label} wrote a non-numeric value on line {i + 1}: "
+                    f"{line.strip()!r}\n{run.streams()}"
+                ) from exc
+            if len(vals) < (i + 1):
+                raise PearExecutableError(
+                    f"{label} output is malformed: expected at least {i + 1} values on "
+                    f"row {i + 1}, got {len(vals)}.\n"
+                    f"  Tree count passed to {label}: {n_trees}\n"
+                    f"{run.streams()}"
+                )
+            matrix[i, : i + 1] = vals[: i + 1]
+            rows_seen = i + 1
+
+    # A short file means rows of the matrix were never filled and would silently
+    # read as zero distances.
+    if rows_seen < n_trees:
+        raise PearExecutableError(
+            f"{label} produced only {rows_seen} of the expected {n_trees} matrix rows, "
+            f"so the remaining distances would be zero.\n"
+            f"  This usually means the tree count did not match the input file, or "
+            f"tqDist could not parse every tree. Note that tqDist reads one tree per "
+            f"line and needs a trailing newline after the last tree.\n"
+            f"{run.streams()}"
+        )
+
+    if parse_warned:
+        raise PearExecutableError(
+            f"{label} reported a Newick parse error but still exited 0, so the distance "
+            f"matrix cannot be trusted.\n"
+            f"  tqDist reads one tree per line and requires a newline after the last "
+            f"tree.\n{run.streams()}"
+        )
+
+    distance_matrix = pd.DataFrame(matrix + matrix.transpose())
+    distance_matrix.to_csv(output_file, header=False, index=False)
+    return distance_matrix.values
+
+
+def _run(system_name, label, file, n_trees, output_file):
+    bin_path = _resolve(system_name, label)
+    run = run_process([bin_path, file, output_file])
+    raise_for_launch_failure(run, bin_path, tool_label=label)
+    if not run.ok:
+        raise PearExecutableError(
+            f"{label} failed (exit code {run.returncode}) on {file}.\n"
+            f"  Tree count passed to {label}: {n_trees}\n"
+            f"{run.streams()}"
+        )
+    return _read_matrix(output_file, n_trees, run, label)
 
 
 def quartet(file, n_trees, output_file):
@@ -113,76 +124,13 @@ def quartet(file, n_trees, output_file):
         output_file (str): name of output file that will contain the distance matrix
 
     Returns:
-        distance_matrix (pandas.DataFrame): computed distance matrix
+        distance_matrix (numpy.ndarray): computed distance matrix
+
+    Raises:
+        PearExecutableError: if tqDist cannot be run, fails, or produces a matrix
+            that does not match n_trees.
     """
-    bin_dir = _bin_dir()
-    # Support two possible layouts: binaries directly under tqDist/ or under tqDist/bin/
-    candidate1 = os.path.join(bin_dir, "all_pairs_quartet_dist")
-    candidate2 = os.path.join(bin_dir, "bin", "all_pairs_quartet_dist")
-    pkg_bin = candidate1 if os.path.exists(candidate1) else candidate2
-    system_bin = shutil.which("all_pairs_quartet_dist")
-
-    if system_bin:
-        bin_path = system_bin
-    elif os.path.exists(pkg_bin):
-        # try to make the packaged binary executable
-        if not os.access(pkg_bin, os.X_OK):
-            try:
-                os.chmod(pkg_bin, os.stat(pkg_bin).st_mode | 0o111)
-            except Exception:
-                pass
-        bin_path = pkg_bin
-    else:
-        sys.exit(
-            f"tqDist quartet binary not found. Ensure native tqDist binaries are present or run `pear_ebi._install_helpers.build_tqdist()` to attempt a local build."
-        )
-
-    cmd_list = [bin_path, file, output_file]
-    rc, _out, err = _run_process(cmd_list)
-    if rc == 127:
-        sys.exit(
-            f"tqDist quartet executable not found at {bin_path}.\n"
-            "You can try rebuilding the packaged native tools by running: `python -c 'import pear_ebi._install_helpers as h; print(h.build_tqdist())'` or install a platform wheel that includes prebuilt binaries."
-        )
-    if rc == 126:
-        sys.exit(f"Permission denied when executing {bin_path}. Try `chmod +x {bin_path}` or call `pear_ebi._install_helpers.ensure_native_executables()`.")
-    if rc == 8:
-        sys.exit(
-            f"Could not execute {bin_path}: exec format error (likely architecture mismatch).\n"
-            "Install a matching platform wheel or build tqDist locally (requires cmake and a compiler)."
-        )
-    if rc != 0:
-        msg = err.strip() if err else f"tqDist exited with code {rc}"
-        sys.exit(f"tqDist (quartet) failed: {msg}")
-
-    # Reads output file and creates numpy array which is used to create a pandas
-    # dataframe. The tqDist executables may separate values with spaces, tabs
-    # or commas; be liberal when splitting.
-    try:
-        with open(output_file, "r") as out:
-            distance_matrix = np.zeros((n_trees, n_trees))
-            for i, line in enumerate(out):
-                tokens = re.split(r"[,\s]+", line.strip())
-                tokens = [t for t in tokens if t != ""]
-                try:
-                    vals = [float(t) for t in tokens]
-                except ValueError:
-                    sys.exit(
-                        f"quartet failed parsing line {i}: '{line.strip()}'.\nParsing error. stderr: {err.strip() if err else ''}"
-                    )
-                if len(vals) < (i + 1):
-                    sys.exit(
-                        f"quartet failed: expected {i+1} values on row {i}, got {len(vals)}.\nstderr: {err.strip() if err else ''}"
-                    )
-                distance_matrix[i, : i + 1] = vals[: i + 1]
-
-        distance_matrix_upper = distance_matrix.transpose()
-        distance_matrix = pd.DataFrame(distance_matrix + distance_matrix_upper)
-        distance_matrix.to_csv(output_file, header=False, index=False)
-        return distance_matrix.values
-    except Exception as e:
-        stderr_msg = err.strip() if err else ""
-        sys.exit(f"quartet failed when reading output: {e}.\n{stderr_msg}")
+    return _run("all_pairs_quartet_dist", "tqDist (quartet)", file, n_trees, output_file)
 
 
 def triplet(file, n_trees, output_file):
@@ -194,70 +142,13 @@ def triplet(file, n_trees, output_file):
         output_file (str): name of output file that will contain the distance matrix
 
     Returns:
-        distance_matrix (pandas.DataFrame): computed distance matrix
+        distance_matrix (numpy.ndarray): computed distance matrix
+
+    Raises:
+        PearExecutableError: if tqDist cannot be run, fails, or produces a matrix
+            that does not match n_trees.
     """
-    bin_dir = _bin_dir()
-    candidate1 = os.path.join(bin_dir, "all_pairs_triplet_dist")
-    candidate2 = os.path.join(bin_dir, "bin", "all_pairs_triplet_dist")
-    pkg_bin = candidate1 if os.path.exists(candidate1) else candidate2
-    system_bin = shutil.which("all_pairs_triplet_dist")
+    return _run("all_pairs_triplet_dist", "tqDist (triplet)", file, n_trees, output_file)
 
-    if system_bin:
-        bin_path = system_bin
-    elif os.path.exists(pkg_bin):
-        if not os.access(pkg_bin, os.X_OK):
-            try:
-                os.chmod(pkg_bin, os.stat(pkg_bin).st_mode | 0o111)
-            except Exception:
-                pass
-        bin_path = pkg_bin
-    else:
-        sys.exit(
-            f"tqDist triplet binary not found. Ensure native tqDist binaries are present or run `pear_ebi._install_helpers.build_tqdist()` to attempt a local build."
-        )
 
-    cmd_list = [bin_path, file, output_file]
-    rc, _out, err = _run_process(cmd_list)
-    if rc == 127:
-        sys.exit(
-            f"tqDist triplet executable not found at {bin_path}.\n"
-            "Try rebuilding the packaged native tools: `python -c 'import pear_ebi._install_helpers as h; print(h.build_tqdist())'` or install a platform wheel that includes prebuilt binaries."
-        )
-    if rc == 126:
-        sys.exit(f"Permission denied when executing {bin_path}. Try `chmod +x {bin_path}` or call `pear_ebi._install_helpers.ensure_native_executables()`." )
-    if rc == 8:
-        sys.exit(
-            f"Could not execute {bin_path}: exec format error (likely architecture mismatch).\n"
-            "Install a matching platform wheel or build tqDist locally (requires cmake and a compiler)."
-        )
-    if rc != 0:
-        msg = err.strip() if err else f"tqDist exited with code {rc}"
-        sys.exit(f"tqDist (triplet) failed: {msg}")
-
-    # Reads output file and creates numpy array which is used to create a pandas
-    # dataframe. Accept commas, tabs or spaces as separators.
-    try:
-        with open(output_file, "r") as out:
-            distance_matrix = np.zeros((n_trees, n_trees))
-            for i, line in enumerate(out):
-                tokens = re.split(r"[,\s]+", line.strip())
-                tokens = [t for t in tokens if t != ""]
-                try:
-                    vals = [float(t) for t in tokens]
-                except ValueError:
-                    sys.exit(
-                        f"triplet failed parsing line {i}: '{line.strip()}'.\nParsing error. stderr: {err.strip() if err else ''}"
-                    )
-                if len(vals) < (i + 1):
-                    sys.exit(
-                        f"triplet failed: expected {i+1} values on row {i}, got {len(vals)}.\nstderr: {err.strip() if err else ''}"
-                    )
-                distance_matrix[i, : i + 1] = vals[: i + 1]
-
-        distance_matrix_upper = distance_matrix.transpose()
-        distance_matrix = pd.DataFrame(distance_matrix + distance_matrix_upper)
-        distance_matrix.to_csv(output_file, header=False, index=False)
-        return distance_matrix.values
-    except Exception as e:
-        stderr_msg = err.strip() if err else ""
-        sys.exit(f"triplet failed when reading output: {e}.\n{stderr_msg}")
+__all__ = ["quartet", "triplet", "PearExecutableError"]

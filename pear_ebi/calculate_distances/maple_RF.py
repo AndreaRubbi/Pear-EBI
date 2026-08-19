@@ -17,10 +17,31 @@ import sys
 import time
 import warnings
 
+import json
+
 import numpy as np
 import pandas as pd
 import rich
 from rich.console import Console
+
+_HERE = os.path.dirname(os.path.realpath(__file__))
+
+
+def _rf_worker(index):
+    """Compute one row of the RF matrix by shelling out to RF_pypy.py under pypy3.
+
+    Defined at module level, and taking only a plain int, so that it is picklable.
+    It used to be a closure assigned to a module global from inside
+    calculate_distance_matrix(), which cannot be pickled under the "spawn" start
+    method that macOS and Windows default to: the child re-imports this module,
+    finds no module-level name, and raises AttributeError. The bare `except:`
+    around the pool hid that, so every macOS user silently dropped to one core.
+    """
+    return subprocess.check_output(
+        ["pypy3", os.path.join(_HERE, "RF_pypy.py"), str(index)],
+        universal_newlines=True,
+        stderr=subprocess.PIPE,
+    )
 
 
 class Tree(object):
@@ -503,13 +524,6 @@ def calculate_distance_matrix(file, n_trees, output_file):
         distance_matrix (np.array): distance matrix
     """
     console = Console()
-    global func_pool
-
-    def func_pool(i):
-        return subprocess.check_output(
-            ["pypy3", f"{current}/RF_pypy.py", str(i)], universal_newlines=True
-        )
-
     current = os.path.dirname(os.path.realpath(__file__))
 
     with open(file, "r") as f:
@@ -526,21 +540,34 @@ def calculate_distance_matrix(file, n_trees, output_file):
         try:
             with mp.Pool(workers) as pool:
                 arg_pool = list(range(len(trees)))
-                results = list(pool.imap(func_pool, arg_pool))
-            distance_matrix_upper = list(
-                map(lambda res: eval(res.split("\n")[1].strip()), results)
-            )
+                results = list(pool.imap(_rf_worker, arg_pool))
+            # json.loads rather than eval: this is subprocess output, and
+            # RF_pypy.py emits a plain list of numbers on its second line.
+            distance_matrix_upper = [
+                json.loads(res.split("\n")[1].strip()) for res in results
+            ]
 
             distance_matrix = np.zeros((n_trees, n_trees))
             for i, line in enumerate(distance_matrix_upper):
                 distance_matrix[i, i + 1 :] = line
 
             distance_matrix_lower = distance_matrix.transpose()
-        except:
-            print("Multiprocessing failed - trying on single core")
+        except (
+            OSError,
+            ValueError,
+            subprocess.SubprocessError,
+            json.JSONDecodeError,
+        ) as exc:
+            # Previously a bare `except:`, which also swallowed KeyboardInterrupt,
+            # MemoryError and SystemExit, and always blamed a shortage of cores.
+            # Say what actually went wrong before falling back.
             print(
-                "Suggestion: compute the distance matrix on a computing unit with more cores or analyze a smaller dataset"
+                f"[yellow]Parallel Robinson-Foulds via pypy3 failed "
+                f"({type(exc).__name__}: {exc})"
             )
+            if isinstance(exc, subprocess.CalledProcessError) and exc.stderr:
+                print(f"[yellow]pypy3 stderr:\n{str(exc.stderr).strip()}")
+            print("[yellow]Falling back to a single core; this will be slower.")
 
             distance_matrix = np.zeros((n_trees, n_trees))
             for i, tree in enumerate(trees):
