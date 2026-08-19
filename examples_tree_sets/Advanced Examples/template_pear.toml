@@ -24,7 +24,7 @@
 
 [distance] # specify the method used to compute the distances
 # available methods are: hashrf_RF, hashrf_wRF, smart_RF, tqdist_quartet, tqdist_triplet
-method = "hashrf"
+method = "hashrf_RF"
 
 [embedding]
 method = "isomap" # embedding method between: pcoa, tsne, isomap, lle

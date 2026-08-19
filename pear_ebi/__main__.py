@@ -236,7 +236,18 @@ def main():
             # value from config and we overwrite it
             # with the value given in terminal
             # ─── Compute Distances ────────────────────────────────────────
-            method = config["method"] if args.method is None else args.method
+            # The method lives under the [distance] table, so it has to be read
+            # one level down -- exactly as [embedding] is read below. Reading it
+            # from the top level always yielded None (config is a
+            # defaultdict(lambda: None)), so calculate_distances was skipped and
+            # embed() silently fell back to hashrf_RF: a config asking for
+            # tqdist_quartet quietly produced unweighted RF distances instead.
+            if config["distance"] is not None:
+                config["distance"] = defaultdict(lambda: None, config["distance"])
+                method_config = config["distance"]["method"]
+            else:
+                method_config = None
+            method = method_config if args.method is None else args.method
             if method not in (
                 "hashrf_RF",
                 "hashrf_wRF",
