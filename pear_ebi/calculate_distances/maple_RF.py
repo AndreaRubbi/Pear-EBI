@@ -76,7 +76,7 @@ class Tree(object):
 def readNewick(tree_list, defaultBLen=0.000033, normalizeInputBLen=1.0):
     """From a list of strings defining phylogenetic trees
     in newick format, returns a list of Tree instances
-    containing the biartitions of the tree in a
+    containing the bipartitions of the tree in a
     modularized form, suitable for comparisons with other trees.
 
     Args:

@@ -174,3 +174,23 @@ extend-exclude = '''
   | pear_ebi/calculate_distances/mac_bin
 )/
 '''
+
+[tool.coverage.run]
+source = ["pear_ebi"]
+# The CLI tests drive the real console script in a subprocess, which coverage cannot
+# see without this. Without parallel mode __main__.py reads as 3% covered even though
+# it is exercised end to end. pytest-cov installs the .pth hook that makes subprocesses
+# start collecting.
+parallel = true
+omit = [
+  "*/linux_bin/*",
+  "*/mac_bin/*",
+  "pear_ebi/test.py",       # a stray plotly demo; see the report
+]
+
+[tool.coverage.report]
+exclude_also = [
+  "if __name__ == .__main__.:",
+  "raise NotImplementedError",
+  "if TYPE_CHECKING:",
+]

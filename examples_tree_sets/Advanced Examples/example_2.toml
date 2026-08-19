@@ -1,5 +1,5 @@
 [trees]
-file1 = "../MAPLE_res/IQtreeStartingTree_Trees"
+file1 = "../MAPLE_res/IQtreeStartingTree_slowest_Trees"
 file2 = "../MAPLE_res/ParsimonyRAxMLStartingTree_GTRmodel_Trees"
 file3 = "../MAPLE_res/RAxMLNGStartingTree_Trees"
 file4 = "../MAPLE_res/UshERStartingTree_Trees"

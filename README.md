@@ -38,28 +38,39 @@ is configured that way by default.
 
 PEAR as a python library
 ------------------------
-Once installed, Pear can be used to upload Newick trees in python and represent them in embedded spaces. We recommend to use it on either jupyter notebook or lab, as these tools allow for more interaction with the graphs. On these platforms, the user is allowed to interact with widgets that allows to modify several parameteres of the plots. For specific uses and applications, see the <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_tree_sets'>examples</a>.
+Once installed, Pear can be used to upload Newick trees in python and represent them in embedded spaces. We recommend to use it on either jupyter notebook or lab, as these tools allow for more interaction with the graphs. On these platforms, the user is allowed to interact with widgets that allows to modify several parameters of the plots. For specific uses and applications, see the <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_tree_sets'>examples</a>.
 
 PEAR as a program
 -----------------
 Run `pear_ebi --help` to see the complete list of arguments and flags.
 ### Simple usage
 
+The commands below are written to be run **from the root of a clone of this
+repository**, because they reference files under `examples_tree_sets/`. That directory
+is part of the repository, not of the PyPI package, so if you installed with
+`pip install pear_ebi` you will need to either clone the repository as well or
+substitute your own Newick file.
+
+Note that the notebooks under `examples_tree_sets/` use different working directories:
+`How to use pear_ebi.ipynb` expects to be run from `examples_tree_sets/`, and the two
+notebooks under `Advanced Examples/` expect to be run from that folder. Paths in the
+`.toml` config files are resolved relative to the config file's own directory.
+
 `pear_ebi examples_tree_sets/beast_trees/beast_run1.trees -m hashrf_RF`
 
 this script calculates the unweighted <a href='https://doi.org/10.1016/0025-5564(81)90043-2'>Robinson Foulds</a> distances between the trees in the file "beast_run1.trees", which contains 1001 phylogenetic trees.
 
-the flag *-m* indicates the method used to compute the dissimilarity between phylogeneic trees. In this case, [HashRF](https://code.google.com/archive/p/hashrf/) has been used.
+the flag *-m* indicates the method used to compute the dissimilarity between phylogenetic trees. In this case, [HashRF](https://code.google.com/archive/p/hashrf/) has been used.
 
 To embed these distances in a lower-dimensional space, we can use PCoA (MDS) or tSNE:
 
 `pear_ebi examples_tree_sets/beast_trees/beast_run1.trees -m hashrf_RF --pcoa 2`
 
-we therefore embedded the distance matrix in 2 dimensions. Using the flag *-quality* one can assess the correlation between the distances in the N-dimensional space and in the embedding.
+we therefore embedded the distance matrix in 2 dimensions. Using the flag *-q* / *--quality* one can assess the correlation between the distances in the N-dimensional space and in the embedding.
 
 `pear_ebi examples_tree_sets/beast_trees/beast_run1.trees -m hashrf_RF --pcoa 2 --plot`
 
-The flag *-plot* indicates that PEAR has to plot the embeddings and show them, respectively. If an embedding method is specified the plots are produced anyway. Plotting doesn't require any indication on the number of dimensions as the embeddings are represented in 2 dimensions if the distances are embedded in 2 dimensions, while it plots on 2 and 3 dimensions in any other case.
+The flag *-p* / *--plot* indicates that PEAR has to plot the embeddings and show them, respectively. If an embedding method is specified the plots are produced anyway. Plotting doesn't require any indication on the number of dimensions as the embeddings are represented in 2 dimensions if the distances are embedded in 2 dimensions, while it plots on 2 and 3 dimensions in any other case.
 
 One can specify any number of files containing trees. Moreover, it is possible to specify a single directory using *--dir*, and possibly a pattern using *--pattern*, in order to select multiple files.
 
@@ -70,7 +81,7 @@ It's possible to compute the distance matrix and re-use it in subsequent runs of
 If any additional metadata is available, this may be specified by indicating a *.csv* file containing a dataframe of compatible shape.
 
 ### Config file
-A standard config toml file can be used for specific emebddings of multiple sets of trees. Instances of toml files are reported in the <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_tree_sets'>examples</a> folder.
+A standard config toml file can be used for specific embeddings of multiple sets of trees. Instances of toml files are reported in the <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_tree_sets'>examples</a> folder.
 
 Using the config file allows one to use all the features of PEAR, including additional embedding methods and plot designs. The config file can also be used to specify lists of indexes of interesting trees in the sets, in order to highlight them in the final plots.
 
@@ -78,9 +89,9 @@ Using the config file allows one to use all the features of PEAR, including addi
 `pear_ebi -i` :
 this script launches the program in the interactive mode. Once the program starts, it is going to guide you through its usage thanks to an intuitive interface.
 
-## Turorials and Examples
+## Tutorials and Examples
 
-Follow <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_tree_sets'>this link</a> for a complete set of basic and avanced guides and tutorials to use PEAR on the command line and as a python library.
+Follow <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_tree_sets'>this link</a> for a complete set of basic and advanced guides and tutorials to use PEAR on the command line and as a python library.
 
  <!--- ### Additional Dependencies
  In order to get the complete report on the quality of embeddings, it may be necessary to

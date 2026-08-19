@@ -20,7 +20,7 @@ Computes euclidean distances - norm of vectors
 
 **Returns**
 
-* **euxlidean_distances** (np.array) : array with euclidean distances
+* **euclidean_distances** (np.array) : array with euclidean distances
 
 
 ----

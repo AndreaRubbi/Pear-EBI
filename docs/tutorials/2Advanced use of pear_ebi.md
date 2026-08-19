@@ -71,7 +71,7 @@ Here you can see the `pear.toml` example stored in the same directory of this no
         <li>`same_scale` indicates whether the same colorscale should be applied to every `tree_set` or not.
         <li>`show` specifies whether the plot should be shown or not.
 </ul>
-<b>Note that</b> all these arguments are optional, and many of them can be specified otherwise using the normal functionalities of pear. In fact, should any of these arguments be specified using the `.toml` structure and the flags in pear, the arguments will be overscribed by the ones indicated on the command line. On an additional note related to this, the flag `--meta` allows to specify on the command line a metadata file, replicating the behaviour of the `metadata` argument in `[collection]`.
+<b>Note that</b> all these arguments are optional, and many of them can be specified otherwise using the normal functionalities of pear. In fact, should any of these arguments be specified using the `.toml` structure and the flags in pear, the arguments will be overwrited by the ones indicated on the command line. On an additional note related to this, the flag `--meta` allows to specify on the command line a metadata file, replicating the behaviour of the `metadata` argument in `[collection]`.
 
 ****
 

@@ -9,7 +9,7 @@ def euclidean_distance(distances):
         distances (np.array): n-dimensional coordinates of points
 
     Returns:
-        euxlidean_distances (np.array): array with euclidean distances
+        euclidean_distances (np.array): array with euclidean distances
     """
     EC = np.array([np.linalg.norm(a - b) for a in distances for b in distances])
     return EC

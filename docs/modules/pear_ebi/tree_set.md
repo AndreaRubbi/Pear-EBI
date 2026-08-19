@@ -91,7 +91,7 @@ Plot 2D embedding performed with method of choice
 * **save** (bool, optional) : save plot HTML. Defaults to False.
 * **name_plot** (str, optional) : name of plot's file. Defaults to None.
 * **static** (bool, optional) : return less interactive plot. Defaults to False.
-* **plot_meta** (str, optional) : meta-variale used to color the points. Defaults to "SET-ID".
+* **plot_meta** (str, optional) : meta-variable used to color the points. Defaults to "SET-ID".
 * **plot_set** (list, optional) : list of sets to plot from set_collection. Defaults to None.
 * **select** (bool, optional) : return set of buttons to show or hide specific traces. Defaults to False.
 * **same_scale** (bool, optional) : use same color_scale for all traces when scale is continuous. Defaults to False.
@@ -126,7 +126,7 @@ Plot 3D embedding performed with method of choice
 * **save** (bool, optional) : save plot HTML. Defaults to False.
 * **name_plot** (str, optional) : name of plot's file. Defaults to None.
 * **static** (bool, optional) : return less interactive plot. Defaults to False.
-* **plot_meta** (str, optional) : meta-variale used to color the points. Defaults to "SET-ID".
+* **plot_meta** (str, optional) : meta-variable used to color the points. Defaults to "SET-ID".
 * **plot_set** (list, optional) : list of sets to plot from set_collection. Defaults to None.
 * **select** (bool, optional) : return set of buttons to show or hide specific traces. Defaults to False.
 * **same_scale** (bool, optional) : use same color_scale for all traces when scale is continuous. Defaults to False.
@@ -157,7 +157,7 @@ Gets subset of phylogenetic trees
 **Args**
 
 * **n_required** (int) : number of points to extract
-* **method** (str, optional) : method used to extact points ('sequence', 'random', 'syst'). Defaults to "sequence".
+* **method** (str, optional) : method used to extract points ('sequence', 'random', 'syst'). Defaults to "sequence".
 
 
 **Returns**
@@ -209,12 +209,12 @@ Computes tree_set distance matrix with method of choice
 ```
 
 ---
-Concatenates two collectionsor collection and tree_set
+Concatenates two collections or collection and tree_set
 
 
 **Args**
 
-* **other** (tree_set ot set_colletion) : tree_set ot set_colletion
+* **other** (tree_set ot set_collection) : tree_set ot set_collection
 
 
 **Returns**

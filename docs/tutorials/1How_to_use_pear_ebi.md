@@ -38,7 +38,7 @@ If you cloned the repository rather than installing from PyPI, dependencies are 
 
 ## Basic Use ##
 After following the steps above to set up pear_ebi, you should be ready to use all the features of pear_ebi!
-<br>This notebook is a good guide to learn how to use it and to check that your installation is succesfull. If you should have any problem, please contact us by filing an issue on github.<br>
+<br>This notebook is a good guide to learn how to use it and to check that your installation is successful. If you should have any problem, please contact us by filing an issue on github.<br>
 To start with, simply check your installation by running:
 
 
@@ -64,7 +64,7 @@ Pear is complaining because no file was given... since it looks like you don't k
                 [input ...]
 
     PEAR-EBI v0.1.85 | Phylogeny Embedding and Approximate Representation
-    Calculates Robison-Foulds distances between large set of trees
+    Calculates Robinson-Foulds distances between large set of trees
 
     positional arguments:
       input                 input file : tree set in newic format
@@ -90,7 +90,7 @@ Pear is complaining because no file was given... since it looks like you don't k
       --plot, -p            plot embedding in 2 or 3 dimensions
       --config CONFIG, -c CONFIG
                             toml config file
-      --quality, -q         asess quality of embedding
+      --quality, -q         assess quality of embedding
       --dir DIR             directory with files
       --pattern PATTERN     pattern of files in directory
 
@@ -231,11 +231,11 @@ If you are a regex wizard you can probably select any set of similarly-named fil
 
 
 ### Compute Distances ###
-You can compute the distance matrix using different methods. Each method has a specific purpose, which is outlined in the associated paper. However, in general, the Robison Foulds distance metric is an admittedly good choice. Additionally, pear_ebi computes this metric using the hashrf algorithm, which is the fastest way of computing such metric to date. You can indicate any method available using the `-m`, or `--method`, flag. When a metric/method is indicated, pear will use it to compute the distance matrix <b>even if a distance matrix is given</b>, and it <b>will overscribe any previous matrix saved at a file with the same standard format</b> (realistically, this happens only if the matrix was produced using pear during an interactive or advanced session - see the interactive sessions chapter).
+You can compute the distance matrix using different methods. Each method has a specific purpose, which is outlined in the associated paper. However, in general, the Robinson Foulds distance metric is an admittedly good choice. Additionally, pear_ebi computes this metric using the hashrf algorithm, which is the fastest way of computing such metric to date. You can indicate any method available using the `-m`, or `--method`, flag. When a metric/method is indicated, pear will use it to compute the distance matrix <b>even if a distance matrix is given</b>, and it <b>will overwrite any previous matrix saved at a file with the same standard format</b> (realistically, this happens only if the matrix was produced using pear during an interactive or advanced session - see the interactive sessions chapter).
 
 
 ```python
-# compute Robison Foulds distances using hashrf #
+# compute Robinson Foulds distances using hashrf #
 !pear_ebi beast_trees/beast_run1.trees -m hashrf_RF
 ```
 
@@ -255,7 +255,7 @@ You can compute the distance matrix using different methods. Each method has a s
 
 
 ```python
-# compute Robison Foulds distances using hashrf #
+# compute Robinson Foulds distances using hashrf #
 !pear_ebi --dir beast_trees --pattern "*run[12]*" --method hashrf_RF
 ```
 

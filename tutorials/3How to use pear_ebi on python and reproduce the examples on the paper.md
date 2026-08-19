@@ -19,7 +19,7 @@ Here we do not delve into the specifics or the rationale of the experiments - fo
 
 ***
 # BEAST
-### <font color='purple'> Bayesan - Markow Chain Monte Carlo </font>
+### <font color='purple'> Bayesian - Markov Chain Monte Carlo </font>
 
 This is a relatively simple example: we have a few files containing trees in Newick format, where each set of trees is produced by a program that produced them sequentially. We want to represent the distribution of these trees in order to analyze the single trajectories and to compare the different trjectories coming from different runs. <br>
 With this idea in mind, we simply compute the square distance matrix using the `Robinson Foulds` metric, which generally represents the relations between trees in an effective way, using the most efficient algorithm: `hashrf`.<br>
