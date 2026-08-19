@@ -30,6 +30,7 @@ import random
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import uuid
 import warnings
@@ -69,6 +70,157 @@ from .subsample import subsample
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=SparseEfficiencyWarning)
+
+
+# ─── NEWICK READING / NORMALISATION ───────────────────────────────────────────
+# Every path that needs to know how many trees a file holds, or to hand a file to
+# one of the native tools, goes through _read_trees()/_write_trees(). Before this,
+# tree counting was spread over six sites using three different idioms (semicolon
+# counts, `wc -l`, and len(readlines())), which is how the reported bug arose: a
+# file whose last tree has no trailing newline counts as 0 lines under `wc -l`,
+# and 0 was then passed to hashrf.
+#
+# Correct newline termination is not cosmetic. hashrf's parser is whitespace
+# agnostic and tolerates several trees on one line *given the right count*, but
+# tqDist's is strictly line-based (NewickParser.cpp:86-100): it getline()s, and a
+# final line with no "\n" sets eofbit so the loop breaks before using it, silently
+# dropping the last tree. maple_RF splits on lines too. So the tools need one tree
+# per line, newline-terminated.
+
+
+def _split_newick(text):
+    """Split a Newick stream into tree strings on top-level ';' terminators.
+
+    A plain text.count(";") over-counts, because a ';' can also appear inside a
+    [...] comment or a '...' quoted label, and NEXUS files use ';' to end their own
+    statements. This walks the text tracking comment depth and quoting, and drops
+    newlines and tabs outside quoted labels so each tree comes back on one line.
+    """
+    trees = []
+    buf = []
+    comment_depth = 0
+    in_quote = False
+    i = 0
+    n = len(text)
+
+    while i < n:
+        ch = text[i]
+
+        if in_quote:
+            buf.append(ch)
+            if ch == "'":
+                # '' is an escaped quote within a quoted label
+                if i + 1 < n and text[i + 1] == "'":
+                    buf.append(text[i + 1])
+                    i += 2
+                    continue
+                in_quote = False
+            i += 1
+            continue
+
+        if ch in "\r\n\t":
+            # Structural whitespace only: real whitespace inside a quoted label is
+            # preserved by the branch above.
+            i += 1
+            continue
+
+        if comment_depth:
+            buf.append(ch)
+            if ch == "[":
+                comment_depth += 1
+            elif ch == "]":
+                comment_depth -= 1
+            i += 1
+            continue
+
+        if ch == "'":
+            in_quote = True
+            buf.append(ch)
+        elif ch == "[":
+            comment_depth = 1
+            buf.append(ch)
+        elif ch == ";":
+            buf.append(";")
+            trees.append("".join(buf).strip())
+            buf = []
+        else:
+            buf.append(ch)
+        i += 1
+
+    tail = "".join(buf).strip()
+    if tail:
+        # Trailing content with no ';' at all: a tree missing its terminator.
+        trees.append(tail + ";")
+
+    # Drop statements that are only a terminator or whitespace.
+    return [t for t in trees if t.strip(" \t\r\n;")]
+
+
+def _extract_nexus_trees(text):
+    """Pull the Newick strings out of the TREES block of a NEXUS file.
+
+    BEAST and friends emit NEXUS with a header, a `translate` table and one
+    `tree STATE_n = [&R] (...);` statement per tree. Reusing _split_newick means
+    the ';' ending `begin trees;`, each translate entry and `end;` are separated
+    out as their own statements and simply discarded here.
+
+    The translate table is deliberately not applied: RF, quartet and triplet
+    distances depend only on how labels partition, so leaving the numeric labels
+    in place gives identical distances and avoids a whole class of mis-mapping.
+    """
+    trees = []
+    for statement in _split_newick(text):
+        head = statement.lstrip().lower()
+        if not (head.startswith("tree ") or head.startswith("utree ")):
+            continue
+        _, sep, rhs = statement.partition("=")
+        if not sep:
+            continue
+        rhs = rhs.strip()
+        # Skip rooting/annotation comments such as [&R] that precede the topology.
+        while rhs.startswith("["):
+            close = rhs.find("]")
+            if close == -1:
+                break
+            rhs = rhs[close + 1 :].lstrip()
+        if rhs:
+            trees.append(rhs if rhs.endswith(";") else rhs + ";")
+    return trees
+
+
+def _read_trees(path):
+    """Read a Newick or NEXUS tree file and return one normalised string per tree.
+
+    Each returned string is a single line ending in ';'. This is the single source
+    of truth for how many trees a file contains.
+    """
+    with open(path, "r", encoding="utf-8", errors="replace") as fh:
+        content = fh.read()
+
+    if content.lstrip()[:6].upper() == "#NEXUS":
+        trees = _extract_nexus_trees(content)
+    else:
+        trees = _split_newick(content)
+
+    normalised = []
+    for tree in trees:
+        tree = tree.strip()
+        if not tree.endswith(";"):
+            tree += ";"
+        normalised.append(tree)
+    return normalised
+
+
+def _write_trees(handle, trees):
+    """Write tree strings one per line, each newline-terminated.
+
+    Returns the number of trees written.
+    """
+    count = 0
+    for tree in trees:
+        handle.write(tree.rstrip("\n") + "\n")
+        count += 1
+    return count
 
 
 def _clean_metadata_df(df):
@@ -136,55 +288,39 @@ class tree_set:
                 file=os.path.splitext(os.path.basename(self.file))[0]
             )
 
-        self.size = int(f"{os.path.getsize(file)/(1<<30):,.0f}")
+        self.size = os.path.getsize(file) // (1 << 30)
         # if self.size > 3: sys.exit(f'File is too large: {self.size} GB')
 
-        # Count trees robustly by counting terminating semicolons (';') in the
-        # Newick file. This handles files where trees are not separated by
-        # newlines (some editors append a final newline but some files don't).
-        # If no semicolons are found, fall back to counting lines.
-        try:
-            with open(file, "r", encoding="utf-8", errors="replace") as fh:
-                content = fh.read()
-        except Exception:
-            # fallback to older approach
-            try:
-                self.n_trees = int(
-                    subprocess.check_output(["wc", "-l", self.file]).decode().split()[0]
-                )
-            except Exception:
-                with open(file, "r") as f:
-                    self.n_trees = len(f.readlines())
-                    f.close()
-        else:
-            n_semis = content.count(";")
-            if n_semis > 0:
-                self.n_trees = n_semis
-                # Ensure each Newick tree ends with a newline so downstream
-                # tools that expect one-tree-per-line (or wc -l) behave
-                # correctly. Write a normalized temporary file and use that
-                # for downstream processing.
-                import tempfile
+        # _read_trees() is the single source of truth for the tree count, replacing
+        # the previous four-way mixture of semicolon counting, `wc -l` and
+        # len(readlines()). `wc -l` is what produced the reported bug: it counts
+        # "\n" bytes, so a lone tree with no trailing newline counted as 0 trees and
+        # 0 was handed to hashrf.
+        trees = _read_trees(file)
+        self.n_trees = len(trees)
+        if self.n_trees == 0:
+            sys.exit(
+                f"No phylogenetic trees found in {file}.\n"
+                "Expected a Newick file (one or more ';'-terminated trees) or a "
+                "NEXUS file with a trees block."
+            )
 
-                normalized = re.sub(r";\s*", ";\n", content)
-                tmp = tempfile.NamedTemporaryFile(delete=False, mode="w", encoding="utf-8")
-                tmp.write(normalized)
-                tmp.flush()
-                tmp.close()
-                # remember original file and replace self.file with normalized
-                self._original_file = self.file
-                self.file = tmp.name
-                self._normalized_created = True
-            else:
-                # no semicolons found, fallback to line counting
-                try:
-                    self.n_trees = int(
-                        subprocess.check_output(["wc", "-l", self.file]).decode().split()[0]
-                    )
-                except Exception:
-                    with open(file, "r") as f:
-                        self.n_trees = len(f.readlines())
-                        f.close()
+        # The native tools need one tree per line, newline-terminated, so a
+        # normalised copy is written to a temp directory. self.file deliberately
+        # keeps pointing at the user's path: it used to be reassigned to the temp
+        # file, which then leaked into every derived name -- __str__, the embedding
+        # CSV, all eight plot filenames and the _SUBSAMPLE file (which ended up
+        # written into /tmp). Use tool_input() to get the path for the tools.
+        #
+        # TemporaryDirectory cleans up through weakref.finalize, which also runs at
+        # interpreter exit; the previous delete=False temp file relied on __del__
+        # and leaked whenever that did not run.
+        self._tmpdir = tempfile.TemporaryDirectory(prefix="pear_ebi_")
+        self._normalized_file = os.path.join(
+            self._tmpdir.name, os.path.basename(file) + ".normalised"
+        )
+        with open(self._normalized_file, "w", encoding="utf-8") as fh:
+            _write_trees(fh, trees)
 
         if type(self.distance_matrix) != type(None):
             try:
@@ -215,12 +351,9 @@ class tree_set:
 
         else:
             self.metadata = pd.DataFrame()
-            # Prefer the original filename (before normalization) for SET-ID so
-            # configuration keys match user-provided names. If a normalized
-            # temporary file was created, the original path is stored in
-            # self._original_file.
-            original_for_id = getattr(self, "_original_file", self.file)
-            set_id_base = os.path.splitext(os.path.basename(original_for_id))[0]
+            # self.file is the user's path (the normalised copy lives separately,
+            # see tool_input), so SET-ID matches the name used in config files.
+            set_id_base = os.path.splitext(os.path.basename(self.file))[0]
             self.metadata["SET-ID"] = [set_id_base for i in range(self.n_trees)]
         self.metadata["STEP"] = [i for i in range(self.n_trees)]
         self.sets = np.unique(self.metadata["SET-ID"])
@@ -238,20 +371,20 @@ class tree_set:
 
         return f"─────────────────────────────\n Tree set containing {self.n_trees} trees;\n File: {self.file};\n Distance matrix: {computed}.\n───────────────────────────── \n"
 
-    def __del__(self):
-        # Remove any normalized temporary file created to ensure newline
-        # termination after each Newick string.
-        try:
-            if hasattr(self, "_normalized_created") and self._normalized_created:
-                try:
-                    os.remove(self.file)
-                except Exception:
-                    pass
-                # restore original attribute (not strictly necessary)
-                if hasattr(self, "_original_file"):
-                    self.file = self._original_file
-        except Exception:
-            pass
+    def tool_input(self):
+        """Path to hand to the native tools.
+
+        The newline-normalised copy when there is one, otherwise self.file. Always
+        use this rather than self.file when invoking hashrf, tqDist or maple_RF:
+        tqDist and maple_RF read one tree per line and drop a final tree that has
+        no trailing newline.
+
+        There is no __del__ any more. It existed only to unlink the old
+        delete=False temp file, and __del__ is not guaranteed to run -- notably at
+        interpreter exit, and in notebooks where the object stays referenced.
+        TemporaryDirectory handles cleanup through weakref.finalize instead.
+        """
+        return getattr(self, "_normalized_file", None) or self.file
 
     # ─── CALCULATE DISTANCES ───────────────────────────────────────────────────
     def calculate_distances(self, method):
@@ -271,7 +404,7 @@ class tree_set:
 
         with self.console.status("[bold green]Calculating distances...") as status:
             self.distance_matrix = methods[method](
-                self.file, self.n_trees, self.output_file
+                self.tool_input(), self.n_trees, self.output_file
             )
         print(f"[bold blue]{method} | Done!")
 
@@ -298,43 +431,32 @@ class tree_set:
         # Sanity check: embedding routines expect self.distance_matrix rows to
         # match the number of metadata rows. If they don't, try to reconcile by
         # trimming metadata to the distance matrix size and warn the user.
-        try:
-            import numpy as _np
+        n_data = (
+            self.distance_matrix.shape[0]
+            if hasattr(self.distance_matrix, "shape")
+            else len(self.distance_matrix)
+        )
 
-            n_data = (
-                self.distance_matrix.shape[0]
-                if hasattr(self.distance_matrix, "shape")
-                else len(self.distance_matrix)
+        if self.metadata.shape[0] != n_data:
+            # This used to trim the metadata down to the matrix and carry on with a
+            # yellow warning, which meant a wrong tree count reached the plots
+            # looking plausible -- trees silently dropped off the end, and every
+            # point mislabelled if the mismatch was not at the tail. There is no
+            # safe way to guess which rows to discard, so stop.
+            per_set = ""
+            if hasattr(self, "data"):
+                per_set = "\n  Per-set tree counts:\n" + "\n".join(
+                    f"    - {name}: {info['n_trees']}"
+                    for name, info in self.data.items()
+                )
+            sys.exit(
+                f"Shape mismatch: the distance matrix has {n_data} rows but the "
+                f"metadata has {self.metadata.shape[0]}.\n"
+                f"  These must agree -- one row per tree.\n"
+                f"  Most often this means a precomputed distance matrix (-d/--dM) was "
+                f"reused with a different set of trees, or a metadata CSV has the "
+                f"wrong number of rows.{per_set}"
             )
-        except Exception:
-            n_data = None
-
-        if n_data is not None and self.metadata.shape[0] != n_data:
-            old_meta_rows = self.metadata.shape[0]
-            print(
-                f"[yellow]Warning: distance matrix has {n_data} rows but metadata has {old_meta_rows} rows. Trimming metadata to match distance matrix."
-            )
-
-            # Print per-set counts before trimming for diagnostics
-            try:
-                print("[cyan]Per-set counts before trimming:")
-                for k, v in self.data.items():
-                    print(f"  - {k}: {v['n_trees']}")
-            except Exception:
-                pass
-
-            # Trim metadata and update STEP and n_trees
-            self.metadata = self.metadata.iloc[:n_data].reset_index(drop=True)
-            self.metadata["STEP"] = list(range(n_data))
-            self.n_trees = n_data
-
-            try:
-                print("[cyan]Per-set counts after trimming (in metadata):")
-                unique, counts = np.unique(self.metadata["SET-ID"], return_counts=True)
-                for kk, cc in zip(unique, counts):
-                    print(f"  - {kk}: {cc}")
-            except Exception:
-                pass
 
         if dimensions < 2:
             sys.exit("Dimensions of embedding must be greater or equal to 2")
@@ -667,10 +789,13 @@ class tree_set:
         Returns:
             subset plots: 2D and 3D embedding plots of subset
         """
+        # tool_input() rather than file: the normalised copies are one tree per
+        # line, so the line-based reading further down cannot lose a tree whose
+        # source file had no trailing newline.
         if isinstance(self, set_collection):
-            files = [TS.file for TS in self.collection]
+            files = [TS.tool_input() for TS in self.collection]
         else:
-            files = [self.file]
+            files = [self.tool_input()]
         console = Console()
         with console.status("[bold blue]Extracting subsample...") as status:
             if method == "syst":
@@ -699,12 +824,10 @@ class tree_set:
                 trees = list()
                 last_max = 0
                 for file in files:
-                    with open(file, "r") as f:
-                        trees_file = list(f.readlines())
-                        n_t = len(trees_file)
-                        trees.extend(list(enumerate(trees_file, start=last_max)))
-                        last_max += n_t
-                        f.close()
+                    trees_file = _read_trees(file)
+                    n_t = len(trees_file)
+                    trees.extend(list(enumerate(trees_file, start=last_max)))
+                    last_max += n_t
 
                 if method == "random":
                     selection = random.sample(trees, n_required)
@@ -712,18 +835,32 @@ class tree_set:
                         map(lambda elem: elem[1], selection)
                     ), list(map(lambda elem: elem[0], selection))
                 elif method == "sequence":
-                    step = self.metadata.shape[0] // n_required
+                    if n_required < 1 or n_required > len(trees):
+                        sys.exit(
+                            f"Cannot take a subsample of {n_required} from "
+                            f"{len(trees)} trees."
+                        )
+                    # Guarded because step == 0 (n_required > n_trees) previously
+                    # produced idxs = [-1] * n_required, i.e. the last tree repeated,
+                    # with no warning; n_required == 0 raised ZeroDivisionError.
+                    step = len(trees) // n_required
                     idxs = [step * (i + 1) - 1 for i in range(n_required)]
                     subsample_trees = [trees[i][1] for i in idxs]
 
                 else:
                     sys.exit(f"Method {method} not available for subsampling")
 
-            file_sub = f"{self.file}_SUBSAMPLE"
-            with open(file_sub, "w") as f:
-                for i in subsample_trees:
-                    f.write(i)
-                f.close()
+            # Written into a temp dir: this used to be f"{self.file}_SUBSAMPLE", and
+            # since self.file had been reassigned to the normalisation temp file, the
+            # subsample and its distance matrix were written into /tmp under a random
+            # name and never cleaned up.
+            self._subsample_tmpdir = tempfile.TemporaryDirectory(prefix="pear_ebi_sub_")
+            file_sub = os.path.join(
+                self._subsample_tmpdir.name,
+                os.path.basename(self.file) + "_SUBSAMPLE",
+            )
+            with open(file_sub, "w", encoding="utf-8") as f:
+                _write_trees(f, subsample_trees)
             # print(len(subsample_trees), len(idxs))
             status.update("[bold green]Calculating distances...")
             dM = hashrf.hashrf(file_sub, n_required, file_sub + "_distances.csv")
@@ -907,6 +1044,7 @@ class set_collection(tree_set):
             "None": None,
         }
 
+        combined_file = self.file
         if method in (
             "hashrf_RF",
             "hashrf_wRF",
@@ -914,57 +1052,62 @@ class set_collection(tree_set):
             "tqdist_quartet",
             "tqdist_triplet",
         ):
-            with open(self.file, "w") as trees:
-                for set in self.collection:
-                    with open(set.file, "r") as file:
-                        trees.write(file.read())
-                        file.close()
-                trees.close()
+            if not self.collection:
+                sys.exit(
+                    "Cannot compute distances: this collection contains no tree sets."
+                )
 
-        # Diagnostic: validate combined input contains expected number of trees
-        try:
-            # count semicolons and non-empty lines in the combined file
-            with open(self.file, "r", encoding="utf-8", errors="replace") as fh:
-                combined = fh.read()
-            combined_semis = combined.count(";")
-            combined_lines = len([ln for ln in combined.splitlines() if ln.strip() != ""])
-            print(f"[cyan]Combined file '{self.file}': {combined_semis} semicolons, {combined_lines} non-empty lines")
-        except Exception:
-            combined_semis = None
-            combined_lines = None
+            # This is the site of the reported bug. The old code did
+            #     trees.write(file.read())
+            # per member, with no separator, so a member file whose last tree had no
+            # trailing newline had its last tree glued onto the next member's first
+            # tree. Writing through _write_trees() terminates every tree, whatever
+            # shape the member files were in.
+            #
+            # It also wrote into self.file with mode "w". For a collection built with
+            # an explicit file= argument that truncates the user's own file, so the
+            # combined input goes to a temp file instead and self.file is left alone.
+            self._tmpdir = tempfile.TemporaryDirectory(prefix="pear_ebi_collection_")
+            combined_file = os.path.join(
+                self._tmpdir.name, os.path.basename(self.file) + ".combined"
+            )
 
-        # Report per-member counts to help debug mismatches
-        try:
+            written = 0
+            per_member = []
+            with open(combined_file, "w", encoding="utf-8") as out:
+                for member in self.collection:
+                    trees = _read_trees(member.tool_input())
+                    written += _write_trees(out, trees)
+                    per_member.append((os.path.basename(member.file), len(trees)))
+
             print("[cyan]Per-member tree counts:")
-            for set in self.collection:
-                try:
-                    with open(set.file, "r", encoding="utf-8", errors="replace") as fh:
-                        cont = fh.read()
-                    semis = cont.count(";")
-                    lines = len([ln for ln in cont.splitlines() if ln.strip() != ""])
-                    print(f"  - {os.path.basename(getattr(set, '_original_file', set.file))}: {semis} trees")
-                except Exception:
-                    print(f"  - {os.path.basename(set.file)}: (could not read)")
-        except Exception:
-            pass
+            for name, count in per_member:
+                print(f"  - {name}: {count} trees")
+
+            # The recount used to be printed and thrown away, so a mismatch between
+            # the summed member counts and the combined file went to the tools
+            # unnoticed. Disagreement here means the count and the data have diverged,
+            # which is exactly what produces a wrong-shaped distance matrix.
+            if written != self.n_trees:
+                sys.exit(
+                    f"Tree count mismatch: the combined input holds {written} trees but "
+                    f"this collection reports {self.n_trees}.\n"
+                    "Refusing to compute distances, because the resulting matrix would "
+                    "not match the metadata."
+                )
+            print(f"[cyan]Combined input: {written} trees, one per line")
 
         with self.console.status("[bold green]Calculating distances...") as status:
             self.distance_matrix = methods[method](
-                self.file, self.n_trees, self.output_file
+                combined_file, self.n_trees, self.output_file
             )
 
-        # smart_RF was missing from this list although it is in the write list
-        # above, so its combined Set_collection_<uuid> file was left behind in the
-        # working directory. remove_file() also replaces a shell `rm` with an
-        # unquoted path whose failures were sent to DEVNULL.
-        if method in (
-            "hashrf_RF",
-            "hashrf_wRF",
-            "smart_RF",
-            "tqdist_quartet",
-            "tqdist_triplet",
-        ):
-            _exec.remove_file(self.file)
+        # The combined input lives in a TemporaryDirectory now, so it is cleaned up
+        # even if this call raises. The old code shelled out to `rm` with an unquoted
+        # path, sent the result to DEVNULL, and omitted smart_RF from the list, which
+        # left that method's Set_collection_<uuid> file in the working directory.
+        if combined_file != self.file:
+            _exec.remove_file(combined_file)
 
         print(f"[bold blue]{method} | Done!")
 
