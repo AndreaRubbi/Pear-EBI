@@ -223,6 +223,42 @@ def _write_trees(handle, trees):
     return count
 
 
+def _as_tree_sets(elements, type_error_message):
+    """Coerce a mixed sequence of tree_set objects and file paths into tree_sets.
+
+    Replaces three copies of this pattern:
+
+        name = os.path.splitext(os.path.basename(element))[0]
+        exec(f"{name} = tree_set('{element}')")
+        ...
+        exec(f"collection.append({name})")
+
+    The basename was interpolated as a Python *identifier*, so any ordinary
+    filename that is not one -- my-trees.nwk, 1000trees.nwk, or anything
+    containing a space -- raised SyntaxError, which was not among the caught
+    exceptions. Since the CLI accepts --dir and --pattern, a hyphenated tree
+    filename was enough to hit it. It was also a code-injection vector via
+    filename, and the second exec relied on the first one's write to locals()
+    surviving, which PEP 667 ends in Python 3.13.
+
+    Returns a new list; unlike the original it does not mutate the caller's.
+    """
+    converted = []
+    for element in elements:
+        if isinstance(element, tree_set):
+            converted.append(element)
+        elif isinstance(element, str):
+            try:
+                converted.append(tree_set(element))
+            except FileNotFoundError:
+                sys.exit(f"File {element} not found")
+            except TypeError:
+                sys.exit(type_error_message)
+        else:
+            sys.exit(type_error_message)
+    return converted
+
+
 def _clean_metadata_df(df):
     """Normalize metadata DataFrame:
     - Strip column names
@@ -936,30 +972,11 @@ class set_collection(tree_set):
             #    trees.close()
 
         elif len(collection) > 0:
-            remove = list()
-            for i, element in enumerate(collection):
-                if not isinstance(element, tree_set):
-                    if isinstance(element, str):
-                        try:
-                            file = os.path.splitext(os.path.basename(element))[0]
-                            exec(f"{file} = tree_set('{element}')")
-                            remove.append(i)
-                        except FileNotFoundError:
-                            sys.exit(f"File {element} not found")
-                        except TypeError:
-                            sys.exit(
-                                f"Set collection can be initialized only with set_collection, tree_set, or file path elements"
-                            )
-                        exec(f"collection.append({file})")
-
-                    else:
-                        sys.exit(
-                            f"Set collection can be initialized only with set_collection, tree_set, or file path elements"
-                        )
-            for i in remove[::-1]:
-                collection.pop(i)
-
-            self.collection = collection
+            self.collection = _as_tree_sets(
+                collection,
+                "Set collection can be initialized only with set_collection, "
+                "tree_set, or file path elements",
+            )
 
         else:
             self.collection = collection
@@ -1127,35 +1144,14 @@ class set_collection(tree_set):
         elif isinstance(other, tree_set):
             return set_collection(self.collection + [other])
         else:
-            remove = list()
-            for i, element in enumerate(other):
-                if not isinstance(element, tree_set):
-                    if isinstance(element, str):
-                        try:
-                            file = os.path.splitext(os.path.basename(element))[0]
-                            exec(f"{file} = tree_set('{element}')")
-                            remove.append(i)
-                        except FileNotFoundError:
-                            sys.exit(f"File {element} not found")
-                        except TypeError:
-                            sys.exit(
-                                "You can concatenate a set_collection \
-                        only with another set_collection, a tree_set,\
-                            or a list of tree_set"
-                            )
-
-                        exec(f"other.append({file})")
-
-                    else:
-                        sys.exit(
-                            "You can concatenate a set_collection \
-                        only with another set_collection, a tree_set,\
-                            or a list of tree_set"
-                        )
-            for i in remove[::-1]:
-                other.pop(i)
-
-            return set_collection(self.collection + other)
+            return set_collection(
+                self.collection
+                + _as_tree_sets(
+                    other,
+                    "You can concatenate a set_collection only with another "
+                    "set_collection, a tree_set, or a list of tree_set",
+                )
+            )
 
     def __str__(self):
         computed = "not computed"
@@ -1187,32 +1183,11 @@ class set_collection(tree_set):
         elif isinstance(other, tree_set):
             return set_collection(self.collection + [other])
         else:
-            remove = list()
-            for i, element in enumerate(other):
-                if not isinstance(element, tree_set):
-                    if isinstance(element, str):
-                        try:
-                            file = os.path.splitext(os.path.basename(element))[0]
-                            exec(f"{file} = tree_set('{element}')")
-                            remove.append(i)
-                        except FileNotFoundError:
-                            sys.exit(f"File {element} not found")
-                        except TypeError:
-                            sys.exit(
-                                "You can concatenate a set_collection \
-                        only with another set_collection, a tree_set,\
-                            or a list of tree_set"
-                            )
-
-                        exec(f"other.append({file})")
-
-                    else:
-                        sys.exit(
-                            "You can concatenate a set_collection \
-                        only with another set_collection, a tree_set,\
-                            or a list of tree_set"
-                        )
-            for i in remove[::-1]:
-                other.pop(i)
-
-            return set_collection(self.collection + other)
+            return set_collection(
+                self.collection
+                + _as_tree_sets(
+                    other,
+                    "You can concatenate a set_collection only with another "
+                    "set_collection, a tree_set, or a list of tree_set",
+                )
+            )
