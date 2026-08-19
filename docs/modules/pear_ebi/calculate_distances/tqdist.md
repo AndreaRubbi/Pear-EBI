@@ -1,33 +1,8 @@
 #
 
 
-### bash_command
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/calculate_distances/tqdist.py/#L14)
-```python
-.bash_command(
-   cmd
-)
-```
-
----
-Executes bash command in subprocess
-
-
-**Args**
-
-* **cmd** (str) : bash command to be runned in subprocess
-
-
-**Returns**
-
-* **0**  : returns 0 if everything's alright
-
-
-----
-
-
 ### quartet
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/calculate_distances/tqdist.py/#L56)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/tqdist.py/#L118)
 ```python
 .quartet(
    file, n_trees, output_file
@@ -47,14 +22,20 @@ Computes quartet distances
 
 **Returns**
 
-* **distance_matrix** (pandas.DataFrame) : computed distance matrix
+* **distance_matrix** (numpy.ndarray) : computed distance matrix
+
+
+**Raises**
+
+* **PearExecutableError**  : if tqDist cannot be run, fails, or produces a matrix
+    that does not match n_trees.
 
 
 ----
 
 
 ### triplet
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/calculate_distances/tqdist.py/#L107)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/tqdist.py/#L136)
 ```python
 .triplet(
    file, n_trees, output_file
@@ -74,4 +55,11 @@ Computes triplet distances
 
 **Returns**
 
-* **distance_matrix** (pandas.DataFrame) : computed distance matrix
+* **distance_matrix** (numpy.ndarray) : computed distance matrix
+
+
+**Raises**
+
+* **PearExecutableError**  : if tqDist cannot be run, fails, or produces a matrix
+    that does not match n_trees.
+

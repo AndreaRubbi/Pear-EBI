@@ -1,33 +1,8 @@
 #
 
 
-### bash_command
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/calculate_distances/hashrf.py/#L14)
-```python
-.bash_command(
-   cmd
-)
-```
-
----
-Executes bash command in subprocess
-
-
-**Args**
-
-* **cmd** (str) : bash command to be runned in subprocess
-
-
-**Returns**
-
-* **0**  : returns 0 if everything's alright
-
-
-----
-
-
 ### hashrf
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/calculate_distances/hashrf.py/#L45)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/hashrf.py/#L183)
 ```python
 .hashrf(
    file, n_trees, output_file
@@ -35,7 +10,7 @@ Executes bash command in subprocess
 ```
 
 ---
-Computes unweighted Robison Foulds distances
+Computes unweighted Robinson Foulds distances
 
 
 **Args**
@@ -47,14 +22,20 @@ Computes unweighted Robison Foulds distances
 
 **Returns**
 
-* **distance_matrix** (pandas.DataFrame) : computed distance matrix
+* **distance_matrix** (numpy.ndarray) : computed distance matrix
+
+
+**Raises**
+
+* **PearExecutableError**  : if hashrf cannot be run, or fails, or produces
+    output that does not match n_trees.
 
 
 ----
 
 
 ### hashrf_weighted
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/calculate_distances/hashrf.py/#L98)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/hashrf.py/#L205)
 ```python
 .hashrf_weighted(
    file, n_trees, output_file
@@ -62,7 +43,7 @@ Computes unweighted Robison Foulds distances
 ```
 
 ---
-Computes weighted Robison Foulds distances
+Computes weighted Robinson Foulds distances
 
 
 **Args**
@@ -74,4 +55,11 @@ Computes weighted Robison Foulds distances
 
 **Returns**
 
-* **distance_matrix** (pandas.DataFrame) : computed distance matrix
+* **distance_matrix** (numpy.ndarray) : computed distance matrix
+
+
+**Raises**
+
+* **PearExecutableError**  : if hashrf cannot be run, or fails, or produces
+    output that does not match n_trees.
+

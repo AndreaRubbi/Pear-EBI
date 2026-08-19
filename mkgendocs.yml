@@ -1,3 +1,8 @@
+# WARNING: running `gendocs --config mkgendocs.yml` DELETES files under
+# sources_dir that it does not itself generate. It will remove docs/tutorials/ and
+# docs/docs_assets/ along with anything else hand-maintained there. Commit first, and
+# restore afterwards with:
+#     git checkout -- docs/tutorials docs/docs_assets
 sources_dir: docs
 repo: https://github.com/AndreaRubbi/Pear-EBI
 version: pear_ebi
@@ -12,10 +17,6 @@ pages:
       - fix
       - indent
 
-  - page: "modules/test/test.md"
-    source: "test/test.py"
-    classes:
-      - TestPEAR
 
   - page: "modules/pear_ebi/tree_set.md"
     source: "pear_ebi/tree_set.py"
@@ -60,17 +61,35 @@ pages:
     functions:
       - plot_embedding
 
+  - page: "modules/pear_ebi/_install_helpers.md"
+    source: "pear_ebi/_install_helpers.py"
+    functions:
+      - platform_bin_dir
+      - describe_platform
+      - hashrf_binary
+      - tqdist_bin_dir
+      - native_executables
+      - ensure_native_executables
+      - build_tqdist
+
+  - page: "modules/pear_ebi/calculate_distances/_exec.md"
+    source: "pear_ebi/calculate_distances/_exec.py"
+    classes:
+      - PearExecutableError
+    functions:
+      - run_process
+      - resolve_binary
+      - remove_file
+
   - page: "modules/pear_ebi/calculate_distances/tqdist.md"
     source: "pear_ebi/calculate_distances/tqdist.py"
     functions:
-      - bash_command
       - quartet
       - triplet
 
   - page: "modules/pear_ebi/calculate_distances/hashrf.md"
     source: "pear_ebi/calculate_distances/hashrf.py"
     functions:
-      - bash_command
       - hashrf
       - hashrf_weighted
 

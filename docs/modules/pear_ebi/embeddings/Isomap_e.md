@@ -2,10 +2,11 @@
 
 
 ### isomap
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/embeddings/Isomap_e.py/#L12)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/embeddings/Isomap_e.py/#L12)
 ```python
 .isomap(
-   distance_matrix, n_components, metadata = None, quality = False, report = False
+   distance_matrix, n_components, metadata = None, quality = False, report = False,
+   output = './ISOMAP_Embedding.csv'
 )
 ```
 
@@ -23,3 +24,4 @@ embed distance_matrix in n_components with Isomap
 **Returns**
 
 * **components** (numpy.array) : embedding of distance matrix
+

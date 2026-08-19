@@ -39,7 +39,13 @@ theme:
 
 plugins:
   - search
-  - mkdocstrings
+  # mkdocstrings removed from the active plugin list. It was enabled but entirely
+  # unused: there is not a single ::: directive anywhere in docs/ -- every API page
+  # is mkgendocs output. Worse, its on_config hook inserts mkdocs-autorefs into the
+  # plugin list, which happens before print-site's own hook runs and so made
+  # print-site no longer last, emitting a warning that fails --strict builds.
+  # The dependency is still declared in the docs group, so re-enabling it is a
+  # one-line change if the API docs are ever moved onto it.
   - minify:
       minify_html: true
   - git-revision-date-localized:

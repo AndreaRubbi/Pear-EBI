@@ -2,10 +2,11 @@
 
 
 ### tsne
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/embeddings/tSNE_e.py/#L12)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/embeddings/tSNE_e.py/#L12)
 ```python
 .tsne(
-   distance_matrix, n_dimensions, metadata = None, quality = False, report = False
+   distance_matrix, n_dimensions, metadata = None, quality = False, report = False,
+   output = './t-SNE_Embedding.csv'
 )
 ```
 
@@ -23,3 +24,4 @@ embed distance_matrix in n_components with t-Stochastic Neighbor Embedding
 **Returns**
 
 * **Distances_embedded_ND** (numpy.array) : distances embedded in n_dimensions
+

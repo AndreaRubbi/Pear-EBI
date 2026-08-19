@@ -2,8 +2,8 @@
 
 
 ## tree_set
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/tree_set.py/#L75)
-```python
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L296)
+```python 
 tree_set(
    file, output_file = None, distance_matrix = None, metadata = None
 )
@@ -17,8 +17,27 @@ Class for the analysis of a set of phylogenetic trees
 **Methods:**
 
 
+### .tool_input
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L410)
+```python
+.tool_input()
+```
+
+---
+Path to hand to the native tools.
+
+The newline-normalised copy when there is one, otherwise self.file. Always
+use this rather than self.file when invoking hashrf, tqDist or maple_RF:
+tqDist and maple_RF read one tree per line and drop a final tree that has
+no trailing newline.
+
+There is no __del__ any more. It existed only to unlink the old
+delete=False temp file, and __del__ is not guaranteed to run -- notably at
+interpreter exit, and in notebooks where the object stays referenced.
+TemporaryDirectory handles cleanup through weakref.finalize instead.
+
 ### .calculate_distances
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/tree_set.py/#L162)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L426)
 ```python
 .calculate_distances(
    method
@@ -35,10 +54,10 @@ Computes tree_set distance matrix with method of choice
 
 
 ### .embed
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/tree_set.py/#L184)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L448)
 ```python
 .embed(
-   method, dimensions, quality = False, report = False
+   method, dimensions, quality = False, report = False, output = None
 )
 ```
 
@@ -54,7 +73,7 @@ Compute embedding with n-dimensions and method of choice
 
 
 ### .plot_2D
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/tree_set.py/#L284)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L581)
 ```python
 .plot_2D(
    method, save = False, name_plot = None, static = False, plot_meta = 'SET-ID',
@@ -89,7 +108,7 @@ Plot 2D embedding performed with method of choice
 
 
 ### .plot_3D
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/tree_set.py/#L394)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L697)
 ```python
 .plot_3D(
    method, save = False, name_plot = None, static = False, plot_meta = 'SET-ID',
@@ -124,7 +143,7 @@ Plot 3D embedding performed with method of choice
 
 
 ### .get_subset
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/tree_set.py/#L509)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L818)
 ```python
 .get_subset(
    n_required, method = 'sequence'
@@ -150,8 +169,8 @@ Gets subset of phylogenetic trees
 
 
 ## set_collection
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/tree_set.py/#L589)
-```python
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L929)
+```python 
 set_collection(
    collection = list(), file = 'Set_collection_', output_file = None,
    distance_matrix = None, metadata = None
@@ -165,7 +184,7 @@ set_collection(
 
 
 ### .calculate_distances
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/tree_set.py/#L708)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L1054)
 ```python
 .calculate_distances(
    method
@@ -182,7 +201,7 @@ Computes tree_set distance matrix with method of choice
 
 
 ### .concatenate
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/tree_set.py/#L803)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L1177)
 ```python
 .concatenate(
    other
@@ -201,3 +220,4 @@ Concatenates two collectionsor collection and tree_set
 **Returns**
 
 * **set_collection**  : concatenated set_collection
+

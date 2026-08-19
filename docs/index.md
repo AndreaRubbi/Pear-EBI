@@ -1,6 +1,6 @@
 
  <h1> Phylogeny Embedding  & <br>  Approximate Representation </h1>
- <img src="https://github.com/AndreaRubbi/Pear-EBI/raw/pear_ebi/logos/LOGO_PEAR.png" width="100" height="100" style='position:absolute; left:900px; top:75px' >
+ <img src="https://github.com/AndreaRubbi/Pear-EBI/raw/pear_ebi/logos/LOGO_PEAR.png" width="100" height="100" style='position:absolute; left:400px; top:-15px' >
 
  <img src="https://img.shields.io/github/license/AndreaRubbi/Pear-EBI?color=red&label=License&style=plastic"> <img src="https://img.shields.io/pypi/v/pear_ebi?color=purple&label=version&style=plastic"> <img src="https://img.shields.io/pypi/implementation/pear_ebi?style=plastic"> <img src="https://img.shields.io/pypi/pyversions/pear_ebi?color=green&style=plastic">
 
@@ -18,9 +18,27 @@ PEAR usage
 ==========
 Pear is both a python software and library. It can be installed with `python -m pip install pear_ebi` or downloaded from <a href="https://github.com/AndreaRubbi/Pear-EBI">Github</a>. Pear requires **Python 3.9 - 3.12** and runs on **Linux (x86-64)** and **macOS (Apple silicon)**; it ships prebuilt HashRF and tqDist binaries for both.
 
+Reproducible environments
+-------------------------
+Dependencies are managed with <a href="https://python-poetry.org/">Poetry</a>. From a checkout:
+
+`poetry install`
+
+installs the exact versions recorded in `poetry.lock`, which is the authoritative record of a
+known-good environment. Add `--with docs` for the documentation toolchain, or install the
+`notebook` extra (`pip install "pear_ebi[notebook]"`) for Jupyter.
+
+PEAR requires **NumPy < 2.0**; this is enforced both by the dependency metadata and by a check
+at import time, so a NumPy 2.x environment fails immediately with an explanatory message rather
+than deep inside a dependency.
+
+If you use conda, note that packages must come from **conda-forge** (EMBL-EBI is no longer
+licensed for Anaconda's `defaults` channel). <a href="https://github.com/conda-forge/miniforge#install">Miniforge</a>
+is configured that way by default.
+
 PEAR as a python library
 ------------------------
-Once installed, Pear can be used to upload newick trees in python and represent them in embedded spaces. We recommend to use it on either jupyter notebook or lab, as these tools allow for more interaction with the graphs. On these platforms, the user is allowed to interact with widgets that allows to modify several parameteres of the plots. For specific uses and applications, see the <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_tree_sets'>examples</a>.
+Once installed, Pear can be used to upload Newick trees in python and represent them in embedded spaces. We recommend to use it on either jupyter notebook or lab, as these tools allow for more interaction with the graphs. On these platforms, the user is allowed to interact with widgets that allows to modify several parameteres of the plots. For specific uses and applications, see the <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_tree_sets'>examples</a>.
 
 PEAR as a program
 -----------------
@@ -29,9 +47,9 @@ Run `pear_ebi --help` to see the complete list of arguments and flags.
 
 `pear_ebi examples_tree_sets/beast_trees/beast_run1.trees -m hashrf_RF`
 
-this script calculates the unweighted <a href='https://doi.org/10.1016/0025-5564(81)90043-2'>Robison Foulds</a> distances between the trees in the file "beast_run1.trees", which contains 1001 phylogenetic trees.
+this script calculates the unweighted <a href='https://doi.org/10.1016/0025-5564(81)90043-2'>Robinson Foulds</a> distances between the trees in the file "beast_run1.trees", which contains 1001 phylogenetic trees.
 
-the flag *-m* indicates the method used to compute the dissimilarity between phylogeneic trees. In this case, [HasRF](https://code.google.com/archive/p/hashrf/) has been used.
+the flag *-m* indicates the method used to compute the dissimilarity between phylogeneic trees. In this case, [HashRF](https://code.google.com/archive/p/hashrf/) has been used.
 
 To embed these distances in a lower-dimensional space, we can use PCoA (MDS) or tSNE:
 
@@ -43,7 +61,7 @@ we therefore embedded the distance matrix in 2 dimensions. Using the flag *-qual
 
 The flag *-plot* indicates that PEAR has to plot the embeddings and show them, respectively. If an embedding method is specified the plots are produced anyway. Plotting doesn't require any indication on the number of dimensions as the embeddings are represented in 2 dimensions if the distances are embedded in 2 dimensions, while it plots on 2 and 3 dimensions in any other case.
 
-One can specify any number of files containing trees. Moreover, it is possible to specify a single directory using *-dir*, and possibly a pattern using *-pattern*, in order to select multiple files.
+One can specify any number of files containing trees. Moreover, it is possible to specify a single directory using *--dir*, and possibly a pattern using *--pattern*, in order to select multiple files.
 
 #### Tree Set
 

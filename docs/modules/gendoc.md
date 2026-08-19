@@ -2,7 +2,7 @@
 
 
 ### add_val
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/gendoc.py/#L14)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/gendoc.py/#L14)
 ```python
 .add_val(
    indices, value, data
@@ -14,7 +14,7 @@
 
 
 ### automate_mkdocs_from_docstring
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/gendoc.py/#L23)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/gendoc.py/#L23)
 ```python
 .automate_mkdocs_from_docstring(
    mkdocs_dir: Union[str, Path], mkgendocs_f: str, repo_dir: Path,
@@ -50,7 +50,7 @@ Automates the -pages for mkgendocs package by adding all Python functions in a d
 
 
 ### automate_nav_structure
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/gendoc.py/#L124)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/gendoc.py/#L124)
 ```python
 .automate_nav_structure(
    mkdocs_dir: Union[str, Path], mkdocs_f: str, repo_dir: Path, match_string: str,
@@ -86,7 +86,7 @@ Automates the -pages for mkgendocs package by adding all Python functions in a d
 
 
 ### fix
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/gendoc.py/#L163)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/gendoc.py/#L163)
 ```python
 .fix(
    f
@@ -111,7 +111,7 @@ Allows creation of arbitrary length dict item
 
 
 ### indent
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/gendoc.py/#L176)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/gendoc.py/#L176)
 ```python
 .indent(
    string: str
@@ -129,3 +129,4 @@ Count the indentation in whitespace characters.
 **Returns**
 
 * **int**  : Number of whitespace indentations
+

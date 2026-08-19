@@ -2,10 +2,10 @@
 
 
 ### subsample
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/subsample/subsample.py/#L17)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/subsample/subsample.py/#L17)
 ```python
 .subsample(
-   file, n_trees, n_required, subp = True
+   files, n_trees, n_required, subp = True
 )
 ```
 
@@ -34,3 +34,4 @@ subsample a set of trees considering their
 
 * **points** (list) : list of trees subsampled.
 * **idxs** (list) : list of indexes of the trees subsampled.
+

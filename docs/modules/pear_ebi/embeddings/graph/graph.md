@@ -2,7 +2,7 @@
 
 
 ### plot_embedding
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/embeddings/graph/graph.py/#L20)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/embeddings/graph/graph.py/#L19)
 ```python
 .plot_embedding(
    data, metadata, dimensions, save = False, name_plot = 'Tree_embedding',
@@ -31,3 +31,4 @@ Plot embedding of distance matrix - in 2D or 3D
 **Returns**
 
 * **image**  : plot with related widgets - interactive or static format
+

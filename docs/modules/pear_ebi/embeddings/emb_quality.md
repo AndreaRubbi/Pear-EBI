@@ -2,7 +2,7 @@
 
 
 ### euclidean_distance
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/embeddings/emb_quality.py/#L6)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/embeddings/emb_quality.py/#L5)
 ```python
 .euclidean_distance(
    distances
@@ -27,7 +27,7 @@ Computes euclidean distances - norm of vectors
 
 
 ### pear_correlation
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/embeddings/emb_quality.py/#L19)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/embeddings/emb_quality.py/#L18)
 ```python
 .pear_correlation(
    distance_matrix, embedding
@@ -54,7 +54,7 @@ in different dimensionalities
 
 
 ### DRM
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/master/pear_ebi/embeddings/emb_quality.py/#L35)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/embeddings/emb_quality.py/#L34)
 ```python
 .DRM(
    distance_matrix, embedding, inverse_emb
@@ -75,3 +75,4 @@ Return DRM object from https://github.com/zhangys11/pyDRMetrics
 **Returns**
 
 * **DRM**  : DRM object with quality metrics
+

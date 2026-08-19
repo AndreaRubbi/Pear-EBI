@@ -1,0 +1,203 @@
+name: CI
+
+# There was no CI before this. That is the direct reason the test suite sat broken
+# for about sixteen months: commit 5a5a3b8 renamed the embedding method "pca" to
+# "pcoa" on 2024-04-29, seven days after test.py was last touched, and nothing
+# reported the breakage.
+
+on:
+  push:
+    branches: [pear_ebi, dev]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test (python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The full supported range from pyproject's requires-python (>=3.9,<3.13).
+        # 3.13 is deliberately absent: NumPy 1.x, which this package pins, ships no
+        # cp313 wheels, so a 3.13 install falls back to building scipy from source.
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Install project
+        run: poetry install --with dev
+
+      - name: Check lockfile is in sync with pyproject
+        run: poetry check --lock
+
+      - name: Assert the NumPy < 2 constraint actually holds
+        # The pin exists in metadata, but a resolver change or a stray upgrade could
+        # break it, and the failure mode is an obscure traceback from inside
+        # pyDRMetrics. Fail loudly here instead.
+        run: |
+          poetry run python -c "
+          import numpy, sys
+          print('numpy', numpy.__version__)
+          sys.exit(0 if numpy.__version__.startswith('1.') else 'numpy >= 2 resolved, which pear_ebi does not support')
+          "
+
+      - name: Run tests
+        env:
+          MPLBACKEND: Agg
+        run: poetry run pytest -v --timeout=600
+
+  packaging:
+    name: packaging invariants
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pipx install poetry
+      - run: poetry build
+
+      - name: Wheel must not ship a top-level "test" package
+        # A bare find_packages() used to install a top-level `test` module into
+        # site-packages, shadowing the CPython stdlib `test` package.
+        run: |
+          python - <<'PY'
+          import glob, zipfile, sys
+          wheel = glob.glob("dist/*.whl")[0]
+          names = zipfile.ZipFile(wheel).namelist()
+          leaked = [n for n in names if n.split("/")[0] in {"test", "tests"}]
+          print("top-level test entries:", leaked)
+          sys.exit(1 if leaked else 0)
+          PY
+
+      - name: Native binaries must keep the executable bit
+        # Without this the binaries install unrunnable and hashrf fails with
+        # "Permission denied" at first use.
+        run: |
+          python - <<'PY'
+          import glob, zipfile, sys
+          wheel = glob.glob("dist/*.whl")[0]
+          z = zipfile.ZipFile(wheel)
+          required = [
+              "pear_ebi/calculate_distances/linux_bin/HashRF/hashrf",
+              "pear_ebi/calculate_distances/linux_bin/tqDist/bin/all_pairs_quartet_dist",
+              "pear_ebi/calculate_distances/linux_bin/tqDist/bin/all_pairs_triplet_dist",
+              "pear_ebi/calculate_distances/mac_bin/HashRF/hashrf",
+          ]
+          bad = []
+          for name in required:
+              if name not in z.namelist():
+                  bad.append(f"{name}: MISSING"); continue
+              mode = (z.getinfo(name).external_attr >> 16) & 0o777
+              if not mode & 0o111:
+                  bad.append(f"{name}: mode {mode:04o} is not executable")
+          print("\n".join(bad) or "all required binaries present and executable")
+          sys.exit(1 if bad else 0)
+          PY
+
+      - name: GPL licence texts must ship with the binaries
+        # HashRF is GPL-2 and tqDist is GPL-3/LGPL-3; distributing the binaries
+        # without their licence texts would not be compliant.
+        run: |
+          python - <<'PY'
+          import glob, zipfile, sys
+          z = zipfile.ZipFile(glob.glob("dist/*.whl")[0])
+          names = set(z.namelist())
+          required = [
+              "pear_ebi/calculate_distances/linux_bin/HashRF/COPYING",
+              "pear_ebi/calculate_distances/linux_bin/tqDist/COPYING",
+              "pear_ebi/calculate_distances/linux_bin/tqDist/COPYING.LESSER",
+              "pear_ebi/calculate_distances/mac_bin/HashRF/COPYING",
+          ]
+          missing = [r for r in required if r not in names]
+          print("missing licence files:", missing or "none")
+          sys.exit(1 if missing else 0)
+          PY
+
+      - name: Wheel must stay small
+        # It was 118.8 MB uncompressed, 99.6% of it vendored build byproducts.
+        # This is a ratchet so that never comes back unnoticed.
+        run: |
+          python - <<'PY'
+          import glob, zipfile, sys
+          z = zipfile.ZipFile(glob.glob("dist/*.whl")[0])
+          total = sum(i.file_size for i in z.infolist()) / 1e6
+          print(f"uncompressed wheel: {total:.1f} MB across {len(z.namelist())} files")
+          sys.exit(1 if total > 20 else 0)
+          PY
+
+      - name: No machine-local paths in the distribution
+        run: |
+          python - <<'PY'
+          import glob, tarfile, sys
+          sdist = glob.glob("dist/*.tar.gz")[0]
+          hits = []
+          with tarfile.open(sdist) as tf:
+              for member in tf.getmembers():
+                  if not member.isfile():
+                      continue
+                  data = tf.extractfile(member).read()
+                  if b"/Users/ar36" in data or b"/home/ar2232" in data:
+                      hits.append(member.name)
+          # mac_bin/HashRF/hashrf embeds linker debug strings and needs a macOS
+          # toolchain to strip; it is a known exception.
+          hits = [h for h in hits if not h.endswith("mac_bin/HashRF/hashrf")]
+          print("files with machine-local paths:", hits or "none")
+          sys.exit(1 if hits else 0)
+          PY
+
+      - name: Install the built wheel in a clean venv and run it
+        run: |
+          python -m venv /tmp/fresh
+          /tmp/fresh/bin/pip install --quiet dist/*.whl
+          printf '(A:0.1,B:0.2,(C:0.3,D:0.4):0.5);\n(A:0.1,C:0.2,(B:0.3,D:0.4):0.5);\n(A:0.1,D:0.2,(B:0.3,C:0.4):0.5);\n' > /tmp/t.nwk
+          cd /tmp && MPLBACKEND=Agg /tmp/fresh/bin/pear_ebi t.nwk -m hashrf_RF
+          test -s /tmp/t_distance_matrix.csv && echo "end-to-end OK"
+
+  lint:
+    name: format and lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pipx install pre-commit
+      - run: pre-commit run --all-files --show-diff-on-failure
+
+  docs:
+    name: docs build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # git-revision-date-localized and git-authors need history
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pipx install poetry
+      - run: poetry install --with docs
+      - name: Build the documentation
+        # The ten mkdocs plugins mkdocs.yml requires were declared nowhere before, so
+        # this build was not reproducible.
+        run: poetry run mkdocs build --strict
+      - name: Reject reintroduced polyfill.io references
+        # That domain served malware in June 2024. Do not let it back in.
+        run: |
+          if grep -rIl "polyfill\.io" site/ 2>/dev/null; then
+            echo "polyfill.io reference found in the built site"; exit 1
+          fi
+          echo "no polyfill.io references"
