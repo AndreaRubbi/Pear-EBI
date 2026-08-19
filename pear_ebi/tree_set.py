@@ -900,7 +900,12 @@ class tree_set:
             # print(len(subsample_trees), len(idxs))
             status.update("[bold green]Calculating distances...")
             dM = hashrf.hashrf(file_sub, n_required, file_sub + "_distances.csv")
-            components = PCoA_e.pcoa(dM, 3)
+            # An explicit output path: pcoa() defaults to "./PCoA_Embedding.csv",
+            # so this intermediate embedding was dropped into the user's working
+            # directory on every get_subset call, with no way to opt out.
+            components = PCoA_e.pcoa(
+                dM, 3, output=os.path.join(self._subsample_tmpdir.name, "subset_pcoa.csv")
+            )
             status.update(f"[bold blue] Done!")
             time.sleep(0.2)
 
