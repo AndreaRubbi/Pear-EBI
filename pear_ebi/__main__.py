@@ -92,7 +92,7 @@ def main():
                 pass
             except KeyboardInterrupt:
                 print("[orange1]\n- Leaving PEAR -")
-                exit()
+                return 130  # conventional exit code for SIGINT
             try:
                 exec(interactive.interact(control), locals(), globals())
             except KeyboardInterrupt:
@@ -110,11 +110,17 @@ def main():
                     config_file = args.config
                     config = toml.load(config_file)
                 except FileNotFoundError:
-                    print("[red]File not found")
-                    exit()
+                    # bare exit() exits 0, so a mistyped --config looked like success
+                    print(f"[red]Config file not found: {args.config}")
+                    return 1
                 except TypeError:
                     print("[red]Config arguments must be a filename or filepath")
-                    exit()
+                    return 1
+                except toml.TomlDecodeError as exc:
+                    # Previously uncaught, so a malformed config surfaced as a raw
+                    # TomlDecodeError traceback.
+                    print(f"[red]Could not parse {args.config}: {exc}")
+                    return 1
             else:
                 # Automatically check whether there is
                 # a pear.toml file in directory
@@ -186,7 +192,8 @@ def main():
             if not files:
                 print("[red]No files specified[white] (see --help for instructions)")
                 print("[orange1]- Leaving PEAR -")
-                exit()
+                # non-zero: nothing was computed, so this is a usage error
+                return 1
 
             # if the key collection is present, then
             # pear parses its keys:

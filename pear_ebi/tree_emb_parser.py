@@ -3,17 +3,33 @@ import argparse
 import pear_ebi
 
 
-def parser():
-    """Generates parser for PEAR program
+def parser(argv=None):
+    """Parses PEAR's command line arguments.
+
+    Args:
+        argv (list, optional): argument list to parse. Defaults to None, which means
+            sys.argv[1:], i.e. the real command line. Passing a list makes the parser
+            testable and lets callers drive PEAR programmatically; without it there
+            was no way to exercise this function at all.
 
     Returns:
-        arg parser: PEAR parser
+        argparse.Namespace: the parsed arguments
     """
     parser = argparse.ArgumentParser(
         prog="PEAR",
         description=f"PEAR-EBI v{pear_ebi.__version__} | \
         Phylogeny Embedding and Approximate Representation",
         epilog="Author: Andrea Rubbi & others - Goldman Group | EMBL-European Bioinformatics Institute",
+    )
+
+    # argparse's own version action, replacing a commented-out -v block. A citable
+    # scientific tool needs a machine-readable way to record which version produced a
+    # result; there was none.
+    parser.add_argument(
+        "-V",
+        "--version",
+        action="version",
+        version=f"pear_ebi {pear_ebi.__version__}",
     )
 
     """parser.add_argument(
@@ -144,4 +160,4 @@ def parser():
         required=False,
     )
 
-    return parser.parse_args()
+    return parser.parse_args(argv)

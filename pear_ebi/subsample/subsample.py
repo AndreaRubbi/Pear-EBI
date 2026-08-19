@@ -1,4 +1,5 @@
 import inspect
+import json
 import os
 import random
 import sys
@@ -50,27 +51,36 @@ def subsample(files, n_trees, n_required, subp=True):
 
     trees = {tree: idx for idx, tree in trees}
 
-    MD1_tree = random.sample(trees.keys(), 1)[0]
+    MD1_tree = random.choice(list(trees))
     MD1_idx = trees[MD1_tree]
     MD1 = maple_RF.readNewick(MD1_tree)[0]
     MD1_prep = maple_RF.prepareTreeComparison(MD1, rooted=False)
     trees.pop(MD1_tree)
 
-    MD2_tree = random.sample(trees.keys(), 1)[0]
+    MD2_tree = random.choice(list(trees))
     MD2_idx = trees[MD2_tree]
     MD2 = maple_RF.readNewick(MD2_tree)[0]
     MD2_prep = maple_RF.prepareTreeComparison(MD2, rooted=False)
     trees.pop(MD2_tree)
-    print(MD1)
-    print(MD2)
 
     interesting_points, idxs = [MD1_tree, MD2_tree], [MD1_idx, MD2_idx]
     d_MD1_MD2 = maple_RF.RobinsonFouldsWithDay1985(MD2, MD1_prep, rooted=False)[0]
 
     # def sample_points(trees, MD1_prep, MD2_prep, alpha = 100):
     # global trees, intersting_points, idxs
+    if n_required > len(trees) + len(interesting_points):
+        raise ValueError(
+            "Cannot subsample %d trees: only %d distinct topologies are available."
+            % (n_required, len(trees) + len(interesting_points))
+        )
+
     while len(interesting_points) < n_required:
-        P_tree = random.sample(trees.keys(), 1)[0]
+        if not trees:
+            raise ValueError(
+                "Ran out of candidate trees after selecting %d of %d requested."
+                % (len(interesting_points), n_required)
+            )
+        P_tree = random.choice(list(trees))
         P_idx = trees[P_tree]
         P = maple_RF.readNewick(P_tree)[0]
         d_MD1_P = maple_RF.RobinsonFouldsWithDay1985(P, MD1_prep, rooted=False)[0]
@@ -102,7 +112,13 @@ def subsample(files, n_trees, n_required, subp=True):
     # return sample_points(trees, MD1_prep, MD2_prep, alpha = 50)
 
 
+# Marker for the machine-readable result line. The caller used to read stdout lines
+# 3 and 4 and eval() them, which meant the debug prints in subsample() were
+# load-bearing: removing them silently corrupted the result.
+RESULT_MARKER = "#PEAR_SUBSAMPLE_RESULT#"
+
+
 if __name__ == "__main__":
     args = sys.argv[1:]
-    res = subsample(args[0], int(args[1]), int(args[2]))
-    print("\n", res[0], "\n", res[1], "\n")
+    trees, idxs = subsample(args[0], int(args[1]), int(args[2]))
+    print(RESULT_MARKER + json.dumps({"trees": trees, "idxs": idxs}))

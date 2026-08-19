@@ -2,7 +2,7 @@ __author__ = "Andrea Rubbi"
 
 # ─── About ────────────────────────────────────────────────────────────────────
 """This file defines the tree_set and set_collection classes.
-    tree_set contains the information relative to a single set of phyogenetic trees
+    tree_set contains the information relative to a single set of phylogenetic trees
     in newick format. It allows to compute the distance matrix using different methods and metrics.
     The distance matrix can be then embedded using different methods and subsequently plotted in 2D or 3D.
     A distance matrix and metadata can be given as .csv files. Moreover, metadata is modified
@@ -25,6 +25,7 @@ __email__ = "andrear@ebi.ac.uk"
 __status__ = "Production"
 
 # ──────────────────────────────────────────────────────────────────────────────
+import json
 import os
 import random
 import shutil
@@ -223,6 +224,50 @@ def _write_trees(handle, trees):
     return count
 
 
+def _load_distance_matrix(source, n_trees, label):
+    """Load a precomputed distance matrix and check it describes `n_trees` trees.
+
+    `source` may be a path or an already-loaded array. Nothing used to verify the
+    size: a matrix left over from a different set of trees was accepted silently, and
+    the embedding was then computed on data that did not correspond to the trees.
+    The shipped example_2.toml did exactly this -- 132 trees against a 136x136
+    matrix -- and reported success.
+    """
+    if source is None:
+        return None
+
+    if isinstance(source, (str, os.PathLike)):
+        try:
+            matrix = pd.read_csv(source, header=None, index_col=None).values
+        except (OSError, pd.errors.ParserError, ValueError) as exc:
+            # Was a bare `except:` followed by a generic message, which discarded the
+            # real cause and also caught KeyboardInterrupt.
+            sys.exit(
+                f"Could not read the distance matrix {source}: {exc}\n"
+                "Expected a headerless CSV with one row per tree."
+            )
+    else:
+        matrix = np.asarray(source)
+
+    if matrix.ndim != 2 or matrix.shape[0] != matrix.shape[1]:
+        sys.exit(
+            f"The distance matrix for {label} is {matrix.shape}, which is not square. "
+            "Expected one row and one column per tree."
+        )
+
+    if matrix.shape[0] != n_trees:
+        sys.exit(
+            f"Distance matrix size does not match the trees loaded.\n"
+            f"  trees loaded            : {n_trees}\n"
+            f"  distance matrix         : {matrix.shape[0]} x {matrix.shape[1]}\n"
+            f"  input                   : {label}\n"
+            "A precomputed matrix must describe exactly the trees being loaded. This "
+            "usually means the matrix was computed from a different set of files."
+        )
+
+    return matrix
+
+
 def _as_tree_sets(elements, type_error_message):
     """Coerce a mixed sequence of tree_set objects and file paths into tree_sets.
 
@@ -358,19 +403,10 @@ class tree_set:
         with open(self._normalized_file, "w", encoding="utf-8") as fh:
             _write_trees(fh, trees)
 
-        if type(self.distance_matrix) != type(None):
-            try:
-                self.distance_matrix = pd.read_csv(
-                    self.distance_matrix, header=None, index_col=None
-                ).values
-                #    header=0,
-                #    index_col=0,
-                #    dtype=np.float32,
-                # self.distance_matrix.columns = list(range(self.distance_matrix.shape[1]))
-            except:
-                sys.exit(
-                    "There's an error with the Distance Matrix file - please check the correct location and name of the .csv file"
-                )
+        if self.distance_matrix is not None:
+            self.distance_matrix = _load_distance_matrix(
+                self.distance_matrix, self.n_trees, self.file
+            )
 
         if type(self.metadata) != type(None):
             try:
@@ -596,7 +632,7 @@ class tree_set:
             save (bool, optional): save plot HTML. Defaults to False.
             name_plot (str, optional): name of plot's file. Defaults to None.
             static (bool, optional): return less interactive plot. Defaults to False.
-            plot_meta (str, optional): meta-variale used to color the points. Defaults to "SET-ID".
+            plot_meta (str, optional): meta-variable used to color the points. Defaults to "SET-ID".
             plot_set (list, optional): list of sets to plot from set_collection. Defaults to None.
             select (bool, optional): return set of buttons to show or hide specific traces. Defaults to False.
             same_scale (bool, optional): use same color_scale for all traces when scale is continuous. Defaults to False.
@@ -713,7 +749,7 @@ class tree_set:
             save (bool, optional): save plot HTML. Defaults to False.
             name_plot (str, optional): name of plot's file. Defaults to None.
             static (bool, optional): return less interactive plot. Defaults to False.
-            plot_meta (str, optional): meta-variale used to color the points. Defaults to "SET-ID".
+            plot_meta (str, optional): meta-variable used to color the points. Defaults to "SET-ID".
             plot_set (list, optional): list of sets to plot from set_collection. Defaults to None.
             select (bool, optional): return set of buttons to show or hide specific traces. Defaults to False.
             same_scale (bool, optional): use same color_scale for all traces when scale is continuous. Defaults to False.
@@ -820,7 +856,7 @@ class tree_set:
 
         Args:
             n_required (int): number of points to extract
-            method (str, optional): method used to extact points ('sequence', 'random', 'syst'). Defaults to "sequence".
+            method (str, optional): method used to extract points ('sequence', 'random', 'syst'). Defaults to "sequence".
 
         Returns:
             subset plots: 2D and 3D embedding plots of subset
@@ -846,11 +882,26 @@ class tree_set:
                     res = subprocess.check_output(command, universal_newlines=True).split(
                         "\n"
                     )
-                    subsample_trees, idxs = eval(res[3]), eval(res[4])
+                    # Parse the marker line instead of eval()ing stdout lines 3 and
+                    # 4 by index, which made the debug prints inside subsample()
+                    # load-bearing and would have silently corrupted results.
+                    payload = None
+                    for line in res:
+                        if line.startswith(subsample.RESULT_MARKER):
+                            payload = json.loads(
+                                line[len(subsample.RESULT_MARKER) :]
+                            )
+                            break
+                    if payload is None:
+                        sys.exit(
+                            "Subsampling under pypy3 produced no result line.\n"
+                            + "\n".join(res[-10:])
+                        )
+                    subsample_trees, idxs = payload["trees"], payload["idxs"]
 
                 else:
                     console.log(
-                        "[bold red]Could not find pypy3 on your sytem PATH - using python3..."
+                        "[bold red]Could not find pypy3 on your system PATH - using python3..."
                     )
                     subsample_trees, idxs = subsample.subsample(
                         str(files), self.n_trees, n_required, subp=False
@@ -946,11 +997,11 @@ class set_collection(tree_set):
 
         self.id = uuid.uuid4()
         self.file = file + str(self.id) if file == "Set_collection_" else file
-        self.distance_matrix = (
-            pd.read_csv(distance_matrix, header=None, index_col=None).values  #
-            if distance_matrix
-            else distance_matrix
-        )
+        # `if distance_matrix` raised "truth value of a DataFrame is ambiguous" for an
+        # in-memory matrix, so only a path could ever be passed. The shape check is
+        # deferred until self.n_trees is known, further down.
+        self._distance_matrix_source = distance_matrix
+        self.distance_matrix = None
         self.embedding_pcoa2D = None
         self.embedding_tsne2D = None
         self.embedding_pcoa3D = None
@@ -1028,6 +1079,11 @@ class set_collection(tree_set):
             self.n_trees += set.n_trees
 
         self.metadata.reset_index(drop=True, inplace=True)
+
+        # n_trees is only known now, so the precomputed matrix is validated here.
+        self.distance_matrix = _load_distance_matrix(
+            self._distance_matrix_source, self.n_trees, self.file
+        )
 
         if type(metadata) != type(None):
             try:
@@ -1136,10 +1192,10 @@ class set_collection(tree_set):
     # the result of addition between two collections
     # is the concatenation of the two collections
     def __add__(self, other):
-        """Concatenates two collectionsor collection and tree_set
+        """Concatenates two collections or collection and tree_set
 
         Args:
-            other (tree_set ot set_colletion): tree_set ot set_colletion
+            other (tree_set ot set_collection): tree_set ot set_collection
 
         Returns:
             set_collection: concatenated set_collection
@@ -1175,10 +1231,10 @@ class set_collection(tree_set):
     # concatenate is a more formal method to concatenate collections
     # using this allows for more clarity in the codebase
     def concatenate(self, other):
-        """Concatenates two collectionsor collection and tree_set
+        """Concatenates two collections or collection and tree_set
 
         Args:
-            other (tree_set ot set_colletion): tree_set ot set_colletion
+            other (tree_set ot set_collection): tree_set ot set_collection
 
         Returns:
             set_collection: concatenated set_collection
