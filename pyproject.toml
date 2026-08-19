@@ -10,9 +10,17 @@ maintainers = [{ name = "Andrea Rubbi", email = "andrear@ebi.ac.uk" }]
 keywords = ["phylogenetics", "phylogenetic-trees", "embedding", "robinson-foulds", "newick"]
 
 # Was absent entirely, so pip would install on any interpreter and fail at runtime.
-# The dependency floors below (pandas, scipy, scikit-learn) all require >= 3.9,
-# which is why the old 3.7/3.8 classifiers were never actually installable.
-requires-python = ">=3.9,<4.0"
+#
+# Floor: the dependency floors below (pandas, scipy, scikit-learn) all require
+# >= 3.9, which is why the old 3.7/3.8 classifiers were never installable.
+#
+# Ceiling: 3.13 is excluded deliberately, and it follows from the NumPy < 2.0
+# requirement rather than from anything in this package. NumPy 1.26.4 is the last
+# 1.x release and ships wheels only for cp39-cp312; 3.13 support first appeared in
+# NumPy 2.1. Verified by installing the wheel on 3.13, where pip falls back to
+# building scipy 1.13.1 from source and fails for want of a Fortran compiler. If
+# the NumPy < 2 constraint is ever lifted, this ceiling can be raised with it.
+requires-python = ">=3.9,<3.13"
 
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -87,11 +95,16 @@ pear_ebi = "pear_ebi.__main__:main"
 # package into site-packages, shadowing the CPython stdlib "test" module.
 packages = [{ include = "pear_ebi" }]
 
-# Vendored native tools. Listed explicitly (rather than MANIFEST.in's four graft
-# lines, two of which pointed at directories that no longer exist) so what ships
-# is reviewable. NOTE: this currently carries the full upstream build trees --
-# object files, CMake caches and sample datasets -- which is why the wheel is
-# ~118 MB. Narrowing these globs to just the executables is a separate change.
+# Vendored native tools: the executables, their licences, and their C/C++ sources.
+# The upstream build byproducts (CMake trees, .o files, autotools logs, 37 MB of
+# sample datasets, macOS ._* forks) were removed, taking the wheel from 118.8 MB to
+# 9.1 MB uncompressed.
+#
+# The sources are kept deliberately, for two reasons. HashRF is GPL-2 and tqDist is
+# GPL-3/LGPL-3, so distributing the binaries carries a source-provision obligation.
+# And _install_helpers.build_tqdist() needs CMakeLists.txt plus the sources to
+# rebuild locally, which is the documented escape hatch when the bundled binary does
+# not match the host architecture (the macOS binaries are arm64-only).
 include = [
   { path = "pear_ebi/calculate_distances/linux_bin/**/*", format = ["sdist", "wheel"] },
   { path = "pear_ebi/calculate_distances/mac_bin/**/*", format = ["sdist", "wheel"] },
@@ -104,6 +117,7 @@ pytest-timeout = ">=2.0"
 black = ">=23.1"
 isort = ">=5.10"
 pre-commit = ">=3.5"
+pytest-cov = ">=4.0"
 
 [tool.poetry.group.docs.dependencies]
 # Every plugin mkdocs.yml requires. None of these were declared anywhere before,
