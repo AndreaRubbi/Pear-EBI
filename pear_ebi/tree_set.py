@@ -359,10 +359,14 @@ class tree_set:
         self.output_file = output_file
         self.distance_matrix = distance_matrix
         self.metadata = metadata
-        self.embedding_pcoa2D = None
-        self.embedding_tsne2D = None
-        self.embedding_pcoa3D = None
-        self.embedding_tsne3D = None
+        # All four embedding methods, in both dimensionalities. Only pcoa and tsne
+        # used to be initialised here, so plot_2D("isomap") and plot_2D("lle") -- both
+        # documented, and isomap is what template_pear.toml ships as its example --
+        # raised AttributeError unless embed() happened to have been called first,
+        # whereas pcoa and tsne silently computed themselves on demand.
+        for _method in ("pcoa", "tsne", "isomap", "lle"):
+            setattr(self, f"embedding_{_method}2D", None)
+            setattr(self, f"embedding_{_method}3D", None)
 
         if self.output_file == None:
             self.output_file = "./{file}_distance_matrix.csv".format(
@@ -1002,10 +1006,14 @@ class set_collection(tree_set):
         # deferred until self.n_trees is known, further down.
         self._distance_matrix_source = distance_matrix
         self.distance_matrix = None
-        self.embedding_pcoa2D = None
-        self.embedding_tsne2D = None
-        self.embedding_pcoa3D = None
-        self.embedding_tsne3D = None
+        # All four embedding methods, in both dimensionalities. Only pcoa and tsne
+        # used to be initialised here, so plot_2D("isomap") and plot_2D("lle") -- both
+        # documented, and isomap is what template_pear.toml ships as its example --
+        # raised AttributeError unless embed() happened to have been called first,
+        # whereas pcoa and tsne silently computed themselves on demand.
+        for _method in ("pcoa", "tsne", "isomap", "lle"):
+            setattr(self, f"embedding_{_method}2D", None)
+            setattr(self, f"embedding_{_method}3D", None)
 
         if self.file != "Set_collection_" + str(self.id) and output_file is None:
             self.output_file = "{file}_distance_matrix.csv".format(

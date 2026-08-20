@@ -56,8 +56,16 @@ class TempDirTestCase(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory(prefix="pear_test_")
         self.tmp = self._tmp.name
+        # chdir as well as providing out(). Several defaults are relative to the
+        # working directory -- embed() writes ./<name>_<METHOD>_embedding.csv and
+        # plot_* write ./<METHOD>_2D.html -- so a test that does not pass an explicit
+        # path scatters files into the repository. Caught exactly that way: running
+        # the suite left four twelve_trees_*_embedding.csv files at the repo root.
+        self._old_cwd = os.getcwd()
+        os.chdir(self.tmp)
 
     def tearDown(self):
+        os.chdir(self._old_cwd)
         self._tmp.cleanup()
 
     def out(self, name):
@@ -488,3 +496,138 @@ class TestParser(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# ─── Embedding attribute initialisation ───────────────────────────────────────
+
+
+class TestEmbeddingAttributes(TempDirTestCase):
+    """Only pcoa and tsne used to be initialised, so isomap and lle crashed."""
+
+    METHODS = ("pcoa", "tsne", "isomap", "lle")
+
+    def test_all_eight_attributes_exist_on_a_fresh_tree_set(self):
+        s = tree_set(FIVE, output_file=self.out("a.csv"))
+        for method in self.METHODS:
+            for dim in ("2D", "3D"):
+                with self.subTest(attr=f"embedding_{method}{dim}"):
+                    self.assertTrue(hasattr(s, f"embedding_{method}{dim}"))
+
+    def test_all_eight_attributes_exist_on_a_fresh_collection(self):
+        c = set_collection(collection=[NO_NL_A], output_file=self.out("b.csv"))
+        for method in self.METHODS:
+            for dim in ("2D", "3D"):
+                with self.subTest(attr=f"embedding_{method}{dim}"):
+                    self.assertTrue(hasattr(c, f"embedding_{method}{dim}"))
+
+    def test_plot_works_for_every_method_without_a_prior_embed(self):
+        """pcoa and tsne computed on demand; isomap and lle raised AttributeError."""
+        s = tree_set(TWELVE, output_file=self.out("c.csv"))
+        s.calculate_distances("hashrf_RF")
+        for method in self.METHODS:
+            for label, plot in (("2D", s.plot_2D), ("3D", s.plot_3D)):
+                with self.subTest(method=method, dim=label):
+                    plot(method, static=True, name_plot=self.out(f"{method}{label}"))
+
+
+# ─── Notebook executability ───────────────────────────────────────────────────
+
+
+class TestNotebooksAreExecutable(unittest.TestCase):
+    """Cells that start interactive mode must stay tagged skip-execution.
+
+    Under nbconvert the `!pear_ebi -i` subprocess inherits the kernel's open stdin
+    pipe, which never delivers data and never reaches EOF, so input() blocks forever:
+    the cell HANGS rather than raising, and the notebook cannot be executed
+    unattended at all. nbclient honours the skip-execution tag, so this test guards
+    the tag rather than the behaviour.
+    """
+
+    NOTEBOOKS = [
+        "examples_tree_sets/How to use pear_ebi.ipynb",
+        "examples_tree_sets/Advanced Examples/Advanced use of pear_ebi.ipynb",
+        "examples_tree_sets/Advanced Examples/"
+        "How to use pear_ebi on python and reproduce the examples on the paper.ipynb",
+    ]
+
+    def _repo(self, rel):
+        return os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), rel
+        )
+
+    def test_interactive_cells_are_tagged_skip_execution(self):
+        import json
+
+        for rel in self.NOTEBOOKS:
+            path = self._repo(rel)
+            if not os.path.exists(path):
+                continue
+            with open(path, encoding="utf-8") as fh:
+                nb = json.load(fh)
+            for i, cell in enumerate(nb["cells"]):
+                if cell.get("cell_type") != "code":
+                    continue
+                src = "".join(cell.get("source", []))
+                if "pear_ebi" in src and (" -i" in src or src.rstrip().endswith("-i")):
+                    tags = cell.get("metadata", {}).get("tags", [])
+                    with self.subTest(notebook=os.path.basename(rel), cell=i):
+                        self.assertIn(
+                            "skip-execution", tags,
+                            f"cell {i} starts interactive mode and would hang "
+                            "nbconvert forever; it must be tagged skip-execution",
+                        )
+
+    def test_notebooks_are_valid_json_with_a_kernelspec(self):
+        import json
+
+        for rel in self.NOTEBOOKS:
+            path = self._repo(rel)
+            with self.subTest(notebook=os.path.basename(rel)):
+                self.assertTrue(os.path.exists(path), f"{rel} is missing")
+                with open(path, encoding="utf-8") as fh:
+                    nb = json.load(fh)
+                self.assertIn("cells", nb)
+                self.assertIn("kernelspec", nb.get("metadata", {}))
+
+
+# ─── hashrf's split canonicalisation ──────────────────────────────────────────
+
+
+class TestHashrfSplitOrientation(TempDirTestCase):
+    """hashrf does not canonicalise a bipartition to a fixed side of the split.
+
+    Two Newick strings can encode the same UNROOTED tree while nesting opposite sides
+    of the internal edge. A correct unrooted implementation normalises the split (for
+    example by always taking the side without a reference taxon) and reports 0. The
+    bundled binary reports 1, and prints "# of unique BIDs = 2" where there is only
+    one distinct bipartition.
+
+    Measured impact: 6 of the first 1770 BEAST pairs deviate from true_unrooted_RF/2,
+    and 2 of the 66 pairs in twelve_trees.nwk. hashrf_RF is also the method embed()
+    silently falls back to.
+
+    Pinned rather than fixed: the behaviour is inside a vendored third-party binary
+    with no flag to change it, and correcting it would change numbers that may already
+    be published.
+    """
+
+    def test_reordering_within_the_string_is_handled(self):
+        """Permuting children of the same nesting is fine -- the defect is narrower."""
+        path = self.out("perm.nwk")
+        with open(path, "w") as fh:
+            fh.write("(A:1,B:1,(C:1,D:1):1);\n(B:1,A:1,(D:1,C:1):1);\n")
+        m = np.asarray(hashrf(path, 2, self.out("perm.csv")))
+        self.assertEqual(m[0, 1], 0)
+
+    def test_opposite_side_of_the_split_is_not_recognised(self):
+        """Same unrooted tree, other side of the internal edge nested -> reports 1."""
+        path = self.out("flip.nwk")
+        with open(path, "w") as fh:
+            fh.write("(A:1,B:1,(C:1,D:1):1);\n(C:1,D:1,(A:1,B:1):1);\n")
+        m = np.asarray(hashrf(path, 2, self.out("flip.csv")))
+        self.assertEqual(
+            m[0, 1], 1,
+            "hashrf now reports 0 for the same unrooted tree written with the "
+            "opposite side nested. If the vendored binary was fixed or replaced, "
+            "update this test and the documentation of hashrf_RF together.",
+        )
