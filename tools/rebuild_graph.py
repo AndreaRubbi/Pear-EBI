@@ -20,7 +20,7 @@ EXCLUDE = (
     "pear_ebi/calculate_distances/mac_bin/",
     "site/", ".venv/", ".venv.stale-pre-poetry/", "dist/", "graphify-out/",
     "__pycache__/", ".ipynb_checkpoints/", "pear_ebi.egg-info/",
-    "docs_assets/", "logos/", ".claude/",
+    "docs_assets/", "logos/",
 )
 
 out = Path("graphify-out"); out.mkdir(exist_ok=True)
