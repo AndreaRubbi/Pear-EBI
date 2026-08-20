@@ -2,7 +2,7 @@
 
 
 ## tree_set
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L296)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L341)
 ```python 
 tree_set(
    file, output_file = None, distance_matrix = None, metadata = None
@@ -18,7 +18,7 @@ Class for the analysis of a set of phylogenetic trees
 
 
 ### .tool_input
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L410)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L450)
 ```python
 .tool_input()
 ```
@@ -37,7 +37,7 @@ interpreter exit, and in notebooks where the object stays referenced.
 TemporaryDirectory handles cleanup through weakref.finalize instead.
 
 ### .calculate_distances
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L426)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L466)
 ```python
 .calculate_distances(
    method
@@ -54,7 +54,7 @@ Computes tree_set distance matrix with method of choice
 
 
 ### .embed
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L448)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L488)
 ```python
 .embed(
    method, dimensions, quality = False, report = False, output = None
@@ -73,7 +73,7 @@ Compute embedding with n-dimensions and method of choice
 
 
 ### .plot_2D
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L581)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L621)
 ```python
 .plot_2D(
    method, save = False, name_plot = None, static = False, plot_meta = 'SET-ID',
@@ -108,7 +108,7 @@ Plot 2D embedding performed with method of choice
 
 
 ### .plot_3D
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L697)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L737)
 ```python
 .plot_3D(
    method, save = False, name_plot = None, static = False, plot_meta = 'SET-ID',
@@ -143,7 +143,7 @@ Plot 3D embedding performed with method of choice
 
 
 ### .get_subset
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L818)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L858)
 ```python
 .get_subset(
    n_required, method = 'sequence'
@@ -169,7 +169,7 @@ Gets subset of phylogenetic trees
 
 
 ## set_collection
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L929)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L984)
 ```python 
 set_collection(
    collection = list(), file = 'Set_collection_', output_file = None,
@@ -184,7 +184,7 @@ set_collection(
 
 
 ### .calculate_distances
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L1054)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L1118)
 ```python
 .calculate_distances(
    method
@@ -201,7 +201,7 @@ Computes tree_set distance matrix with method of choice
 
 
 ### .concatenate
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L1177)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L1241)
 ```python
 .concatenate(
    other

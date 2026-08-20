@@ -2,7 +2,7 @@
 
 
 ### subsample
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/subsample/subsample.py/#L17)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/subsample/subsample.py/#L18)
 ```python
 .subsample(
    files, n_trees, n_required, subp = True
