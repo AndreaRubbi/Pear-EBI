@@ -39,3 +39,44 @@ pear_ebi/calculate_distances/*/*/config.log
 pear_ebi/calculate_distances/*/*/config.status
 pear_ebi/calculate_distances/**/*.o
 pear_ebi/calculate_distances/**/._*
+
+# ─── PEAR run outputs ─────────────────────────────────────────────────────────
+# Everything a normal run writes into the working directory. None of it belongs in
+# git, and the test suite and the notebooks both generate it. Patterns are specific
+# to the names PEAR actually produces so that tracked fixtures and the generated
+# site/ are unaffected (verified: no tracked file is matched).
+*_distance_matrix.csv
+Set_collection_distance_matrix_*.csv
+*_PCOA_embedding.csv
+*_TSNE_embedding.csv
+*_ISOMAP_embedding.csv
+*_LLE_embedding.csv
+PCoA_Embedding.csv
+PCA_Embedding.csv
+*_PCOA_2D.html
+*_PCOA_3D.html
+*_TSNE_2D.html
+*_TSNE_3D.html
+*_ISOMAP_2D.html
+*_ISOMAP_3D.html
+*_LLE_2D.html
+*_LLE_3D.html
+PCOA_2D.html
+PCOA_3D.html
+TSNE_2D.html
+TSNE_3D.html
+*_SUBSAMPLE
+*_SUBSAMPLE_distances.csv
+Trees.pckl
+tmp_file
+
+# notebook execution artefacts
+executed.ipynb
+ex.ipynb
+*.exec-input.ipynb
+*.executed.ipynb
+.ipynb_checkpoints/
+
+# these two ARE deliberate fixtures and must stay tracked
+!tests/beast_run1_distance_matrix.csv
+!tests/PCA_Embedding.csv

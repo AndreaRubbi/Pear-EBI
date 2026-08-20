@@ -1,5 +1,7 @@
 import os
 import re
+import shutil
+import tempfile
 import warnings
 
 import numpy as np
@@ -8,9 +10,12 @@ import pandas as pd
 from .._install_helpers import tqdist_bin_dir
 from ._exec import (
     PearExecutableError,
+    file_fingerprint,
     raise_for_launch_failure,
+    remove_file,
     resolve_binary,
     run_process,
+    written_by_this_run,
 )
 
 # ──────────────────────────────── RUNNING TQDIST RETURNING CLEANED OUTPUT ─────
@@ -103,16 +108,32 @@ def _read_matrix(output_file, n_trees, run, label):
 
 
 def _run(system_name, label, file, n_trees, output_file):
+    """Run a tqDist tool and return the symmetric distance matrix.
+
+    tqDist is pointed at a temporary file rather than at output_file, and the result
+    is only written to output_file once it has been validated. Previously tqDist wrote
+    straight to output_file and wrote incrementally, so a run that was then refused
+    left a truncated matrix behind that looked like a valid result -- and destroyed any
+    matrix already at that path.
+    """
     bin_path = _resolve(system_name, label)
-    run = run_process([bin_path, file, output_file])
-    raise_for_launch_failure(run, bin_path, tool_label=label)
-    if not run.ok:
-        raise PearExecutableError(
-            f"{label} failed (exit code {run.returncode}) on {file}.\n"
-            f"  Tree count passed to {label}: {n_trees}\n"
-            f"{run.streams()}"
-        )
-    return _read_matrix(output_file, n_trees, run, label)
+
+    with tempfile.TemporaryDirectory(prefix="pear_tqdist_") as tmp:
+        staged = os.path.join(tmp, "matrix.csv")
+        run = run_process([bin_path, file, staged])
+        raise_for_launch_failure(run, bin_path, tool_label=label)
+        if not run.ok:
+            raise PearExecutableError(
+                f"{label} failed (exit code {run.returncode}) on {file}.\n"
+                f"  Tree count passed to {label}: {n_trees}\n"
+                f"{run.streams()}"
+            )
+        # _read_matrix validates and rewrites the staged file as a symmetric matrix;
+        # it raises before anything reaches output_file if the result is unusable.
+        matrix = _read_matrix(staged, n_trees, run, label)
+        shutil.copyfile(staged, output_file)
+
+    return matrix
 
 
 def quartet(file, n_trees, output_file):

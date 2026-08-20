@@ -9,6 +9,20 @@ from .emb_quality import DRM, pear_correlation
 
 # ──────────────────────────────────────────────────────────────────────────────
 # ─── t-SNE ND ─────────────────────────────────────────────────────────────────
+def _perplexity_for(distance_matrix, preferred=3.0):
+    """Return a legal perplexity for this many samples.
+
+    sklearn requires perplexity < n_samples. The value was hardcoded at 3, so
+    `--tsne` raised a raw ValueError for three trees or fewer. This clamps rather
+    than rescales: whenever the original 3 is legal it is used unchanged, so
+    embeddings of existing tree sets are numerically identical to before.
+    """
+    n_samples = len(distance_matrix)
+    if n_samples <= 2:
+        return 1.0
+    return float(min(preferred, n_samples - 1))
+
+
 def tsne(
     distance_matrix,
     n_dimensions,
@@ -36,7 +50,7 @@ def tsne(
         method=method,
         init="random",
         learning_rate=200.0,
-        perplexity=3,
+        perplexity=_perplexity_for(distance_matrix),
     )
 
     Distances_embedded_ND = tsne.fit_transform(distance_matrix.astype(np.float32))

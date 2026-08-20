@@ -30,6 +30,51 @@ def main():
     # the sys.path.
     sys.path.append(parent)
 
+    def _plot_stem(SET):
+        """Filename stem for a plot: the input name, not just the method.
+
+        Plots used to be written as PCOA_2D.html, named only after the embedding
+        method, so running PEAR on two different tree sets in the same directory
+        silently overwrote the first set's plot with the second's.
+        """
+        name = getattr(SET, "file", None)
+        if not name:
+            return "pear"
+        stem = os.path.splitext(os.path.basename(str(name)))[0]
+        return stem or "pear"
+
+    def _gather(glob_pattern):
+        """Expand a glob to a sorted list of regular files.
+
+        Sorted because glob() returns whatever order the filesystem gives, and that
+        order determines SET-IDs and the row order of the distance matrix -- so the
+        same command could produce differently-ordered output on different machines.
+        Directories are filtered out: with --dir and no --pattern the pattern defaults
+        to "*", which otherwise swept up subdirectories and any non-tree file sitting
+        in the folder.
+        """
+        from pear_ebi.tree_set import _read_trees
+
+        matches = sorted(glob(glob_pattern))
+        files_only = [m for m in matches if os.path.isfile(m)]
+
+        # Skip files that hold no trees instead of aborting the whole run. With
+        # --dir and no --pattern the pattern is "*", so any README or notes.csv in
+        # the folder gets matched; loading one would otherwise stop everything.
+        kept = []
+        for candidate in files_only:
+            try:
+                if _read_trees(candidate):
+                    kept.append(candidate)
+                else:
+                    print(f"[orange1]Skipping {candidate}: no phylogenetic trees in it")
+            except (OSError, UnicodeDecodeError) as exc:
+                print(f"[orange1]Skipping {candidate}: {exc}")
+
+        if not kept:
+            print(f"[orange1]Warning: no tree files matched {glob_pattern}")
+        return kept
+
     import pear_ebi.tree_emb_parser
     from pear_ebi.calculate_distances import hashrf
     from pear_ebi.calculate_distances._exec import PearExecutableError
@@ -47,15 +92,30 @@ def main():
         if args.interactive_mode:
             file = args.input
             if not file:
+                # input() never raises FileNotFoundError, so the old handlers were
+                # dead and a mistyped path fell through to tree_set(), which exited
+                # with a traceback rather than re-prompting. Validate here instead.
                 while True:
                     try:
                         print("[bright_magenta]Specify file with tree set\n")
-                        file.append(input("File: "))
-                        break
-                    except FileNotFoundError:
-                        print("[red] File not found - try again")
-                    except ValueError:
-                        print("[red] Invalid file specification")
+                        answer = input("File: ").strip()
+                    except EOFError:
+                        print("[orange1]\n- Leaving PEAR -")
+                        return 130
+                    except KeyboardInterrupt:
+                        print("[orange1]\n- Leaving PEAR -")
+                        return 130
+                    if not answer:
+                        print("[red]Please give a file name, or press Ctrl-C to quit")
+                        continue
+                    if not os.path.exists(answer):
+                        print(f"[red]File not found: {answer} - try again")
+                        continue
+                    if os.path.isdir(answer):
+                        print(f"[red]{answer} is a directory, not a tree file")
+                        continue
+                    file.append(answer)
+                    break
 
             distance_matrix = args.distance_matrix
             output_file = args.output
@@ -83,21 +143,59 @@ def main():
 
             interactive.usage()
 
+        # Explicit dispatch, replacing exec(interactive.interact(control), ...).
+        # That call passed its globals and locals the wrong way round, and relied on
+        # option 5's "SET = ..." assignment landing in module globals so later
+        # commands could still see it -- which happened to work on CPython and stops
+        # working under PEP 667 in Python 3.13. Calling the functions directly makes
+        # the rebinding an ordinary local assignment.
+        actions = {
+            1: lambda s: (print(s), s)[1],
+            2: lambda s: (interactive.calculate_distances(s), s)[1],
+            3: lambda s: (interactive.embedding(s), s)[1],
+            4: lambda s: (interactive.plotting(s), s)[1],
+            5: lambda s: interactive.add_set(s),
+            6: lambda s: (interactive.get_subset(s), s)[1],
+            8: lambda s: (interactive.usage(), s)[1],
+        }
+
         while args.interactive_mode:
-            control = ""
             try:
-                control = input("Command: ")
-                control = int(control)
+                control = int(input("Command: "))
             except ValueError:
-                pass
+                print("[bold orange1]Operation unavailable")
+                continue
+            except EOFError:
+                # Ctrl-D used to escape as an uncaught EOFError traceback.
+                print("[orange1]\n- Leaving PEAR -")
+                return 0
             except KeyboardInterrupt:
                 print("[orange1]\n- Leaving PEAR -")
                 return 130  # conventional exit code for SIGINT
+
+            if control == 7:
+                print("[orange1]- Leaving PEAR -")
+                return 0
+
+            action = actions.get(control)
+            if action is None:
+                print("[bold orange1]Operation unavailable")
+                continue
+
             try:
-                exec(interactive.interact(control), locals(), globals())
+                SET = action(SET)
             except KeyboardInterrupt:
-                print("[red] Interrupted")
-                pass
+                print("[red]Interrupted")
+            except SystemExit as exc:
+                # A library path calling sys.exit() would otherwise end the session
+                # and discard everything computed so far.
+                print(f"[red]{exc}")
+            except Exception as exc:  # noqa: BLE001 - keep the session alive
+                # Any failure inside one action used to escape and kill the whole
+                # session, losing every distance matrix and embedding already
+                # computed. Report it and return to the prompt instead.
+                print(f"[red]{type(exc).__name__}: {exc}")
+                print("[white]Nothing else changed - your tree set is still loaded.")
 
         # ─── Normal Pear ──────────────────────────────────────────────────────
         else:
@@ -170,7 +268,7 @@ def main():
                         )
                     try:
                         glob_pattern = os.path.join(d, pattern)
-                        files.extend(glob(glob_pattern))
+                        files.extend(_gather(glob_pattern))
                     except FileNotFoundError:
                         print("[red]File or directory not found")
                     except ValueError:
@@ -178,8 +276,11 @@ def main():
             if args.dir is not None:
                 try:
                     pattern = args.pattern if args.pattern is not None else "*"
+                    if not os.path.isdir(args.dir):
+                        print(f"[red]Not a directory: {args.dir}")
+                        return 1
                     glob_pattern = os.path.join(args.dir, pattern)
-                    files.extend(glob(glob_pattern))
+                    files.extend(_gather(glob_pattern))
                 except FileNotFoundError:
                     print("[red]File or directory not found")
                 except ValueError:
@@ -313,6 +414,16 @@ def main():
             #    quality = True
             #    report = True
             report = False
+
+            if args.pcoa is not None and args.tsne is not None:
+                # Only one embedding method is carried through, and --tsne is assigned
+                # second, so --pcoa was silently discarded with no warning.
+                print(
+                    "[red]--pcoa and --tsne cannot be combined: PEAR computes one "
+                    "embedding per run.\n[white]Run it twice, or use a config file "
+                    "with an [embedding] section."
+                )
+                return 1
 
             if args.pcoa is not None:
                 method_embedding = "pcoa"
@@ -482,7 +593,7 @@ def main():
                         name_plot3d = (
                             name_plot3d + "3D"
                             if name_plot is not None
-                            else f"{method_embedding.upper()}_3D"
+                            else f"{_plot_stem(SET)}_{method_embedding.upper()}_3D"
                         )
                         fig = SET.plot_3D(
                             method_embedding,
@@ -501,7 +612,7 @@ def main():
                     name_plot2d = (
                         name_plot + "2D"
                         if name_plot is not None
-                        else f"{method_embedding.upper()}_2D"
+                        else f"{_plot_stem(SET)}_{method_embedding.upper()}_2D"
                     )
                     fig = SET.plot_2D(
                         method_embedding,
@@ -524,7 +635,7 @@ def main():
                         name_plot3d = (
                             name_plot + "3D"
                             if name_plot is not None
-                            else f"{method_embedding.upper()}_3D"
+                            else f"{_plot_stem(SET)}_{method_embedding.upper()}_3D"
                         )
                         fig = SET.plot_3D(
                             method_embedding,
@@ -538,7 +649,7 @@ def main():
                     name_plot2d = (
                         name_plot + "2D"
                         if name_plot is not None
-                        else f"{method_embedding.upper()}_2D"
+                        else f"{_plot_stem(SET)}_{method_embedding.upper()}_2D"
                     )
                     fig = SET.plot_2D(
                         method_embedding,

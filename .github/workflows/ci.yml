@@ -57,7 +57,19 @@ jobs:
       - name: Run tests
         env:
           MPLBACKEND: Agg
-        run: poetry run pytest -v --timeout=600
+        run: poetry run pytest -v --timeout=1800
+
+      - name: Test runs must not leave byproducts in the tree
+        # PEAR writes distance matrices, embeddings and plots relative to the working
+        # directory, so a test that forgets to isolate itself silently litters the
+        # repository -- and those files then get committed.
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "The test run modified or added files:"
+            git status --porcelain
+            exit 1
+          fi
+          echo "working tree clean after the test run"
 
   packaging:
     name: packaging invariants
@@ -160,12 +172,40 @@ jobs:
           PY
 
       - name: Install the built wheel in a clean venv and run it
+        # Deliberately run from /tmp, not the checkout: with the repository as the
+        # working directory, "" on sys.path makes ./pear_ebi shadow the installed
+        # package, so this would silently test the source tree instead of the wheel.
         run: |
           python -m venv /tmp/fresh
           /tmp/fresh/bin/pip install --quiet dist/*.whl
-          printf '(A:0.1,B:0.2,(C:0.3,D:0.4):0.5);\n(A:0.1,C:0.2,(B:0.3,D:0.4):0.5);\n(A:0.1,D:0.2,(B:0.3,C:0.4):0.5);\n' > /tmp/t.nwk
-          cd /tmp && MPLBACKEND=Agg /tmp/fresh/bin/pear_ebi t.nwk -m hashrf_RF
-          test -s /tmp/t_distance_matrix.csv && echo "end-to-end OK"
+          mkdir -p /tmp/userland && cd /tmp/userland
+          PEAR_REPO="$GITHUB_WORKSPACE" /tmp/fresh/bin/python - <<'PY'
+          import os, sys, pear_ebi, numpy
+          repo = os.environ["PEAR_REPO"]
+          loc = os.path.dirname(pear_ebi.__file__)
+          assert "site-packages" in loc, f"not installed properly: {loc}"
+          assert repo not in loc, f"loaded from the checkout, not the wheel: {loc}"
+          assert not [p for p in sys.path if repo in p], "checkout leaked onto sys.path"
+          assert numpy.__version__.startswith("1."), numpy.__version__
+          # every module must import from the installed copy
+          from pear_ebi.tree_set import tree_set, set_collection
+          from pear_ebi.calculate_distances import hashrf, tqdist, maple_RF
+          from pear_ebi.embeddings import PCoA_e, tSNE_e, Isomap_e, LLE_e
+          from pear_ebi.embeddings.graph import graph
+          from pear_ebi.interactive_mode import interactive
+          from pear_ebi import _install_helpers as ih
+          assert len(ih.native_executables()) == 9
+          assert all(os.access(p, os.X_OK) for p in ih.native_executables())
+          print(f"provenance clean: {loc}")
+          PY
+          printf '(A:0.1,B:0.2,(C:0.3,D:0.4):0.5);\n(A:0.1,C:0.2,(B:0.3,D:0.4):0.5);\n(A:0.1,D:0.2,(B:0.3,C:0.4):0.5);\n' > t.nwk
+          for m in hashrf_RF hashrf_wRF smart_RF tqdist_quartet tqdist_triplet; do
+            MPLBACKEND=Agg /tmp/fresh/bin/pear_ebi t.nwk -m $m -o "d_$m.csv"
+            test -s "d_$m.csv" || { echo "$m produced no matrix"; exit 1; }
+          done
+          MPLBACKEND=Agg /tmp/fresh/bin/pear_ebi t.nwk -m hashrf_RF --pcoa 2 -p
+          ls *.html >/dev/null || { echo "no plot written"; exit 1; }
+          echo "end-to-end OK from a clean install"
 
   lint:
     name: format and lint

@@ -602,6 +602,28 @@ def calculate_distance_matrix(file, n_trees, output_file):
 
         distance_matrix_lower = distance_matrix.transpose()
 
-    distance_matrix = pd.DataFrame(distance_matrix + distance_matrix_lower)
+    distance_matrix = distance_matrix + distance_matrix_lower
+
+    # RobinsonFouldsWithDay1985 gives up and returns None for a tree whose taxa are
+    # not all present in the reference tree, printing
+    #     "<taxon> not in reference tree - aborting RF distance"
+    # to stdout. That left NaN cells in the matrix, and the result was still written
+    # out and reported as "Done!" with exit code 0 -- a silently incomplete distance
+    # matrix. Refuse it instead.
+    missing = np.isnan(distance_matrix)
+    if missing.any():
+        n_bad = int(missing.sum() // 2)
+        rows = sorted({int(i) for i in np.argwhere(missing)[:, 0]})
+        sys.exit(
+            f"smart_RF could not compare every pair of trees: {n_bad} pairwise "
+            f"distances are undefined.\n"
+            f"  affected trees (0-based): {rows[:12]}"
+            f"{' ...' if len(rows) > 12 else ''}\n"
+            "This happens when the trees do not all share the same taxa. Robinson-"
+            "Foulds distances are only defined between trees over the same taxon set, "
+            "so check that every tree in the input has the same tip labels."
+        )
+
+    distance_matrix = pd.DataFrame(distance_matrix)
     distance_matrix.to_csv(output_file, header=False, index=False)
     return distance_matrix.values

@@ -208,6 +208,12 @@ def _read_trees(path):
         tree = tree.strip()
         if not tree.endswith(";"):
             tree += ";"
+        # A Newick tree describes at least one clade, so it must contain a balanced
+        # pair of parentheses. Without this check any text file counted as one "tree"
+        # -- `--dir` defaults to the pattern "*", so a stray notes.csv sitting beside
+        # the tree files was swept into the collection as a 1-tree member.
+        if "(" not in tree or ")" not in tree:
+            continue
         normalised.append(tree)
     return normalised
 
@@ -222,6 +228,53 @@ def _write_trees(handle, trees):
         handle.write(tree.rstrip("\n") + "\n")
         count += 1
     return count
+
+
+def _unique_set_id(candidate, path, taken):
+    """Return a SET-ID for `path` that is not already in `taken`.
+
+    SET-IDs are filename stems, so two inputs with the same basename -- run1/trees.nwk
+    and run2/trees.nwk, which is the obvious way to lay out replicate runs -- produced
+    the same key. self.data is keyed by it, so the second member silently overwrote
+    the first: the collection reported the right total tree count but listed only one
+    member, and per-set colouring and [highlight] keys addressed the wrong trees.
+
+    On a collision, parent directories are prepended until the id is unique, so the
+    two above become "run1/trees" and "run2/trees". A numeric suffix is the last
+    resort.
+    """
+    if candidate not in taken:
+        return candidate
+
+    parts = os.path.normpath(os.path.abspath(path)).split(os.sep)
+    stem = os.path.splitext(parts[-1])[0]
+    for depth in range(2, len(parts)):
+        qualified = "/".join(parts[-depth:-1] + [stem])
+        if qualified not in taken:
+            return qualified
+
+    suffix = 2
+    while f"{candidate}_{suffix}" in taken:
+        suffix += 1
+    return f"{candidate}_{suffix}"
+
+
+def _fit_metadata_rows(df, n_trees):
+    """Trim trailing all-empty metadata rows, but never below n_trees.
+
+    Spreadsheets append empty rows when saving a CSV, so a metadata file often has a
+    few more rows than trees. But a trailing blank row is also how "no information for
+    the last tree" is written. The two are indistinguishable from the file alone, so
+    the tree count decides: excess trailing blanks are dropped, and any blank row that
+    still corresponds to a tree is kept.
+    """
+    if df.shape[0] <= n_trees:
+        return df
+    blank = ~df.notna().any(axis=1)
+    keep = df.shape[0]
+    while keep > n_trees and blank.iloc[keep - 1]:
+        keep -= 1
+    return df.iloc[:keep].reset_index(drop=True)
 
 
 def _load_distance_matrix(source, n_trees, label):
@@ -307,9 +360,17 @@ def _as_tree_sets(elements, type_error_message):
 def _clean_metadata_df(df):
     """Normalize metadata DataFrame:
     - Strip column names
-    - Drop rows that are entirely empty/NaN
+    - Normalise empty cells to NaN
     - If the first data row equals the column names (duplicate header), drop it
     - Reset index
+
+    Deliberately does NOT drop blank rows. One row per tree is required, and the
+    tree_set docstring tells users to leave a blank row for a tree with no
+    information, so dropping blanks anywhere silently renumbered every later tree.
+    Trailing blanks are a spreadsheet artefact, but a trailing blank is also exactly
+    how "no information for the last tree" is written -- indistinguishable here. So
+    trimming is left to _fit_metadata_rows(), which knows the tree count and only
+    trims down to it.
     """
     try:
         # Ensure columns are stripped strings
@@ -317,9 +378,6 @@ def _clean_metadata_df(df):
 
         # Replace empty-string-only cells with NaN for detection
         df = df.replace("", np.nan)
-
-        # Drop rows that are completely NaN
-        df = df.dropna(axis=0, how="all")
 
         # Reset index to standard 0..n-1
         df = df.reset_index(drop=True)
@@ -373,6 +431,21 @@ class tree_set:
                 file=os.path.splitext(os.path.basename(self.file))[0]
             )
 
+        # Validated before os.path.getsize, which used to raise a raw
+        # FileNotFoundError or IsADirectoryError traceback at the user for the two
+        # most ordinary mistakes there are: a typo in a filename, and passing a
+        # directory instead of a file.
+        if not os.path.exists(file):
+            sys.exit(f"Tree file not found: {file}")
+        if os.path.isdir(file):
+            sys.exit(
+                f"{file} is a directory, not a tree file.\n"
+                "Use --dir to read every tree file in a directory, optionally with "
+                "--pattern to select a subset."
+            )
+        if not os.access(file, os.R_OK):
+            sys.exit(f"Tree file is not readable: {file}")
+
         self.size = os.path.getsize(file) // (1 << 30)
         # if self.size > 3: sys.exit(f'File is too large: {self.size} GB')
 
@@ -412,26 +485,55 @@ class tree_set:
                 self.distance_matrix, self.n_trees, self.file
             )
 
-        if type(self.metadata) != type(None):
+        # SET-ID labels which input file each tree came from. It is always derived
+        # from the filename here; a user-supplied column of the same name wins.
+        set_id_base = os.path.splitext(os.path.basename(self.file))[0]
+
+        if self.metadata is not None:
+            source = self.metadata
             try:
-                self.metadata = pd.read_csv(self.metadata)
-                # Clean metadata: remove empty trailing rows and duplicate header rows
-                try:
-                    self.metadata = _clean_metadata_df(self.metadata)
-                except Exception:
-                    pass
-            except Exception:
+                # skip_blank_lines=False: a blank row means 'no information for
+                # this tree' (see the class docstring) and must occupy a row.
+                self.metadata = pd.read_csv(source, skip_blank_lines=False)
+            except FileNotFoundError:
+                sys.exit(f"Metadata file not found: {source}")
+            except (OSError, pd.errors.ParserError, pd.errors.EmptyDataError) as exc:
+                # Was a bare `except Exception` with a generic message, which hid the
+                # real cause and also caught KeyboardInterrupt.
+                sys.exit(f"Could not read the metadata file {source}: {exc}")
+
+            try:
+                self.metadata = _clean_metadata_df(self.metadata)
+            except (KeyError, ValueError, TypeError):
+                # Cleaning is best-effort; a metadata frame that cannot be tidied is
+                # still usable as long as its shape is right, which is checked next.
+                pass
+
+            self.metadata = _fit_metadata_rows(self.metadata, self.n_trees)
+
+            # Previously unchecked. A row count that did not match the trees made
+            # line "metadata[STEP] = range(n_trees)" raise a raw
+            # "Length of values does not match length of index" ValueError.
+            if self.metadata.shape[0] != self.n_trees:
                 sys.exit(
-                    "There's an error with the Metadata file - please check the correct location and name of the .csv file"
+                    f"Metadata does not match the trees loaded.\n"
+                    f"  trees in {os.path.basename(self.file)}: {self.n_trees}\n"
+                    f"  rows in {os.path.basename(str(source))}: "
+                    f"{self.metadata.shape[0]}\n"
+                    "The metadata CSV needs exactly one row per tree, in the same "
+                    "order (use a blank row for a tree with no information)."
                 )
 
+            # SET-ID used to be created only on the no-metadata path, so supplying a
+            # metadata CSV made the next line raise KeyError: 'SET-ID' unless the user
+            # happened to include a column of that name -- which nothing documented.
+            if "SET-ID" not in self.metadata.columns:
+                self.metadata["SET-ID"] = set_id_base
         else:
             self.metadata = pd.DataFrame()
-            # self.file is the user's path (the normalised copy lives separately,
-            # see tool_input), so SET-ID matches the name used in config files.
-            set_id_base = os.path.splitext(os.path.basename(self.file))[0]
-            self.metadata["SET-ID"] = [set_id_base for i in range(self.n_trees)]
-        self.metadata["STEP"] = [i for i in range(self.n_trees)]
+            self.metadata["SET-ID"] = [set_id_base for _ in range(self.n_trees)]
+
+        self.metadata["STEP"] = list(range(self.n_trees))
         self.sets = np.unique(self.metadata["SET-ID"])
 
     # ─── STR ───────────────────────────────────────────────────────────────────
@@ -536,6 +638,15 @@ class tree_set:
 
         if dimensions < 2:
             sys.exit("Dimensions of embedding must be greater or equal to 2")
+
+        if dimensions > self.n_trees:
+            # PCA/Isomap/LLE cannot produce more components than there are samples;
+            # sklearn raised a raw ValueError traceback at the user instead.
+            sys.exit(
+                f"Cannot embed {self.n_trees} trees in {dimensions} dimensions.\n"
+                f"The number of dimensions cannot exceed the number of trees "
+                f"({self.n_trees})."
+            )
 
         if output == None:
             output = f"./{os.path.splitext(os.path.basename(self.file))[0]}_{str.upper(method)}_embedding.csv"
@@ -1022,10 +1133,14 @@ class set_collection(tree_set):
         elif output_file is None:
             self.output_file = "Set_collection_distance_matrix_" + str(self.id) + ".csv"
         else:
-            if output_file[-4:] == ".csv":
-                self.output_file = output_file[:-4] + "_" + str(self.id) + ".csv"
-            else:
-                self.output_file = output_file + "_" + str(self.id) + ".csv"
+            # An explicitly requested -o is honoured verbatim. A UUID used to be
+            # spliced in, so `-o wanted.csv` produced wanted_<uuid>.csv and the path
+            # could not be predicted -- unusable from a script or a Makefile. The
+            # UUID is still used for the auto-generated name above, where it does
+            # prevent collisions between unnamed collections.
+            self.output_file = (
+                output_file if output_file.endswith(".csv") else output_file + ".csv"
+            )
 
         if isinstance(collection, tree_set):
             self.collection = [collection]
@@ -1051,7 +1166,7 @@ class set_collection(tree_set):
         if type(metadata) != type(None):
             try:
                 # Read without forcing an index so we can clean trailing empty rows
-                metadata_input = pd.read_csv(metadata)
+                metadata_input = pd.read_csv(metadata, skip_blank_lines=False)
                 try:
                     metadata_input = _clean_metadata_df(metadata_input)
                 except Exception:
@@ -1077,6 +1192,10 @@ class set_collection(tree_set):
             else:
                 key = os.path.splitext(os.path.basename(set.file))[0]
 
+            # Two members with the same basename would otherwise collide in
+            # self.data, silently discarding the first.
+            key = _unique_set_id(key, set.file, self.data)
+
             # Ensure the metadata exported for the collection uses the
             # canonical SET-ID (so config keys match)
             metadata["SET-ID"] = np.array([key] * set.n_trees)
@@ -1093,7 +1212,10 @@ class set_collection(tree_set):
             self._distance_matrix_source, self.n_trees, self.file
         )
 
-        if type(metadata) != type(None):
+        # Was `if type(metadata) != type(None)`, which tested the loop variable left
+        # over from the members above -- always a DataFrame -- rather than the
+        # metadata argument. Harmless only because concatenating None is a no-op.
+        if metadata_input is not None:
             try:
                 self.metadata = pd.concat([self.metadata, metadata_input], axis=1)
             except Exception:
