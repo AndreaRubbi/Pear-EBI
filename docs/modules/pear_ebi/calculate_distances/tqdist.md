@@ -2,7 +2,7 @@
 
 
 ### quartet
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/tqdist.py/#L118)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/tqdist.py/#L139)
 ```python
 .quartet(
    file, n_trees, output_file
@@ -35,7 +35,7 @@ Computes quartet distances
 
 
 ### triplet
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/tqdist.py/#L136)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/tqdist.py/#L157)
 ```python
 .triplet(
    file, n_trees, output_file

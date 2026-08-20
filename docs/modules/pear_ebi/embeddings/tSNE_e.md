@@ -2,7 +2,7 @@
 
 
 ### tsne
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/embeddings/tSNE_e.py/#L12)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/embeddings/tSNE_e.py/#L26)
 ```python
 .tsne(
    distance_matrix, n_dimensions, metadata = None, quality = False, report = False,

@@ -1974,7 +1974,7 @@ platform, for example because it was built for a different architecture
 <li><strong>Namespace</strong>  : the parsed arguments</li>
 </ul></section><section class="print-page" id="modules-pear_ebi-tree_set" heading-number="2.2.3"><h1 id="modules-pear_ebi-tree_set-_1"><a class="headerlink" href="#modules-pear_ebi-tree_set-_1" title="Permanent link">&para;</a></h1>
 <h2 id="modules-pear_ebi-tree_set-tree_set">tree_set<a class="headerlink" href="#modules-pear_ebi-tree_set-tree_set" title="Permanent link">&para;</a></h2>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L341">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L399">source</a>
 <div class="highlight"><pre><span></span><code><span class="n">tree_set</span><span class="p">(</span>
    <span class="n">file</span><span class="p">,</span> <span class="n">output_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">distance_matrix</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span>
@@ -1983,7 +1983,7 @@ platform, for example because it was built for a different architecture
 <p>Class for the analysis of a set of phylogenetic trees</p>
 <p><strong>Methods:</strong></p>
 <h3 id="modules-pear_ebi-tree_set-tool_input">.tool_input<a class="headerlink" href="#modules-pear_ebi-tree_set-tool_input" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L450">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L552">source</a>
 <div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">tool_input</span><span class="p">()</span>
 </code></pre></div></p>
 <hr />
@@ -1997,7 +1997,7 @@ delete=False temp file, and <strong>del</strong> is not guaranteed to run -- not
 interpreter exit, and in notebooks where the object stays referenced.
 TemporaryDirectory handles cleanup through weakref.finalize instead.</p>
 <h3 id="modules-pear_ebi-tree_set-calculate_distances">.calculate_distances<a class="headerlink" href="#modules-pear_ebi-tree_set-calculate_distances" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L466">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L568">source</a>
 <div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">calculate_distances</span><span class="p">(</span>
    <span class="n">method</span>
 <span class="p">)</span>
@@ -2009,7 +2009,7 @@ TemporaryDirectory handles cleanup through weakref.finalize instead.</p>
 <li><strong>method</strong> (str) : method/algorithm used to compute distance matrix</li>
 </ul>
 <h3 id="modules-pear_ebi-tree_set-embed">.embed<a class="headerlink" href="#modules-pear_ebi-tree_set-embed" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L488">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L590">source</a>
 <div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">embed</span><span class="p">(</span>
    <span class="n">method</span><span class="p">,</span> <span class="n">dimensions</span><span class="p">,</span> <span class="n">quality</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">report</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span>
@@ -2023,7 +2023,7 @@ TemporaryDirectory handles cleanup through weakref.finalize instead.</p>
 <li><strong>quality</strong> (bool, optional) : returns quality report and self.emb_quality. Defaults to False.</li>
 </ul>
 <h3 id="modules-pear_ebi-tree_set-plot_2d">.plot_2D<a class="headerlink" href="#modules-pear_ebi-tree_set-plot_2d" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L621">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L732">source</a>
 <div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">plot_2D</span><span class="p">(</span>
    <span class="n">method</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name_plot</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">static</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot_meta</span> <span class="o">=</span> <span class="s1">'SET-ID'</span><span class="p">,</span>
    <span class="n">plot_set</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">select</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">same_scale</span> <span class="o">=</span> <span class="kc">False</span>
@@ -2051,7 +2051,7 @@ TemporaryDirectory handles cleanup through weakref.finalize instead.</p>
 <li><strong>plot</strong>  : either interactive or not</li>
 </ul>
 <h3 id="modules-pear_ebi-tree_set-plot_3d">.plot_3D<a class="headerlink" href="#modules-pear_ebi-tree_set-plot_3d" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L737">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L848">source</a>
 <div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">plot_3D</span><span class="p">(</span>
    <span class="n">method</span><span class="p">,</span> <span class="n">save</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">name_plot</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">static</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">plot_meta</span> <span class="o">=</span> <span class="s1">'SET-ID'</span><span class="p">,</span>
    <span class="n">plot_set</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">select</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">same_scale</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">z_axis</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2079,7 +2079,7 @@ TemporaryDirectory handles cleanup through weakref.finalize instead.</p>
 <li><strong>plot</strong>  : either interactive or not</li>
 </ul>
 <h3 id="modules-pear_ebi-tree_set-get_subset">.get_subset<a class="headerlink" href="#modules-pear_ebi-tree_set-get_subset" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L858">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L969">source</a>
 <div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">get_subset</span><span class="p">(</span>
    <span class="n">n_required</span><span class="p">,</span> <span class="n">method</span> <span class="o">=</span> <span class="s1">'sequence'</span>
 <span class="p">)</span>
@@ -2097,7 +2097,7 @@ TemporaryDirectory handles cleanup through weakref.finalize instead.</p>
 </ul>
 <hr />
 <h2 id="modules-pear_ebi-tree_set-set_collection">set_collection<a class="headerlink" href="#modules-pear_ebi-tree_set-set_collection" title="Permanent link">&para;</a></h2>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L984">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L1095">source</a>
 <div class="highlight"><pre><span></span><code><span class="n">set_collection</span><span class="p">(</span>
    <span class="n">collection</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(),</span> <span class="n">file</span> <span class="o">=</span> <span class="s1">'Set_collection_'</span><span class="p">,</span> <span class="n">output_file</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
    <span class="n">distance_matrix</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2105,7 +2105,7 @@ TemporaryDirectory handles cleanup through weakref.finalize instead.</p>
 </code></pre></div></p>
 <p><strong>Methods:</strong></p>
 <h3 id="modules-pear_ebi-tree_set-calculate_distances_1">.calculate_distances<a class="headerlink" href="#modules-pear_ebi-tree_set-calculate_distances_1" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L1118">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L1240">source</a>
 <div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">calculate_distances</span><span class="p">(</span>
    <span class="n">method</span>
 <span class="p">)</span>
@@ -2117,7 +2117,7 @@ TemporaryDirectory handles cleanup through weakref.finalize instead.</p>
 <li><strong>method</strong> (str) : method/algorithm used to compute distance matrix</li>
 </ul>
 <h3 id="modules-pear_ebi-tree_set-concatenate">.concatenate<a class="headerlink" href="#modules-pear_ebi-tree_set-concatenate" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L1241">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L1363">source</a>
 <div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
    <span class="n">other</span>
 <span class="p">)</span>
@@ -2320,7 +2320,7 @@ modularized form, suitable for comparisons with other trees.</p>
 <li><strong>distance_matrix</strong> (np.array) : distance matrix</li>
 </ul></section><section class="print-page" id="modules-pear_ebi-calculate_distances-tqdist" heading-number="2.2.4.4"><h1 id="modules-pear_ebi-calculate_distances-tqdist-_1"><a class="headerlink" href="#modules-pear_ebi-calculate_distances-tqdist-_1" title="Permanent link">&para;</a></h1>
 <h3 id="modules-pear_ebi-calculate_distances-tqdist-quartet">quartet<a class="headerlink" href="#modules-pear_ebi-calculate_distances-tqdist-quartet" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/tqdist.py/#L118">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/tqdist.py/#L139">source</a>
 <div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">quartet</span><span class="p">(</span>
    <span class="n">file</span><span class="p">,</span> <span class="n">n_trees</span><span class="p">,</span> <span class="n">output_file</span>
 <span class="p">)</span>
@@ -2344,7 +2344,7 @@ modularized form, suitable for comparisons with other trees.</p>
 </ul>
 <hr />
 <h3 id="modules-pear_ebi-calculate_distances-tqdist-triplet">triplet<a class="headerlink" href="#modules-pear_ebi-calculate_distances-tqdist-triplet" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/tqdist.py/#L136">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/tqdist.py/#L157">source</a>
 <div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">triplet</span><span class="p">(</span>
    <span class="n">file</span><span class="p">,</span> <span class="n">n_trees</span><span class="p">,</span> <span class="n">output_file</span>
 <span class="p">)</span>
@@ -2482,7 +2482,7 @@ in different dimensionalities</p>
 <li><strong>DRM</strong>  : DRM object with quality metrics</li>
 </ul></section><section class="print-page" id="modules-pear_ebi-embeddings-tsne_e" heading-number="2.2.5.5"><h1 id="modules-pear_ebi-embeddings-tsne_e-_1"><a class="headerlink" href="#modules-pear_ebi-embeddings-tsne_e-_1" title="Permanent link">&para;</a></h1>
 <h3 id="modules-pear_ebi-embeddings-tsne_e-tsne">tsne<a class="headerlink" href="#modules-pear_ebi-embeddings-tsne_e-tsne" title="Permanent link">&para;</a></h3>
-<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/embeddings/tSNE_e.py/#L12">source</a>
+<p><a href="https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/embeddings/tSNE_e.py/#L26">source</a>
 <div class="highlight"><pre><span></span><code><span class="o">.</span><span class="n">tsne</span><span class="p">(</span>
    <span class="n">distance_matrix</span><span class="p">,</span> <span class="n">n_dimensions</span><span class="p">,</span> <span class="n">metadata</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">quality</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">report</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
    <span class="n">output</span> <span class="o">=</span> <span class="s1">'./t-SNE_Embedding.csv'</span>
