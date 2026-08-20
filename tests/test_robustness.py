@@ -407,3 +407,119 @@ class TestInteractiveMode(ScratchTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# ─── Blank metadata cells reaching the plotting code ──────────────────────────
+
+
+class TestBlankMetadataPlots(ScratchTestCase):
+    """Keeping blank rows (correctly) exposed a crash further downstream.
+
+    graph.plot_embedding did `np.unique(metadata[col])`, which sorts, and sorting NaN
+    against strings raises
+        TypeError: '<' not supported between instances of 'float' and 'str'
+    So the very usage the tree_set docstring recommends -- a blank row for a tree with
+    no information -- worked at load time and then died as soon as an embedding was
+    computed. A blank is now its own labelled category.
+    """
+
+    def setUp(self):
+        super().setUp()
+        shutil.copy(TWELVE, "t.nwk")
+
+    def _meta(self, name, header, values):
+        with open(name, "w") as fh:
+            fh.write(header + "\n" + "\n".join(values) + "\n")
+        return name
+
+    def _plot(self, meta):
+        from pear_ebi.tree_set import tree_set
+
+        s = tree_set("t.nwk", metadata=meta, output_file="d.csv")
+        s.calculate_distances("hashrf_RF")
+        s.embed("pcoa", 2, output="e.csv")
+        return s.plot_2D("pcoa", static=True, name_plot="p")
+
+    def test_text_column_with_one_blank(self):
+        self._meta("m.csv", "GENE", ["" if i == 4 else f"g{i}" for i in range(12)])
+        self.assertIsNotNone(self._plot("m.csv"))
+
+    def test_text_column_with_several_blanks(self):
+        self._meta("m.csv", "GENE", ["" if i % 3 else f"g{i}" for i in range(12)])
+        self.assertIsNotNone(self._plot("m.csv"))
+
+    def test_entirely_blank_text_column(self):
+        self._meta("m.csv", "GENE", [""] * 12)
+        self.assertIsNotNone(self._plot("m.csv"))
+
+    def test_numeric_column_with_a_blank(self):
+        """A blank in a numeric column would make both colour-scale bounds NaN."""
+        self._meta("m.csv", "SUPPORT",
+                   ["" if i == 4 else f"{0.1 * i:.2f}" for i in range(12)])
+        self.assertIsNotNone(self._plot("m.csv"))
+
+    def test_column_with_no_blanks_is_unaffected(self):
+        self._meta("m.csv", "GENE", [f"g{i}" for i in range(12)])
+        self.assertIsNotNone(self._plot("m.csv"))
+
+    @unittest.skipIf(PEAR is None, "console script not installed")
+    def test_end_to_end_cli_with_blank_text_metadata(self):
+        self._meta("m.csv", "GENE", ["" if i == 4 else f"g{i}" for i in range(12)])
+        r = self.run_cli("t.nwk", "--meta", "m.csv", "-m", "hashrf_RF", "--pcoa", "2")
+        self.assertNoTraceback(r, "blank text metadata + --pcoa")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+
+# ─── Temporary files ──────────────────────────────────────────────────────────
+
+
+class TestNoStrayTempFiles(ScratchTestCase):
+    def test_smart_RF_does_not_leave_the_pickle_in_the_working_directory(self):
+        """Trees.pckl was written to the cwd and never removed, once per run.
+
+        Only the pypy3 branch writes it, so a shim standing in for pypy3 is what
+        exercises the path on a machine without it.
+        """
+        shutil.copy(TWELVE, "t.nwk")
+        os.makedirs("fakebin", exist_ok=True)
+        shim = os.path.join(self.cwd, "fakebin", "pypy3")
+        with open(shim, "w") as fh:
+            fh.write(f'#!/bin/sh\nexec {sys.executable} "$@"\n')
+        os.chmod(shim, 0o755)
+
+        env = dict(os.environ, MPLBACKEND="Agg",
+                   PATH=os.path.join(self.cwd, "fakebin") + os.pathsep + os.environ["PATH"])
+        result = subprocess.run(
+            [sys.executable, "-c",
+             "from pear_ebi.calculate_distances import maple_RF;"
+             "maple_RF.calculate_distance_matrix('t.nwk', 12, 's.csv')"],
+            cwd=self.cwd, capture_output=True, text=True, timeout=1800, env=env,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue(os.path.exists("s.csv"))
+        self.assertFalse(os.path.exists("Trees.pckl"),
+                         f"pickle left behind; cwd holds {sorted(os.listdir(self.cwd))}")
+
+    def test_parallel_and_single_core_smart_RF_agree(self):
+        """The worker signature changed to carry the pickle directory."""
+        from pear_ebi.calculate_distances import maple_RF
+
+        shutil.copy(TWELVE, "t.nwk")
+        single = np.asarray(maple_RF.calculate_distance_matrix("t.nwk", 12, "seq.csv"))
+
+        os.makedirs("fakebin", exist_ok=True)
+        shim = os.path.join(self.cwd, "fakebin", "pypy3")
+        with open(shim, "w") as fh:
+            fh.write(f'#!/bin/sh\nexec {sys.executable} "$@"\n')
+        os.chmod(shim, 0o755)
+        env = dict(os.environ, MPLBACKEND="Agg",
+                   PATH=os.path.join(self.cwd, "fakebin") + os.pathsep + os.environ["PATH"])
+        result = subprocess.run(
+            [sys.executable, "-c",
+             "from pear_ebi.calculate_distances import maple_RF;"
+             "maple_RF.calculate_distance_matrix('t.nwk', 12, 'par.csv')"],
+            cwd=self.cwd, capture_output=True, text=True, timeout=1800, env=env,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        parallel = np.loadtxt("par.csv", delimiter=",")
+        np.testing.assert_array_equal(parallel, single)

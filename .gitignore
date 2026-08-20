@@ -4,7 +4,9 @@
 pear_ebi.egg\-info/
 __pycache__/
 #build/
-#dist/
+# poetry build output: regenerable artefacts, not sources. 46 MB of them were
+# tracked; `poetry build` recreates them whenever they are needed.
+dist/
 #gendoc.py
 #.isort.cfg
 #.pre\-commit\-config.yaml

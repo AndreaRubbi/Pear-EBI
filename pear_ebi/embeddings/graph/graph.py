@@ -69,8 +69,25 @@ def plot_embedding(
     # ─── Define Color Map And Mapping Array For Each Metadata ─────────────
     metadata_colors = dict()
     for meta in metadata.columns:  # for each metadata column
-        elements = np.unique(metadata[meta])  # unique elements
-        color_plot = np.array(metadata[meta].values, dtype=object)  # get meta column
+        column = metadata[meta]
+
+        # A metadata column may legitimately be blank for some trees: the tree_set
+        # docstring tells users to leave a blank row for a tree with no information.
+        # That leaves NaN in the column, and np.unique sorts, so sorting NaN against
+        # strings raised
+        #     TypeError: '<' not supported between instances of 'float' and 'str'
+        # Blank entries become their own labelled category instead, which is what they
+        # are. Numeric columns are left alone, where NaN sorts without complaint.
+        # An entirely blank column is read by pandas as float64 NaN, so it would take
+        # the continuous-colour branch below and produce NaN scale bounds. Treat it as
+        # a single category instead.
+        if column.isna().all():
+            column = column.astype(object).fillna("n/a")
+        elif not np.issubdtype(column.dtype, np.number) and column.isna().any():
+            column = column.fillna("n/a")
+
+        elements = np.unique(column)  # unique elements
+        color_plot = np.array(column.values, dtype=object)  # get meta column
 
         colorscales_cmap = [
             "Accent",
@@ -292,8 +309,10 @@ def plot_embedding(
         if np.issubdtype(elements.dtype, np.number):
             cont_colorsc = True
 
-            min_value = np.min(elements)
-            max_value = np.max(elements)
+            # nanmin/nanmax: a numeric column with a blank row would otherwise make
+            # both bounds NaN and the whole colour scale degenerate.
+            min_value = np.nanmin(elements)
+            max_value = np.nanmax(elements)
 
             norm = mcolors.Normalize(vmin=min_value, vmax=max_value)
             scalar_map = plt.cm.ScalarMappable(norm=norm, cmap=cmap)

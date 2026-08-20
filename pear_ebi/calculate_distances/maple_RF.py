@@ -14,6 +14,7 @@ import pickle
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import warnings
 
@@ -27,20 +28,26 @@ from rich.console import Console
 _HERE = os.path.dirname(os.path.realpath(__file__))
 
 
-def _rf_worker(index):
+def _rf_worker(args):
     """Compute one row of the RF matrix by shelling out to RF_pypy.py under pypy3.
 
-    Defined at module level, and taking only a plain int, so that it is picklable.
-    It used to be a closure assigned to a module global from inside
+    Takes a plain (index, workdir) tuple, and is defined at module level, so that it
+    is picklable. It used to be a closure assigned to a module global from inside
     calculate_distance_matrix(), which cannot be pickled under the "spawn" start
-    method that macOS and Windows default to: the child re-imports this module,
-    finds no module-level name, and raises AttributeError. The bare `except:`
-    around the pool hid that, so every macOS user silently dropped to one core.
+    method that macOS and Windows default to: the child re-imports this module, finds
+    no module-level name, and raises AttributeError. The bare `except:` around the
+    pool hid that, so every macOS user silently dropped to one core.
+
+    workdir is where Trees.pckl lives. RF_pypy.py opens it by relative path, so the
+    child is run with that directory as its cwd -- which is what keeps the pickle out
+    of the user's working directory, where it used to be written and never removed.
     """
+    index, workdir = args
     return subprocess.check_output(
         ["pypy3", os.path.join(_HERE, "RF_pypy.py"), str(index)],
         universal_newlines=True,
         stderr=subprocess.PIPE,
+        cwd=workdir,
     )
 
 
@@ -531,15 +538,20 @@ def calculate_distance_matrix(file, n_trees, output_file):
         f.close()
     distance_matrix = list()
     if shutil.which("pypy3") is not None:
-        pckl = open("Trees.pckl", "wb")
-        pickle.dump(trees, pckl)
-        pckl.close()
+        # Trees.pckl used to be written into the caller's working directory and never
+        # removed, so every smart_RF run on a machine with pypy3 left a copy of the
+        # whole tree set behind (12 MB for the shipped examples). A TemporaryDirectory
+        # cleans itself up, and the workers are run with it as their cwd because
+        # RF_pypy.py opens the pickle by relative path.
+        pypy_workdir = tempfile.TemporaryDirectory(prefix="pear_maple_")
+        with open(os.path.join(pypy_workdir.name, "Trees.pckl"), "wb") as pckl:
+            pickle.dump(trees, pckl)
         workers = os.cpu_count()
         if "sched_getaffinity" in dir(os):
             workers = len(os.sched_getaffinity(0))
         try:
             with mp.Pool(workers) as pool:
-                arg_pool = list(range(len(trees)))
+                arg_pool = [(i, pypy_workdir.name) for i in range(len(trees))]
                 results = list(pool.imap(_rf_worker, arg_pool))
             # json.loads rather than eval: this is subprocess output, and
             # RF_pypy.py emits a plain list of numbers on its second line.
