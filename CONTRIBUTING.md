@@ -64,6 +64,28 @@ Actions tab. It is the only supported way to publish: it bumps the version, veri
 artefacts, publishes to PyPI, tags the commit and redeploys the documentation, and it refuses
 to do any of that if a check fails.
 
+### `pear_ebi` is a protected branch, which shapes how this works
+
+Actions cannot push commits to `pear_ebi` — the branch is protected and the workflow's
+token is not allowed to bypass it. `gh-pages` is unprotected, which is why documentation
+deploys fine. So **the supported way to release is to bump the version yourself and push**:
+
+```
+poetry version patch          # or minor / major / an explicit version
+python tools/sync_version.py  # propagates it to __init__.py and CITATION.cff
+git commit -am "Release 1.1.2" && git push
+```
+
+The push-triggered release then publishes and tags it, and needs no branch write of its
+own — only a tag push, which protection does not cover.
+
+Dispatching the workflow with a bump input still works, but the bump has to be pushed by
+Actions, so it stops before publishing with an explanatory error rather than putting a
+version on PyPI that git has no record of. (That is not hypothetical: release 1.1.1 was
+published and then the commit push was rejected, so 1.1.1 exists on PyPI with no
+corresponding tag.) Either bump-and-push as above, or grant this workflow a bypass on the
+protection rule.
+
 Two inputs:
 
 - **version** — either a bump keyword (`patch` / `minor` / `major`) or an explicit

@@ -285,36 +285,68 @@ jobs:
           echo "Dry run: version ${{ steps.bump.outputs.version }} builds, tests and"
           echo "verifies cleanly. Nothing was committed, tagged, published or deployed."
 
-      - name: Publish to PyPI
+      - name: Prepare the release commit and tag, without pushing
         if: ${{ !inputs.dry_run }}
-        # Deliberately before the commit and tag. Trusted Publishing needs a one-time
-        # setup on PyPI, and until that exists this step fails with an OIDC permission
-        # error -- so it runs while nothing has been written to the repository yet, and
-        # a fixed-and-retried run can use the same version. Tagging first would push
-        # v<version>, and the retry would then stop at "tag already exists".
-        #
-        # No API token is stored anywhere: the OIDC identity of this workflow is the
-        # credential. See CONTRIBUTING.md for the fields to enter on PyPI.
-        uses: pypa/gh-action-pypi-publish@release/v1
-
-      - name: Commit and tag the release
-        if: ${{ !inputs.dry_run }}
-        # After the publish: PyPI is the step that can fail for reasons outside this
-        # repository, and it must not leave a tag behind when it does.
+        id: prepare
         run: |
           git config user.name  "AndreaRubbi"
           git config user.email "andrea.rubbi.98@gmail.com"
           git add pyproject.toml pear_ebi/__init__.py CITATION.cff
           # Nothing to commit when the version being released is the one already in the
-          # tree. Tag what is there rather than failing on an empty commit.
+          # tree, which is the case for a push-triggered release: the human bumped it.
           if git diff --cached --quiet; then
-            echo "already at ${{ steps.bump.outputs.version }}; tagging HEAD"
+            echo "commit=false" >> "$GITHUB_OUTPUT"
+            echo "already at ${{ steps.bump.outputs.version }}: tagging HEAD"
           else
+            echo "commit=true" >> "$GITHUB_OUTPUT"
             git commit -m "Release ${{ steps.bump.outputs.version }}"
-            git push origin HEAD:${{ github.ref_name }}
           fi
           git tag -a '${{ steps.bump.outputs.tag }}' \
             -m "pear_ebi ${{ steps.bump.outputs.version }}"
+
+      - name: Check git will accept the release before publishing it
+        if: ${{ !inputs.dry_run }}
+        # This is the step that was missing. pear_ebi is a protected branch, so the
+        # push of the release commit was rejected -- but only after PyPI had already
+        # been published to, leaving a version on PyPI that nothing in git recorded.
+        #
+        # --dry-run performs the real authentication and the real server-side checks
+        # without transferring anything, so a protected branch or a missing permission
+        # fails here, before the publish, and the same version can be retried.
+        run: |
+          if [ "${{ steps.prepare.outputs.commit }}" = "true" ]; then
+            if ! git push --dry-run origin HEAD:${{ github.ref_name }}; then
+              echo "::error::Cannot push the release commit to ${{ github.ref_name }}."
+              echo "That branch is protected, and this workflow's token is not allowed"
+              echo "to push to it. Nothing has been published."
+              echo ""
+              echo "Release without a bump instead: change the version in"
+              echo "pyproject.toml yourself, run tools/sync_version.py, push that"
+              echo "commit, and the push-triggered release will publish and tag it --"
+              echo "no branch write from Actions needed. Or allow this workflow to"
+              echo "bypass the branch protection rule."
+              exit 1
+            fi
+          fi
+          git push --dry-run origin '${{ steps.bump.outputs.tag }}'
+          echo "git will accept the release"
+
+      - name: Publish to PyPI
+        if: ${{ !inputs.dry_run }}
+        # After the checks above and before the pushes below, so that neither side can
+        # get ahead of the other: nothing is published until git has agreed to record
+        # it, and nothing is recorded until PyPI has accepted it.
+        #
+        # No API token is stored anywhere: the OIDC identity of this workflow is the
+        # credential. See CONTRIBUTING.md for the fields to enter on PyPI.
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Push the release commit and tag
+        if: ${{ !inputs.dry_run }}
+        run: |
+          if [ "${{ steps.prepare.outputs.commit }}" = "true" ]; then
+            git push origin HEAD:${{ github.ref_name }}
+          fi
           git push origin '${{ steps.bump.outputs.tag }}'
 
       - name: Deploy the documentation
