@@ -355,6 +355,19 @@ class TestHookVersionsMatchTheProject(unittest.TestCase):
     """
 
     @staticmethod
+    def _installed(tool):
+        """The version in this environment, or None if the tool is not installed.
+
+        The formatters live in the dev dependency group, so they are present for the
+        CI test job and for anyone who ran `poetry install --with dev`. In a bare
+        environment there is no version to compare against and nothing to drift.
+        """
+        try:
+            return md.version(tool)
+        except md.PackageNotFoundError:
+            return None
+
+    @staticmethod
     def _pinned(tool):
         path = os.path.join(REPO_ROOT, ".pre-commit-config.yaml")
         with open(path, encoding="utf-8") as fh:
@@ -368,22 +381,28 @@ class TestHookVersionsMatchTheProject(unittest.TestCase):
     def test_black_and_isort_revs_match_the_installed_versions(self):
         for tool in ("black", "isort"):
             with self.subTest(tool=tool):
+                installed = self._installed(tool)
+                if installed is None:
+                    self.skipTest(f"{tool} is not installed in this environment")
                 pinned = self._pinned(tool)
                 self.assertIsNotNone(pinned, f"no {tool} hook found in the config")
                 self.assertEqual(
                     pinned,
-                    md.version(tool),
+                    installed,
                     f"pre-commit pins {tool} {pinned} but the environment has "
-                    f"{md.version(tool)}; the two will fight over the formatting",
+                    f"{installed}; the two will fight over the formatting",
                 )
 
     def test_blacken_docs_uses_the_same_black(self):
+        installed = self._installed("black")
+        if installed is None:
+            self.skipTest("black is not installed in this environment")
         path = os.path.join(REPO_ROOT, ".pre-commit-config.yaml")
         with open(path, encoding="utf-8") as fh:
             config = fh.read()
         match = re.search(r"additional_dependencies:\s*\[black==([^\]]+)\]", config)
         self.assertIsNotNone(match, "blacken-docs does not pin a black version")
-        self.assertEqual(match.group(1), md.version("black"))
+        self.assertEqual(match.group(1), installed)
 
 
 if __name__ == "__main__":
