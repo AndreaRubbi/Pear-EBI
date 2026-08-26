@@ -2,6 +2,46 @@
 <!-- This adds support for mkdocs-git-authors-plugin to mkdocs-material theme -->
 {% extends "base.html" %}
 
+{#
+  Icons and link-preview metadata.
+
+  theme.favicon emits a single <link rel="icon">. This adds the other forms that
+  clients look for: a sized icon so a crawler does not have to fetch and measure it,
+  the legacy .ico for anything that asks for that, and the touch icon iOS uses when a
+  visitor adds the site to a home screen. Google's requirement for showing a favicon
+  in search results is a square icon of at least 48px, a multiple of 48, on the same
+  host as the page and reachable by its crawler -- favicon.png is 192x192 and sits
+  next to the pages it is linked from, so it satisfies all four.
+
+  The Open Graph and Twitter tags make a shared link render with the logo and the
+  site description rather than a bare URL.
+#}
+{% block extrahead %}
+  <link rel="icon" type="image/png" sizes="192x192"
+        href="{{ 'docs_assets/images/favicon.png' | url }}">
+  <link rel="alternate icon" type="image/x-icon"
+        href="{{ 'docs_assets/images/favicon.ico' | url }}">
+  <link rel="apple-touch-icon" sizes="180x180"
+        href="{{ 'docs_assets/images/apple-touch-icon.png' | url }}">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ config.site_name }}">
+  <meta property="og:title" content="{% if page and page.title and not page.is_homepage %}{{ page.title }} - {% endif %}{{ config.site_name }}">
+  {% if config.site_description %}
+  <meta property="og:description" content="{{ config.site_description }}">
+  <meta name="twitter:description" content="{{ config.site_description }}">
+  {% endif %}
+  {# Open Graph requires absolute URLs, so these are built from site_url rather than
+     passed through | url, which yields a page-relative path. #}
+  {% set logo_url = (config.site_url or '') ~ 'docs_assets/images/logo_pear.png' %}
+  {% if page and page.canonical_url %}
+  <meta property="og:url" content="{{ page.canonical_url }}">
+  {% endif %}
+  <meta property="og:image" content="{{ logo_url }}">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content="{{ logo_url }}">
+{% endblock %}
+
 {% block disqus %}
     <div class="md-source-date">
     <small>
