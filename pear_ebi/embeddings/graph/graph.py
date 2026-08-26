@@ -537,10 +537,15 @@ def plot_embedding(
 
         # defines the layout of the plot
         fig.update_layout(
-            width=900,
+            # No fixed width: autosize only takes effect when width is None, so
+            # width=900 pinned the figure to 900px and it did not follow the width of
+            # the notebook output area or the browser window it was embedded in.
             height=900 + 10 * nUnique,
             autosize=True,
-            margin=dict(t=0, b=100, l=0, r=0),
+            # Non-zero margins. Plotly draws tick labels, axis titles, colourbars and
+            # legends inside the paper area, so a margin of 0 clips whatever lands at
+            # the edge -- which was the whole outer band of the plot.
+            margin=dict(t=40, b=100, l=40, r=60),
             template="seaborn",
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
@@ -826,10 +831,17 @@ def plot_embedding(
 
         # defines the layout of the plot
         fig.update_layout(
-            width=800,
-            height=1200,
-            autosize=False,
-            margin=dict(t=0, b=0, l=0, r=0),
+            # Was width=800, height=1200, autosize=False: a canvas that ignored its
+            # container, so in any viewport shorter than 1200px only part of the plot
+            # was visible and it never used the available width. Fixing the height and
+            # letting the width follow the container is the usual responsive shape.
+            height=850,
+            autosize=True,
+            # Was margin=dict(t=0, b=0, l=0, r=0), which left plotly nowhere to put
+            # the parts it draws inside the paper area: the top marginal histogram was
+            # cut off at its own bars, the right marginal lost its last tick label and
+            # the PCo2 title sat half outside the left edge.
+            margin=dict(t=40, b=80, l=90, r=60),
             template="seaborn",
             xaxis=dict(
                 showgrid=True,
@@ -838,7 +850,11 @@ def plot_embedding(
                 linewidth=2,
                 zeroline=True,
                 showticklabels=True,
-                domain=[0, 0.84],
+                # The gutter between the main panel and its marginal was 0.01, so the
+                # main axis's last tick label sat on top of the marginal's first one.
+                # The base layout also said 0.84 while the Scatter2D button relayout
+                # said 0.85, so pressing the button nudged everything sideways.
+                domain=[0, 0.82],
                 title="PCo1",
                 title_font=dict(size=20),
                 # range = [min_x - abs(0.1 * min_x), max_x + abs(0.1 * max_x)]
@@ -850,7 +866,7 @@ def plot_embedding(
                 linecolor="black",
                 linewidth=2,
                 showticklabels=True,
-                domain=[0, 0.84],
+                domain=[0, 0.82],
                 title="PCo2",
                 title_font=dict(size=20),
                 # range = [min_y - abs(0.1 * min_y), max_y + abs(0.1 * max_y)]
@@ -861,7 +877,7 @@ def plot_embedding(
                 linecolor="black",
                 linewidth=2,
                 showticklabels=True,
-                domain=[0.85, 1],
+                domain=[0.86, 1],
                 showgrid=True,
             ),
             yaxis2=dict(
@@ -869,7 +885,7 @@ def plot_embedding(
                 linecolor="black",
                 linewidth=2,
                 showticklabels=True,
-                domain=[0.85, 1],
+                domain=[0.86, 1],
                 showgrid=True,
             ),
             paper_bgcolor="rgba(0,0,0,0)",
@@ -938,28 +954,28 @@ def plot_embedding(
                                             "showline": True,
                                             "zeroline": True,
                                             "showticklabels": True,
-                                            "domain": [0, 0.85],
+                                            "domain": [0, 0.82],
                                         },
                                         "yaxis": {
                                             "showgrid": True,
                                             "showline": True,
                                             "zeroline": True,
                                             "showticklabels": True,
-                                            "domain": [0, 0.85],
+                                            "domain": [0, 0.82],
                                         },
                                         # xaxis 2 and yaxis2 refer to the second set of axes
                                         # that are needed to plot the marginal distribution
                                         # the range indicates the portion of total graph space
                                         # allocated to that specific axis
                                         "xaxis2": {
-                                            "domain": [0.85, 1],
+                                            "domain": [0.86, 1],
                                             "showgrid": True,
                                             "showline": True,
                                             "zeroline": True,
                                             "showticklabels": True,
                                         },
                                         "yaxis2": {
-                                            "domain": [0.85, 1],
+                                            "domain": [0.86, 1],
                                             "showgrid": True,
                                             "showline": True,
                                             "zeroline": True,
@@ -1151,7 +1167,13 @@ def plot_embedding(
 
     # if save is requested, then a pdf file is returned
     if save:
-        no_widget_fig.write_html(name_plot + ".html")
+        # responsive: without it the saved page keeps the figure at whatever pixel
+        # width it was built with and never reflows, so a narrow window crops it.
+        no_widget_fig.write_html(
+            name_plot + ".html",
+            config={"responsive": True},
+            default_width="100%",
+        )
 
     # if static is requested, then a less interactive plot is returned
     #! NB: this can be the only way to obtain a plot in cases where
