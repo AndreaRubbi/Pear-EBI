@@ -13,10 +13,9 @@ on:
     inputs:
       version:
         description: >-
-          Bump level (patch, minor, major) or an explicit version such as 1.0.1.7.
-          NOTE: this project uses a four-segment version, and `poetry version patch`
-          zeroes the fourth segment (1.0.1.6 -> 1.0.2.0). Give an explicit version if
-          you want 1.0.1.7.
+          Bump level (patch, minor, major) or an explicit version such as 1.1.1.
+          Passing the version already in pyproject.toml is allowed, and releases that
+          version as it stands.
         required: true
         default: patch
       dry_run:
@@ -63,11 +62,16 @@ jobs:
       - name: Bump the version
         id: bump
         run: |
+          OLD=$(poetry version --short)
           poetry version "${{ inputs.version }}"
           NEW=$(poetry version --short)
           echo "version=$NEW" >> "$GITHUB_OUTPUT"
           echo "tag=v$NEW" >> "$GITHUB_OUTPUT"
-          echo "Releasing $NEW"
+          if [ "$OLD" = "$NEW" ]; then
+            echo "pyproject.toml already declares $NEW; releasing it as it stands"
+          else
+            echo "Releasing $NEW (was $OLD)"
+          fi
 
       - name: Refuse if that tag already exists
         run: |
@@ -91,22 +95,24 @@ jobs:
         run: poetry check --lock
 
       - name: Version agrees everywhere
-        # pyproject.toml and pear_ebi/__init__.py, checked against each other and against
-        # what the interpreter imports. The *installed* metadata is deliberately not
-        # checked here: an editable install's dist-info does not follow a version bump
-        # (poetry treats the root project as current, and even `pip install -e .` reports
-        # "already satisfied"), so it would be asserting on a stale copy. The version
-        # that matters is the one in the built artefacts and in a clean install, and both
-        # are asserted below.
+        # pyproject.toml, pear_ebi/__init__.py and CITATION.cff against each other, and
+        # against what the interpreter imports and what the installed metadata says.
+        #
+        # A stale `pear_ebi.egg-info/` in the checkout would defeat the metadata half of
+        # this: importlib.metadata searches sys.path, "" is on it when the working
+        # directory is the repository, and a left-over egg-info there wins over the real
+        # installed distribution. A runner starts from a clean clone so it cannot happen
+        # here, but it does happen locally, which is why there is a test for it.
         env:
           DECLARED: ${{ steps.bump.outputs.version }}
         run: |
           poetry run python tools/sync_version.py --check
           poetry run python - <<'PY'
-          import os, pear_ebi
+          import importlib.metadata as md, os, pear_ebi
           declared = os.environ["DECLARED"]
           assert pear_ebi.__version__ == declared, (pear_ebi.__version__, declared)
-          print("version consistent in the source tree:", declared)
+          assert md.version("pear_ebi") == declared, (md.version("pear_ebi"), declared)
+          print("version consistent:", declared)
           PY
 
       - name: Run the full test suite
@@ -227,11 +233,17 @@ jobs:
         run: |
           git config user.name  "AndreaRubbi"
           git config user.email "andrea.rubbi.98@gmail.com"
-          git add pyproject.toml pear_ebi/__init__.py
-          git commit -m "Release ${{ steps.bump.outputs.version }}"
+          git add pyproject.toml pear_ebi/__init__.py CITATION.cff
+          # Nothing to commit when the version being released is the one already in the
+          # tree. Tag what is there rather than failing on an empty commit.
+          if git diff --cached --quiet; then
+            echo "already at ${{ steps.bump.outputs.version }}; tagging HEAD"
+          else
+            git commit -m "Release ${{ steps.bump.outputs.version }}"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
           git tag -a '${{ steps.bump.outputs.tag }}' \
             -m "pear_ebi ${{ steps.bump.outputs.version }}"
-          git push origin HEAD:${{ github.ref_name }}
           git push origin '${{ steps.bump.outputs.tag }}'
 
       - name: Publish to PyPI

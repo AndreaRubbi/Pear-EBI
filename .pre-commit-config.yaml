@@ -31,6 +31,9 @@ repos:
         # repository's, is "test_*.py" -- so without this argument the hook whose job
         # is catching misnamed test files failed on every correctly named one.
         args: ["--pytest-test-first"]
+        # Everything under tests/ that is not itself a test: shared helpers have no
+        # business being named test_*.py, and pytest would try to collect them.
+        exclude: ^tests/(__init__|toml_compat)\.py$
       #- id: detect-aws-credentials
       - id: detect-private-key
       - id: check-added-large-files

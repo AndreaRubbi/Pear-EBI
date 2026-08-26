@@ -36,21 +36,67 @@ def _pyproject():
 
 
 class TestMetadata(unittest.TestCase):
+    def test_no_stale_egg_info_shadows_the_metadata(self):
+        """A setup.py-era egg-info in the root outranks the installed distribution.
+
+        importlib.metadata searches sys.path, and "" is on sys.path whenever the working
+        directory is the repository, so a left-over pear_ebi.egg-info/ is found before
+        the real installation. One from December 2025 was doing exactly that: it
+        reported version 1.0.1.6 with the pre-Poetry pins and a top_level.txt still
+        listing the `test` package, so anything reading the metadata from the repository
+        root saw the old package. Deleting it is the fix; this test says so out loud.
+        """
+        stale = [
+            name
+            for name in os.listdir(REPO_ROOT)
+            if name.endswith((".egg-info", ".dist-info"))
+        ]
+        self.assertEqual(
+            stale,
+            [],
+            f"{stale} in the repository root shadows the installed metadata; "
+            "delete it (it is build output, not source)",
+        )
+
+    def test_version_is_three_segments(self):
+        """MAJOR.MINOR.PATCH.
+
+        Releases up to 1.0.1.6 carried a fourth segment, which Poetry read as the patch
+        level: `poetry version patch` on 1.0.1.6 produced 1.0.2.0, not 1.0.1.7. Three
+        segments is what the bump keywords, PEP 440 and every downstream tool assume.
+        """
+        declared = _pyproject()["project"]["version"]
+        self.assertRegex(
+            declared,
+            r"^\d+\.\d+\.\d+$",
+            f"version {declared!r} is not MAJOR.MINOR.PATCH",
+        )
+
+    def test_citation_metadata_carries_the_same_version(self):
+        """CITATION.cff tells people which version to cite, so it must not lag."""
+        path = os.path.join(REPO_ROOT, "CITATION.cff")
+        with open(path, encoding="utf-8") as fh:
+            match = re.search(r"(?m)^version:[ \t]*(\S+)", fh.read())
+        self.assertIsNotNone(match, "CITATION.cff declares no version")
+        self.assertEqual(
+            match.group(1),
+            _pyproject()["project"]["version"],
+            "CITATION.cff is out of step; run python tools/sync_version.py",
+        )
+
     def test_version_is_consistent_everywhere(self):
         """__version__, pyproject and the installed metadata must agree."""
         import pear_ebi
 
         declared = _pyproject()["project"]["version"]
         self.assertEqual(pear_ebi.__version__, declared)
-        # An editable install's dist-info does not follow a version bump on its own --
-        # poetry treats the root project as already current, and pip reports "already
-        # satisfied" -- so say what to do rather than just printing two versions.
         self.assertEqual(
             md.version("pear_ebi"),
             declared,
-            "the installed metadata is out of step with pyproject.toml; if you just "
-            "changed the version, reinstall with `poetry install --only-root` or "
-            "`pip install -e . --no-deps --force-reinstall`",
+            "the installed metadata is out of step with pyproject.toml. A left-over "
+            "pear_ebi.egg-info/ in the repository root is the usual cause (see "
+            "test_no_stale_egg_info_shadows_the_metadata); otherwise reinstall with "
+            "`poetry install`",
         )
 
     def test_requires_python_excludes_3_13(self):

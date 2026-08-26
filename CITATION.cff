@@ -1,23 +1,8 @@
-# Citation metadata for the PEAR-EBI software.
+# Citation metadata for PEAR-EBI. GitHub renders the "Cite this repository" button in
+# the sidebar from this file, and offers BibTeX and APA from it.
 #
-# GitHub renders a "Cite this repository" button from this file. The documentation
-# refers to an associated manuscript in five places without ever citing it, and no
-# DOI, preprint or journal reference exists anywhere in the repository, so this file
-# describes the *software* only.
-#
-# TO DO (needs the maintainer): once the paper is available, add a
-# `preferred-citation:` block so that citing the repository cites the paper. The
-# author list below was taken from __credits__ in pear_ebi/__init__.py and its order
-# and completeness should be confirmed; ORCIDs are omitted rather than guessed.
-#
-#   preferred-citation:
-#     type: article
-#     title: "..."
-#     authors: [...]
-#     journal: "..."
-#     year: ...
-#     doi: "..."
-
+# `version:` is kept in step with pyproject.toml by tools/sync_version.py, which the
+# release workflow runs; do not edit it by hand.
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 title: "PEAR: Phylogeny Embedding and Approximate Representation"
@@ -27,7 +12,7 @@ abstract: >-
   distances together with PCoA, t-SNE, Isomap and locally linear embedding.
 type: software
 license: MIT
-version: 1.0.1.6
+version: 1.1.0
 repository-code: "https://github.com/AndreaRubbi/Pear-EBI"
 url: "https://andrearubbi.github.io/Pear-EBI/"
 keywords:
