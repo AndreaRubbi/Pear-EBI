@@ -228,8 +228,22 @@ jobs:
           echo "Dry run: version ${{ steps.bump.outputs.version }} builds, tests and"
           echo "verifies cleanly. Nothing was committed, tagged, published or deployed."
 
+      - name: Publish to PyPI
+        if: ${{ !inputs.dry_run }}
+        # Deliberately before the commit and tag. Trusted Publishing needs a one-time
+        # setup on PyPI, and until that exists this step fails with an OIDC permission
+        # error -- so it runs while nothing has been written to the repository yet, and
+        # a fixed-and-retried run can use the same version. Tagging first would push
+        # v<version>, and the retry would then stop at "tag already exists".
+        #
+        # No API token is stored anywhere: the OIDC identity of this workflow is the
+        # credential. See CONTRIBUTING.md for the fields to enter on PyPI.
+        uses: pypa/gh-action-pypi-publish@release/v1
+
       - name: Commit and tag the release
         if: ${{ !inputs.dry_run }}
+        # After the publish: PyPI is the step that can fail for reasons outside this
+        # repository, and it must not leave a tag behind when it does.
         run: |
           git config user.name  "AndreaRubbi"
           git config user.email "andrea.rubbi.98@gmail.com"
@@ -245,15 +259,6 @@ jobs:
           git tag -a '${{ steps.bump.outputs.tag }}' \
             -m "pear_ebi ${{ steps.bump.outputs.version }}"
           git push origin '${{ steps.bump.outputs.tag }}'
-
-      - name: Publish to PyPI
-        if: ${{ !inputs.dry_run }}
-        # Trusted Publishing: no API token is stored anywhere. It requires a one-time
-        # setup on PyPI (Manage project -> Publishing -> add a GitHub publisher for
-        # AndreaRubbi/Pear-EBI, workflow release.yml). Until that exists this step
-        # fails with an OIDC permission error and nothing else is affected -- the
-        # commit and tag are already pushed, so a re-run would need an explicit version.
-        uses: pypa/gh-action-pypi-publish@release/v1
 
       - name: Deploy the documentation
         if: ${{ !inputs.dry_run }}

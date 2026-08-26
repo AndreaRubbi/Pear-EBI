@@ -103,28 +103,53 @@ under 20 MB; the wheel installs into a clean venv **outside the checkout** and c
 distance matrix there; and the documentation builds `--strict` with no reintroduced
 `polyfill.io` reference.
 
-Only then does it commit, tag `v<version>`, push, publish and deploy.
+Only then does it publish to PyPI, commit, tag `v<version>`, push and deploy.
+
+Publishing comes before the tag on purpose. PyPI is the one step that can fail for reasons
+outside this repository, and if it did so after tagging, the tag `v<version>` would already
+be pushed and a retry would stop at "tag already exists" — the version would be burnt. In
+this order a failed publish leaves the repository untouched and the same version can be
+retried once the cause is fixed.
 
 It runs the full suite and deploys the documentation itself rather than leaving either to CI,
 because the release commit is pushed with the workflow's own `GITHUB_TOKEN` and GitHub does
 not start new workflow runs from such a push. So no CI run appears for the release commit --
 the release workflow's own log is the record that it was checked.
 
-### One-time PyPI setup
+### One-time PyPI setup — do this before the first release
 
-Publishing uses [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) — an OIDC
-exchange, so there is no API token to store or rotate. **It must be enabled on PyPI once
-before the first release, or the publish step will fail.** On
-<https://pypi.org/manage/project/pear-ebi/settings/publishing/>, add a GitHub publisher:
+Publishing uses [Trusted Publishing](https://docs.pypi.org/trusted-publishers/): PyPI
+verifies an OIDC token that GitHub mints for this workflow, so there is no API token to
+create, paste into a secret, or rotate. Nothing about it can be done from the repository —
+it has to be granted once on PyPI, by someone with **Owner** or **Maintainer** rights on
+the `pear-ebi` project.
 
-| field | value |
-| --- | --- |
-| Owner | `AndreaRubbi` |
-| Repository | `Pear-EBI` |
-| Workflow | `release.yml` |
-| Environment | *(leave empty)* |
+1. Sign in to PyPI as the account that owns `pear-ebi`.
+2. Go to <https://pypi.org/manage/project/pear-ebi/settings/publishing/>
+   (or: your projects → `pear-ebi` → *Manage* → *Publishing*).
+3. Under **Add a new publisher**, choose **GitHub** and fill in:
 
-Until that exists, use `dry_run` — everything except the publish and the push is exercised.
+   | field | value |
+   | --- | --- |
+   | PyPI Project Name | `pear-ebi` |
+   | Owner | `AndreaRubbi` |
+   | Repository name | `Pear-EBI` |
+   | Workflow name | `release.yml` |
+   | Environment name | *(leave empty)* |
+
+4. Press **Add**. It takes effect immediately; there is nothing to copy back.
+
+Two-factor authentication is required on PyPI to manage a project, so if the account does
+not have it set up yet, that comes first.
+
+That is the whole grant. From then on, "Run workflow" in the Actions tab is the only step
+needed to cut a release: the version is bumped, PyPI receives the new distribution, the
+commit is tagged and pushed, and the documentation is redeployed.
+
+Until the publisher exists, run with `dry_run` — everything except the publish, the push
+and the deploy is exercised, so the artefacts and the test suite are still fully checked.
+A release run without it will fail at the publish step with an OIDC permission error, and
+because publishing precedes the tag, nothing will have been written to the repository.
 
 ## Code style
 
