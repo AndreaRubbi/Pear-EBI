@@ -285,7 +285,7 @@ jobs:
           echo "Dry run: version ${{ steps.bump.outputs.version }} builds, tests and"
           echo "verifies cleanly. Nothing was committed, tagged, published or deployed."
 
-      - name: Prepare the release commit and tag, without pushing
+      - name: Prepare the release commit, without pushing
         if: ${{ !inputs.dry_run }}
         id: prepare
         run: |
@@ -296,40 +296,32 @@ jobs:
           # tree, which is the case for a push-triggered release: the human bumped it.
           if git diff --cached --quiet; then
             echo "commit=false" >> "$GITHUB_OUTPUT"
-            echo "already at ${{ steps.bump.outputs.version }}: tagging HEAD"
+            echo "already at ${{ steps.bump.outputs.version }}: nothing to commit"
           else
             echo "commit=true" >> "$GITHUB_OUTPUT"
             git commit -m "Release ${{ steps.bump.outputs.version }}"
           fi
-          git tag -a '${{ steps.bump.outputs.tag }}' \
-            -m "pear_ebi ${{ steps.bump.outputs.version }}"
 
       - name: Check git will accept the release before publishing it
-        if: ${{ !inputs.dry_run }}
-        # This is the step that was missing. pear_ebi is a protected branch, so the
-        # push of the release commit was rejected -- but only after PyPI had already
-        # been published to, leaving a version on PyPI that nothing in git recorded.
-        #
-        # --dry-run performs the real authentication and the real server-side checks
-        # without transferring anything, so a protected branch or a missing permission
-        # fails here, before the publish, and the same version can be retried.
+        if: ${{ !inputs.dry_run && steps.prepare.outputs.commit == 'true' }}
+        # Only reached when a bump has to be committed, which is the dispatch path.
+        # pear_ebi is a protected branch, so that push can be rejected -- and it was,
+        # after PyPI had already been published to, leaving a version on PyPI that
+        # nothing in git recorded. --dry-run performs the real authentication and the
+        # real server-side checks without transferring anything, so it fails here,
+        # before the publish, and the same version can be retried.
         run: |
-          if [ "${{ steps.prepare.outputs.commit }}" = "true" ]; then
-            if ! git push --dry-run origin HEAD:${{ github.ref_name }}; then
-              echo "::error::Cannot push the release commit to ${{ github.ref_name }}."
-              echo "That branch is protected, and this workflow's token is not allowed"
-              echo "to push to it. Nothing has been published."
-              echo ""
-              echo "Release without a bump instead: change the version in"
-              echo "pyproject.toml yourself, run tools/sync_version.py, push that"
-              echo "commit, and the push-triggered release will publish and tag it --"
-              echo "no branch write from Actions needed. Or allow this workflow to"
-              echo "bypass the branch protection rule."
-              exit 1
-            fi
+          if ! git push --dry-run origin HEAD:${{ github.ref_name }}; then
+            echo "::error::Cannot push the release commit to ${{ github.ref_name }}."
+            echo "Nothing has been published."
+            echo ""
+            echo "Release without a bump instead: change the version in pyproject.toml"
+            echo "yourself, run tools/sync_version.py, push that commit, and the"
+            echo "push-triggered release will publish and tag it -- no branch write"
+            echo "from Actions needed."
+            exit 1
           fi
-          git push --dry-run origin '${{ steps.bump.outputs.tag }}'
-          echo "git will accept the release"
+          echo "git will accept the release commit"
 
       - name: Publish to PyPI
         if: ${{ !inputs.dry_run }}
@@ -341,13 +333,37 @@ jobs:
         # credential. See CONTRIBUTING.md for the fields to enter on PyPI.
         uses: pypa/gh-action-pypi-publish@release/v1
 
-      - name: Push the release commit and tag
+      - name: Push the release commit
+        if: ${{ !inputs.dry_run && steps.prepare.outputs.commit == 'true' }}
+        run: git push origin HEAD:${{ github.ref_name }}
+
+      - name: Tag the release and publish a GitHub release
         if: ${{ !inputs.dry_run }}
+        # Through the API rather than `git push origin <tag>`, which cannot work here.
+        # GITHUB_TOKEN is a GitHub App installation token, and GitHub refuses any push
+        # from one that creates or updates a workflow file. Pushing a new tag counts:
+        # the ref did not exist before, so .github/workflows/ci.yml at that ref is
+        # "created" by the push, and it is rejected with
+        #
+        #   refusing to allow a GitHub App to create or update workflow
+        #   `.github/workflows/ci.yml` without `workflows` permission
+        #
+        # That permission cannot be granted to GITHUB_TOKEN -- it is not one of the
+        # keys the permissions block accepts -- so the push route is closed no matter
+        # how the job is configured. Creating the ref through the API is not a push and
+        # is not subject to the rule; `contents: write` is enough.
+        #
+        # It also gives the repository a Releases page, and attaches the very wheel and
+        # sdist that went to PyPI, so the artefacts are downloadable from here too.
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          if [ "${{ steps.prepare.outputs.commit }}" = "true" ]; then
-            git push origin HEAD:${{ github.ref_name }}
-          fi
-          git push origin '${{ steps.bump.outputs.tag }}'
+          gh release create '${{ steps.bump.outputs.tag }}' \
+            --target "$(git rev-parse HEAD)" \
+            --title 'pear_ebi ${{ steps.bump.outputs.version }}' \
+            --notes 'Published to PyPI: https://pypi.org/project/pear-ebi/${{ steps.bump.outputs.version }}/' \
+            dist/*
+          echo "tagged ${{ steps.bump.outputs.tag }} and created the release"
 
       - name: Deploy the documentation
         if: ${{ !inputs.dry_run }}

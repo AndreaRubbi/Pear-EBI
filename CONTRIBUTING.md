@@ -64,11 +64,21 @@ Actions tab. It is the only supported way to publish: it bumps the version, veri
 artefacts, publishes to PyPI, tags the commit and redeploys the documentation, and it refuses
 to do any of that if a check fails.
 
-### `pear_ebi` is a protected branch, which shapes how this works
+### Two constraints shape how this works
 
-Actions cannot push commits to `pear_ebi` — the branch is protected and the workflow's
-token is not allowed to bypass it. `gh-pages` is unprotected, which is why documentation
-deploys fine. So **the supported way to release is to bump the version yourself and push**:
+**`GITHUB_TOKEN` may not push anything that touches a workflow file.** It is a GitHub App
+installation token, and GitHub rejects such pushes with *"refusing to allow a GitHub App to
+create or update workflow `.github/workflows/ci.yml` without `workflows` permission"*.
+Pushing a **tag** counts: the ref is new, so every workflow file at that ref is "created" by
+the push. That permission is not one the `permissions:` block can grant, so the push route is
+closed however the job is configured — which is why the workflow creates tags through the
+REST API (`gh release create`) instead. That also gives the repository a Releases page with
+the wheel and sdist attached.
+
+**`pear_ebi` is a protected branch**, so Actions cannot push commits to it either.
+`gh-pages` is unprotected, which is why documentation deploys fine.
+
+Between them, **the supported way to release is to bump the version yourself and push**:
 
 ```
 poetry version patch          # or minor / major / an explicit version
@@ -76,14 +86,15 @@ python tools/sync_version.py  # propagates it to __init__.py and CITATION.cff
 git commit -am "Release 1.1.2" && git push
 ```
 
-The push-triggered release then publishes and tags it, and needs no branch write of its
-own — only a tag push, which protection does not cover.
+The push-triggered release then publishes it and creates the tag and GitHub release
+through the API, so it needs no git write of its own at all.
 
 Dispatching the workflow with a bump input still works, but the bump has to be pushed by
-Actions, so it stops before publishing with an explanatory error rather than putting a
-version on PyPI that git has no record of. (That is not hypothetical: release 1.1.1 was
-published and then the commit push was rejected, so 1.1.1 exists on PyPI with no
-corresponding tag.) Either bump-and-push as above, or grant this workflow a bypass on the
+Actions, so it checks that the push will be accepted **before** publishing and stops with an
+explanatory error rather than putting a version on PyPI that git has no record of. That is
+not hypothetical: both 1.1.0 and 1.1.1 were published this way and neither tag could be
+pushed, so they existed on PyPI with nothing in git recording them until the tags were
+created by hand. Either bump-and-push as above, or grant this workflow a bypass on the
 protection rule.
 
 Two inputs:
