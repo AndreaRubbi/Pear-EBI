@@ -47,7 +47,7 @@ jobs:
       release: ${{ steps.check.outputs.release }}
       version: ${{ steps.check.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # tags, so an already-released version can be recognised
 
@@ -90,13 +90,13 @@ jobs:
       group: gh-pages
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # full history: the git-revision-date-localized and git-authors mkdocs
           # plugins read it, and gh-deploy needs to push
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
 

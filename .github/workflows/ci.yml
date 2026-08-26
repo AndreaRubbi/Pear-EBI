@@ -28,9 +28,9 @@ jobs:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -43,15 +43,19 @@ jobs:
       - name: Check lockfile is in sync with pyproject
         run: poetry check --lock
 
-      - name: Assert the NumPy < 2 constraint actually holds
-        # The pin exists in metadata, but a resolver change or a stray upgrade could
-        # break it, and the failure mode is an obscure traceback from inside
-        # pyDRMetrics. Fail loudly here instead.
+      - name: Report the resolved scientific stack
+        # This used to assert numpy < 2. That pin is gone -- it rested on pyDRMetrics
+        # not having been ported, which turned out to be untrue -- so there is nothing
+        # to assert here any more: the constraint that matters is "no upper bounds",
+        # and tests/test_packaging.py checks that. What is still worth having is the
+        # resolved versions in the log, since the lockfile pins different ones per
+        # interpreter and a failure elsewhere is much easier to read with them to hand.
         run: |
           poetry run python -c "
-          import numpy, sys
-          print('numpy', numpy.__version__)
-          sys.exit(0 if numpy.__version__.startswith('1.') else 'numpy >= 2 resolved, which pear_ebi does not support')
+          import matplotlib, numpy, pandas, plotly, scipy, sklearn
+          print(f'numpy {numpy.__version__}  pandas {pandas.__version__}  '
+                f'scipy {scipy.__version__}  scikit-learn {sklearn.__version__}  '
+                f'matplotlib {matplotlib.__version__}  plotly {plotly.__version__}')
           "
 
       - name: Run tests
@@ -75,8 +79,8 @@ jobs:
     name: packaging invariants
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - run: pipx install poetry
@@ -186,7 +190,7 @@ jobs:
           assert "site-packages" in loc, f"not installed properly: {loc}"
           assert repo not in loc, f"loaded from the checkout, not the wheel: {loc}"
           assert not [p for p in sys.path if repo in p], "checkout leaked onto sys.path"
-          assert numpy.__version__.startswith("1."), numpy.__version__
+          print(f"numpy {numpy.__version__} resolved for this wheel")
           # every module must import from the installed copy
           from pear_ebi.tree_set import tree_set, set_collection
           from pear_ebi.calculate_distances import hashrf, tqdist, maple_RF
@@ -211,8 +215,8 @@ jobs:
     name: format and lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - run: pipx install pre-commit
@@ -230,10 +234,10 @@ jobs:
       group: gh-pages
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # git-revision-date-localized and git-authors need history
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.11"
       - run: pipx install poetry
