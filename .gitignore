@@ -1,4 +1,7 @@
-#site/
+# Built documentation. CI builds it on every push and deploys it to gh-pages,
+# so a committed copy would be a second source of truth that can silently
+# disagree with what is published. Preview locally with `mkdocs serve`.
+site/
 #docs/
 #docs_assets/
 pear_ebi.egg\-info/

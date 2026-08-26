@@ -1,0 +1,262 @@
+name: Release
+
+# One-click release. Actions -> Release -> Run workflow.
+#
+# Publishing is deliberately NOT tied to an ordinary push: PyPI refuses to overwrite an
+# existing version, so "publish on every push" would either fail on the second push or
+# require bumping the version for every README fix. This workflow does the whole
+# sequence in one place, and refuses to publish anything that does not build and test
+# cleanly first.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: >-
+          Bump level (patch, minor, major) or an explicit version such as 1.0.1.7.
+          NOTE: this project uses a four-segment version, and `poetry version patch`
+          zeroes the fourth segment (1.0.1.6 -> 1.0.2.0). Give an explicit version if
+          you want 1.0.1.7.
+        required: true
+        default: patch
+      dry_run:
+        description: "Build, test and verify only - do not commit, tag, publish or deploy"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # commit the version bump, push the tag, deploy to gh-pages
+  id-token: write   # PyPI Trusted Publishing (OIDC) - no API token needed
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    concurrency:
+      # See the same group in ci.yml: this job deploys the documentation too, and the two
+      # must not force-push gh-pages simultaneously.
+      group: gh-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # full history: the git-revision-date-localized and git-authors mkdocs
+          # plugins read it, and gh-deploy needs to push
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Refuse to release from a dirty tree
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "The working tree is not clean:"; git status --porcelain; exit 1
+          fi
+
+      - name: Bump the version
+        id: bump
+        run: |
+          poetry version "${{ inputs.version }}"
+          NEW=$(poetry version --short)
+          echo "version=$NEW" >> "$GITHUB_OUTPUT"
+          echo "tag=v$NEW" >> "$GITHUB_OUTPUT"
+          echo "Releasing $NEW"
+
+      - name: Refuse if that tag already exists
+        run: |
+          TAG='${{ steps.bump.outputs.tag }}'
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG already exists locally"; exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists on the remote"; exit 1
+          fi
+
+      - name: Keep __version__ in step with pyproject
+        # poetry version only edits pyproject.toml; pear_ebi/__init__.py carries the
+        # version that `pear_ebi --version` reports.
+        run: python tools/sync_version.py
+
+      - name: Install the project
+        run: poetry install --with dev,docs
+
+      - name: Lockfile still consistent
+        run: poetry check --lock
+
+      - name: Version agrees everywhere
+        # pyproject.toml and pear_ebi/__init__.py, checked against each other and against
+        # what the interpreter imports. The *installed* metadata is deliberately not
+        # checked here: an editable install's dist-info does not follow a version bump
+        # (poetry treats the root project as current, and even `pip install -e .` reports
+        # "already satisfied"), so it would be asserting on a stale copy. The version
+        # that matters is the one in the built artefacts and in a clean install, and both
+        # are asserted below.
+        env:
+          DECLARED: ${{ steps.bump.outputs.version }}
+        run: |
+          poetry run python tools/sync_version.py --check
+          poetry run python - <<'PY'
+          import os, pear_ebi
+          declared = os.environ["DECLARED"]
+          assert pear_ebi.__version__ == declared, (pear_ebi.__version__, declared)
+          print("version consistent in the source tree:", declared)
+          PY
+
+      - name: Run the full test suite
+        env:
+          MPLBACKEND: Agg
+        run: poetry run pytest -q --timeout=1800
+
+      - name: Build the distribution
+        run: poetry build
+
+      - name: Verify the artefacts
+        # The same invariants the CI packaging job enforces. A release must not be able
+        # to ship a wheel that shadows the stdlib `test` module, loses the executable
+        # bit on the bundled binaries, drops the GPL licence texts, or balloons back to
+        # the 118 MB it used to be.
+        env:
+          DECLARED: ${{ steps.bump.outputs.version }}
+        run: |
+          python - <<'PY'
+          import glob, os, sys, zipfile
+          declared = os.environ["DECLARED"]
+          wheel = glob.glob("dist/*.whl")[0]
+          z = zipfile.ZipFile(wheel)
+          names = z.namelist()
+          problems = []
+
+          # The version PyPI will serve. Checked on the filenames and on the wheel's own
+          # METADATA, because these are the copies that leave this machine.
+          sdists = glob.glob("dist/*.tar.gz")
+          if os.path.basename(wheel) != f"pear_ebi-{declared}-py3-none-any.whl":
+              problems.append(f"unexpected wheel name: {os.path.basename(wheel)}")
+          if [os.path.basename(s) for s in sdists] != [f"pear_ebi-{declared}.tar.gz"]:
+              problems.append(f"unexpected sdist: {[os.path.basename(s) for s in sdists]}")
+          try:
+              metadata = z.read(f"pear_ebi-{declared}.dist-info/METADATA").decode()
+          except KeyError:
+              problems.append(f"wheel has no pear_ebi-{declared}.dist-info/METADATA")
+          else:
+              if f"Version: {declared}" not in metadata:
+                  problems.append(f"wheel METADATA does not declare version {declared}")
+
+          leaked = [n for n in names if n.split("/")[0] in {"test", "tests"}]
+          if leaked:
+              problems.append(f"top-level test package in the wheel: {leaked[:3]}")
+
+          required_exec = [
+              "pear_ebi/calculate_distances/linux_bin/HashRF/hashrf",
+              "pear_ebi/calculate_distances/linux_bin/tqDist/bin/all_pairs_quartet_dist",
+              "pear_ebi/calculate_distances/mac_bin/HashRF/hashrf",
+          ]
+          for name in required_exec:
+              if name not in names:
+                  problems.append(f"missing binary: {name}")
+              elif not (z.getinfo(name).external_attr >> 16) & 0o111:
+                  problems.append(f"not executable: {name}")
+
+          for licence in [
+              "pear_ebi/calculate_distances/linux_bin/HashRF/COPYING",
+              "pear_ebi/calculate_distances/linux_bin/tqDist/COPYING",
+              "pear_ebi/calculate_distances/linux_bin/tqDist/COPYING.LESSER",
+              "pear_ebi/calculate_distances/mac_bin/HashRF/COPYING",
+          ]:
+              if licence not in names:
+                  problems.append(f"missing licence text: {licence}")
+
+          size_mb = sum(i.file_size for i in z.infolist()) / 1e6
+          if size_mb > 20:
+              problems.append(f"wheel is {size_mb:.1f} MB uncompressed")
+
+          print(f"wheel: {size_mb:.1f} MB, {len(names)} files")
+          if problems:
+              print("\n".join(f"  - {p}" for p in problems)); sys.exit(1)
+          print("artefact checks passed")
+          PY
+
+      - name: Install the wheel in a clean venv and run it
+        # From /tmp, not the checkout: with the repository as the working directory ""
+        # on sys.path makes ./pear_ebi shadow the installed package, and this would
+        # silently exercise the source tree instead of the artefact being released.
+        run: |
+          python -m venv /tmp/relcheck
+          /tmp/relcheck/bin/pip install --quiet dist/*.whl
+          mkdir -p /tmp/relwork && cd /tmp/relwork
+          PEAR_REPO="$GITHUB_WORKSPACE" DECLARED="${{ steps.bump.outputs.version }}" \
+            /tmp/relcheck/bin/python - <<'PY'
+          import importlib.metadata as md, os, pear_ebi
+          loc = os.path.dirname(pear_ebi.__file__)
+          assert "site-packages" in loc, loc
+          assert os.environ["PEAR_REPO"] not in loc, loc
+          declared = os.environ["DECLARED"]
+          assert pear_ebi.__version__ == declared, (pear_ebi.__version__, declared)
+          assert md.version("pear_ebi") == declared, (md.version("pear_ebi"), declared)
+          print("installed cleanly:", pear_ebi.__version__)
+          PY
+          printf '(A:1,B:1,(C:1,D:1):1);\n(A:1,C:1,(B:1,D:1):1);\n(A:1,D:1,(B:1,C:1):1);\n' > t.nwk
+          MPLBACKEND=Agg /tmp/relcheck/bin/pear_ebi t.nwk -m hashrf_RF -o d.csv
+          test -s d.csv
+          test "$(/tmp/relcheck/bin/pear_ebi --version)" = "pear_ebi ${{ steps.bump.outputs.version }}"
+
+      - name: Build the documentation
+        run: poetry run mkdocs build --strict
+
+      - name: Reject a reintroduced polyfill.io reference
+        # That domain was sold and served malware in June 2024.
+        run: |
+          if grep -rIl "polyfill\.io" site/ 2>/dev/null; then
+            echo "polyfill.io reference found in the built site"; exit 1
+          fi
+
+      - name: Stop here if this is a dry run
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "Dry run: version ${{ steps.bump.outputs.version }} builds, tests and"
+          echo "verifies cleanly. Nothing was committed, tagged, published or deployed."
+
+      - name: Commit and tag the release
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git config user.name  "AndreaRubbi"
+          git config user.email "andrea.rubbi.98@gmail.com"
+          git add pyproject.toml pear_ebi/__init__.py
+          git commit -m "Release ${{ steps.bump.outputs.version }}"
+          git tag -a '${{ steps.bump.outputs.tag }}' \
+            -m "pear_ebi ${{ steps.bump.outputs.version }}"
+          git push origin HEAD:${{ github.ref_name }}
+          git push origin '${{ steps.bump.outputs.tag }}'
+
+      - name: Publish to PyPI
+        if: ${{ !inputs.dry_run }}
+        # Trusted Publishing: no API token is stored anywhere. It requires a one-time
+        # setup on PyPI (Manage project -> Publishing -> add a GitHub publisher for
+        # AndreaRubbi/Pear-EBI, workflow release.yml). Until that exists this step
+        # fails with an OIDC permission error and nothing else is affected -- the
+        # commit and tag are already pushed, so a re-run would need an explicit version.
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+      - name: Deploy the documentation
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git config user.name  "AndreaRubbi"
+          git config user.email "andrea.rubbi.98@gmail.com"
+          poetry run mkdocs gh-deploy --force
+
+      - name: Summary
+        if: ${{ !inputs.dry_run }}
+        run: |
+          {
+            echo "### Released ${{ steps.bump.outputs.version }}"
+            echo ""
+            echo "- tag \`${{ steps.bump.outputs.tag }}\` pushed"
+            echo "- published to https://pypi.org/project/pear-ebi/${{ steps.bump.outputs.version }}/"
+            echo "- documentation deployed to gh-pages"
+          } >> "$GITHUB_STEP_SUMMARY"

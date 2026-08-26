@@ -123,6 +123,21 @@ Follow <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_t
  It may be necessary to also install `libgcc` and remove old versions of `libstdc++` from the interpreter libraries. --->
 ________________________
 
+## Contributing and releasing
+
+`CONTRIBUTING.md` covers the development setup, the test conventions and the release
+process. In short: releases are cut by the **Release** workflow from the Actions tab, which
+bumps the version, verifies the artefacts, publishes to PyPI, tags the commit and redeploys
+this documentation. Every push to `pear_ebi` rebuilds and redeploys the documentation on its
+own, so the published site never lags the branch.
+
+Note that PEAR uses a four-segment version (`1.0.1.6`), so Poetry's `patch` keyword bumps it
+to `1.0.2.0` rather than `1.0.1.7` — a routine release should pass an explicit version.
+Publishing relies on PyPI Trusted Publishing, which has to be enabled once on PyPI before the
+first automated release; `CONTRIBUTING.md` says how.
+
+________________________
+
 ## How to cite
 
 If you use PEAR in published work, please cite the software. `CITATION.cff` in the

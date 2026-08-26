@@ -219,8 +219,16 @@ jobs:
       - run: pre-commit run --all-files --show-diff-on-failure
 
   docs:
-    name: docs build
+    name: docs build and deploy
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # to push the built site to gh-pages
+    concurrency:
+      # Shared with the release workflow: both end in `mkdocs gh-deploy --force`, and two
+      # force-pushes to gh-pages at once would have one of them fail. Queue instead of
+      # cancelling, so a deploy that has started is never abandoned half-done.
+      group: gh-pages
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -241,3 +249,15 @@ jobs:
             echo "polyfill.io reference found in the built site"; exit 1
           fi
           echo "no polyfill.io references"
+
+      - name: Deploy to gh-pages
+        # Only for a real push to the default branch: pull requests must build and be
+        # checked, but must not publish. The live site is therefore always whatever the
+        # branch currently builds to, with no separate committed copy to fall out of
+        # step with it.
+        if: github.event_name == 'push' && github.ref == 'refs/heads/pear_ebi'
+        run: |
+          git config user.name  "AndreaRubbi"
+          git config user.email "andrea.rubbi.98@gmail.com"
+          poetry run mkdocs gh-deploy --force
+          echo "documentation deployed to gh-pages"

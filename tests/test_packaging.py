@@ -43,7 +43,16 @@ class TestMetadata(unittest.TestCase):
 
         declared = _pyproject()["project"]["version"]
         self.assertEqual(pear_ebi.__version__, declared)
-        self.assertEqual(md.version("pear_ebi"), declared)
+        # An editable install's dist-info does not follow a version bump on its own --
+        # poetry treats the root project as already current, and pip reports "already
+        # satisfied" -- so say what to do rather than just printing two versions.
+        self.assertEqual(
+            md.version("pear_ebi"),
+            declared,
+            "the installed metadata is out of step with pyproject.toml; if you just "
+            "changed the version, reinstall with `poetry install --only-root` or "
+            "`pip install -e . --no-deps --force-reinstall`",
+        )
 
     def test_requires_python_excludes_3_13(self):
         """NumPy 1.x ships no cp313 wheels, so 3.13 cannot work while numpy<2 holds.
