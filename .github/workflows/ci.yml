@@ -23,8 +23,8 @@ jobs:
       fail-fast: false
       matrix:
         # The full supported range from pyproject's requires-python (>=3.10,<3.14).
-        # 3.13 is deliberately absent: NumPy 1.x, which this package pins, ships no
-        # cp313 wheels, so a 3.13 install falls back to building scipy from source.
+        # 3.13 is included now: it was excluded while numpy<2 held, since NumPy 1.x
+        # ships no cp313 wheels, and that pin is gone.
         python-version: ["3.10", "3.11", "3.12", "3.13"]
 
     steps:

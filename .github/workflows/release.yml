@@ -9,14 +9,21 @@ name: Release
 # cleanly first.
 
 on:
+  # A push releases only when the version in pyproject.toml is one that has not been
+  # released yet: the gate job below checks for the tag and asks PyPI. So bumping the
+  # version and pushing publishes, and every other push -- a README fix, a test, a
+  # dependency bump -- skips the whole thing instead of failing against a version PyPI
+  # already has.
+  push:
+    branches: [pear_ebi]
   workflow_dispatch:
     inputs:
       version:
         description: >-
           Bump level (patch, minor, major) or an explicit version such as 1.1.1.
           Passing the version already in pyproject.toml is allowed, and releases that
-          version as it stands.
-        required: true
+          version as it stands. Leave as-is for a plain re-run.
+        required: false
         default: patch
       dry_run:
         description: "Build, test and verify only - do not commit, tag, publish or deploy"
@@ -32,7 +39,50 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Cheap (a checkout and two lookups) so that an ordinary push costs almost nothing.
+  gate:
+    name: is this version unreleased?
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.check.outputs.release }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # tags, so an already-released version can be recognised
+
+      - id: check
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          VERSION=$(grep -m1 -Po '(?<=^version = ")[^"]+' pyproject.toml)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "pyproject.toml declares $VERSION"
+
+          if [ "$EVENT" != "push" ]; then
+            # Dispatched by hand: the version input decides, so always go through.
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "manual run: proceeding"; exit 0
+          fi
+
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "tag v$VERSION already exists: nothing to release on this push"; exit 0
+          fi
+
+          CODE=$(curl -s -o /dev/null -w '%{http_code}' \
+            "https://pypi.org/pypi/pear_ebi/$VERSION/json")
+          if [ "$CODE" = "200" ]; then
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "PyPI already serves $VERSION: nothing to release on this push"; exit 0
+          fi
+
+          echo "release=true" >> "$GITHUB_OUTPUT"
+          echo "$VERSION is unreleased (no tag, PyPI returned $CODE): releasing"
+
   release:
+    needs: gate
+    if: needs.gate.outputs.release == 'true'
     runs-on: ubuntu-latest
     concurrency:
       # See the same group in ci.yml: this job deploys the documentation too, and the two
@@ -61,9 +111,16 @@ jobs:
 
       - name: Bump the version
         id: bump
+        env:
+          REQUESTED: ${{ inputs.version }}
         run: |
           OLD=$(poetry version --short)
-          poetry version "${{ inputs.version }}"
+          # No input on a push-triggered run: release what the tree already declares.
+          if [ -n "$REQUESTED" ]; then
+            poetry version "$REQUESTED"
+          else
+            echo "no version input (push-triggered): keeping $OLD"
+          fi
           NEW=$(poetry version --short)
           echo "version=$NEW" >> "$GITHUB_OUTPUT"
           echo "tag=v$NEW" >> "$GITHUB_OUTPUT"
