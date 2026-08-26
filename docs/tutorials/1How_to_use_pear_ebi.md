@@ -46,9 +46,9 @@ To start with, simply check your installation by running:
 !pear_ebi
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [31mNo files specified[0m[37m [0m[1;37m([0m[37msee --help for instructions[0m[1;37m)[0m
-    [93m- Leaving PEAR -[0m
+    PEAR v0.1.85
+    No files specified (see --help for instructions)
+    - Leaving PEAR -
 
 
 Pear is complaining because no file was given... since it looks like you don't know how to use it, it kindly suggests to seek help using the `--help` (or simply `-h`) flag. Good idea!
@@ -118,16 +118,16 @@ You define a <font color='blue'>tree_set</font> with a set of trees coming from 
 !pear_ebi beast_trees/beast_long.trees
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m1001[0m trees;
+     Tree set containing 1001 trees;
      File: beast_trees/beast_long.trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 
@@ -136,18 +136,18 @@ You define a <font color='blue'>tree_set</font> with a set of trees coming from 
 !pear_ebi beast_trees/beast_run1.trees beast_trees/beast_run2.trees
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set collection containing [1;36m2002[0m trees;
-     File: Set_collection_[93m1bfec55f-592e-43a6-bf2b-4000219b3092[0m;
+     Tree set collection containing 2002 trees;
+     File: Set_collection_1bfec55f-592e-43a6-bf2b-4000219b3092;
      Distance matrix: not computed.
     ─────────────────────────────
-    beast_run1; Containing [1;36m1001[0m trees.
-    beast_run2; Containing [1;36m1001[0m trees.
+    beast_run1; Containing 1001 trees.
+    beast_run2; Containing 1001 trees.
 
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 Although you may be perplexed about the actual practical difference between these structures, we suggest you keep these questions for the next chapters and bear with us to explore some more funky ways of loading trees onto pear.
@@ -159,25 +159,25 @@ Although you may be perplexed about the actual practical difference between thes
 !pear_ebi --dir beast_trees
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set collection containing [1;36m9009[0m trees;
-     File: Set_collection_[93m696e3bb7-7deb-46e1-97c8-3bcce630cddd[0m;
+     Tree set collection containing 9009 trees;
+     File: Set_collection_696e3bb7-7deb-46e1-97c8-3bcce630cddd;
      Distance matrix: not computed.
     ─────────────────────────────
-    beast_run7; Containing [1;36m1001[0m trees.
-    beast_run2; Containing [1;36m1001[0m trees.
-    beast_long; Containing [1;36m1001[0m trees.
-    beast_run5; Containing [1;36m1001[0m trees.
-    beast_run6; Containing [1;36m1001[0m trees.
-    beast_run3; Containing [1;36m1001[0m trees.
-    beast_run8; Containing [1;36m1001[0m trees.
-    beast_run4; Containing [1;36m1001[0m trees.
-    beast_run1; Containing [1;36m1001[0m trees.
+    beast_run7; Containing 1001 trees.
+    beast_run2; Containing 1001 trees.
+    beast_long; Containing 1001 trees.
+    beast_run5; Containing 1001 trees.
+    beast_run6; Containing 1001 trees.
+    beast_run3; Containing 1001 trees.
+    beast_run8; Containing 1001 trees.
+    beast_run4; Containing 1001 trees.
+    beast_run1; Containing 1001 trees.
 
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 Whoa! Too many... thankfully we can indicate a pattern to look for
@@ -188,24 +188,24 @@ Whoa! Too many... thankfully we can indicate a pattern to look for
 !pear_ebi --dir beast_trees --pattern "*run*"
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set collection containing [1;36m8008[0m trees;
-     File: Set_collection_[93m9781a60f-d6d7-4ffb-97c3-36d7aed9af4b[0m;
+     Tree set collection containing 8008 trees;
+     File: Set_collection_9781a60f-d6d7-4ffb-97c3-36d7aed9af4b;
      Distance matrix: not computed.
     ─────────────────────────────
-    beast_run7; Containing [1;36m1001[0m trees.
-    beast_run2; Containing [1;36m1001[0m trees.
-    beast_run5; Containing [1;36m1001[0m trees.
-    beast_run6; Containing [1;36m1001[0m trees.
-    beast_run3; Containing [1;36m1001[0m trees.
-    beast_run8; Containing [1;36m1001[0m trees.
-    beast_run4; Containing [1;36m1001[0m trees.
-    beast_run1; Containing [1;36m1001[0m trees.
+    beast_run7; Containing 1001 trees.
+    beast_run2; Containing 1001 trees.
+    beast_run5; Containing 1001 trees.
+    beast_run6; Containing 1001 trees.
+    beast_run3; Containing 1001 trees.
+    beast_run8; Containing 1001 trees.
+    beast_run4; Containing 1001 trees.
+    beast_run1; Containing 1001 trees.
 
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 If you are a regex wizard you can probably select any set of similarly-named files in this way. Me? I generally ask GPT to write the magic formula. <b>NB:</b> you can also use a combination of `--dir`, `--pattern`, and normal file definition if one or more files come from other directories.
@@ -215,19 +215,19 @@ If you are a regex wizard you can probably select any set of similarly-named fil
 !pear_ebi beast_trees/beast_long.trees --dir beast_trees --pattern "*run[1,2]*"
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set collection containing [1;36m3003[0m trees;
-     File: Set_collection_[93m21d56458-1d6b-4dab-9842-f8a65287e845[0m;
+     Tree set collection containing 3003 trees;
+     File: Set_collection_21d56458-1d6b-4dab-9842-f8a65287e845;
      Distance matrix: not computed.
     ─────────────────────────────
-    beast_run2; Containing [1;36m1001[0m trees.
-    beast_run1; Containing [1;36m1001[0m trees.
-    beast_long; Containing [1;36m1001[0m trees.
+    beast_run2; Containing 1001 trees.
+    beast_run1; Containing 1001 trees.
+    beast_long; Containing 1001 trees.
 
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 ### Compute Distances ###
@@ -239,18 +239,18 @@ You can compute the distance matrix using different methods. Each method has a s
 !pear_ebi beast_trees/beast_run1.trees -m hashrf_RF
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m1001[0m trees;
+     Tree set containing 1001 trees;
      File: beast_trees/beast_run1.trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
-    [2K[32m⠙[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mhashrf_RF | Done![0m
+    ⠙ Calculating distances...0m
+    hashrf_RF | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 
@@ -259,20 +259,20 @@ You can compute the distance matrix using different methods. Each method has a s
 !pear_ebi --dir beast_trees --pattern "*run[12]*" --method hashrf_RF
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set collection containing [1;36m2002[0m trees;
-     File: Set_collection_[93mc9cf5472-d392-4825-b88f-e9feffdb331a[0m;
+     Tree set collection containing 2002 trees;
+     File: Set_collection_c9cf5472-d392-4825-b88f-e9feffdb331a;
      Distance matrix: not computed.
     ─────────────────────────────
-    beast_run2; Containing [1;36m1001[0m trees.
-    beast_run1; Containing [1;36m1001[0m trees.
+    beast_run2; Containing 1001 trees.
+    beast_run1; Containing 1001 trees.
 
-    [2K[32m⠙[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mhashrf_RF | Done![0m
+    ⠙ Calculating distances...0m
+    hashrf_RF | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 
@@ -281,18 +281,18 @@ You can compute the distance matrix using different methods. Each method has a s
 !pear_ebi MAPLE_res/IQtreeStartingTree_slower_Trees -m tqdist_quartet
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m32[0m trees;
+     Tree set containing 32 trees;
      File: MAPLE_res/IQtreeStartingTree_slower_Trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
-    [2K[32m⠴[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mtqdist_quartet | Done![0m
+    ⠴ Calculating distances...0m
+    tqdist_quartet | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 
@@ -301,18 +301,18 @@ You can compute the distance matrix using different methods. Each method has a s
 !pear_ebi MAPLE_res/IQtreeStartingTree_slower_Trees -m smart_RF
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m32[0m trees;
+     Tree set containing 32 trees;
      File: MAPLE_res/IQtreeStartingTree_slower_Trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
-    [2K[32m⠙[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34msmart_RF | Done![0m
+    ⠙ Calculating distances...0m
+    smart_RF | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 If you run the exaples above you will notice the difference between the time efficiency of hashrf and any other algorithm. Please note the astonishing performance of that algorithm, especially considering the sensible difference in the number of trees analyzed!
@@ -330,18 +330,18 @@ Should you disregard this suggestion, we suggest you also disregard your downstr
 !pear_ebi MAPLE_res/IQtreeStartingTree_slower_Trees -m hashrf_RF -o precomputed_distance_matrix
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m32[0m trees;
+     Tree set containing 32 trees;
      File: MAPLE_res/IQtreeStartingTree_slower_Trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
-    [2K[32m⠴[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mhashrf_RF | Done![0m
+    ⠴ Calculating distances...0m
+    hashrf_RF | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 
@@ -350,16 +350,16 @@ Should you disregard this suggestion, we suggest you also disregard your downstr
 !pear_ebi MAPLE_res/IQtreeStartingTree_slower_Trees -d precomputed_distance_matrix
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m32[0m trees;
+     Tree set containing 32 trees;
      File: MAPLE_res/IQtreeStartingTree_slower_Trees;
      Distance matrix: computed.
     ─────────────────────────────
 
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 Please note the difference in the input "Distance matrix" status.
@@ -373,20 +373,20 @@ Here we show the easy way of embedding the distances and produce nice plots! Fir
 !pear_ebi MAPLE_res/IQtreeStartingTree_slower_Trees -m tqdist_triplet --pcoa 2
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m32[0m trees;
+     Tree set containing 32 trees;
      File: MAPLE_res/IQtreeStartingTree_slower_Trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
-    [2K[32m⠹[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mtqdist_triplet | Done![0m
-    [?25l[32m⠋[0m [1;32mEmbedding distances...[0m
-    [1A[2K[1;34mpcoa | Done![0m
+    ⠹ Calculating distances...0m
+    tqdist_triplet | Done!
+    ⠋ Embedding distances...
+    pcoa | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 
@@ -395,20 +395,20 @@ Here we show the easy way of embedding the distances and produce nice plots! Fir
 !pear_ebi MAPLE_res/IQtreeStartingTree_slower_Trees -m hashrf_RF --tsne 5
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m32[0m trees;
+     Tree set containing 32 trees;
      File: MAPLE_res/IQtreeStartingTree_slower_Trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
-    [2K[32m⠦[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mhashrf_RF | Done![0m
-    [2K[32m⠸[0m [1;32mEmbedding distances...[0m0m
-    [1A[2K[1;34mtsne | Done![0m
+    ⠦ Calculating distances...0m
+    hashrf_RF | Done!
+    ⠸ Embedding distances...0m
+    tsne | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 Use the `--plot` flag to show the plots at the end. Note that, when an embedding method is specified, the plots are produced regardless of whether the `--plot` flag is present or not.
@@ -419,20 +419,20 @@ Use the `--plot` flag to show the plots at the end. Note that, when an embedding
 !pear_ebi MAPLE_res/IQtreeStartingTree_slower_Trees -m hashrf_RF --tsne 5 --plot
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m32[0m trees;
+     Tree set containing 32 trees;
      File: MAPLE_res/IQtreeStartingTree_slower_Trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
-    [2K[32m⠴[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mhashrf_RF | Done![0m
-    [2K[32m⠸[0m [1;32mEmbedding distances...[0m0m
-    [1A[2K[1;34mtsne | Done![0m
+    ⠴ Calculating distances...0m
+    hashrf_RF | Done!
+    ⠸ Embedding distances...0m
+    tsne | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 <b>NB:</b> this is something you are expected to run in a terminal, this is why the graph doesn't show up here.
@@ -446,22 +446,22 @@ The toolset of quality-measures provided by pear may be expanded upon request in
 !pear_ebi MAPLE_res/IQtreeStartingTree_slower_Trees -m hashrf_RF --tsne 5 --quality
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m32[0m trees;
+     Tree set containing 32 trees;
      File: MAPLE_res/IQtreeStartingTree_slower_Trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
-    [2K[32m⠼[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mhashrf_RF | Done![0m
-    [2K[32m⠼[0m [1;32mEmbedding distances...[0m0m
-    [1A[2K[1;34mtsne | Done![0m
-    With [1;36m5[0m components/dimensions, the estimated correlation with the [1;36m32[0m-dimensional
-    coordinates is [1;36m-0.03[0m
+    ⠼ Calculating distances...0m
+    hashrf_RF | Done!
+    ⠼ Embedding distances...0m
+    tsne | Done!
+    With 5 components/dimensions, the estimated correlation with the 32-dimensional
+    coordinates is -0.03
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 
@@ -470,22 +470,22 @@ The toolset of quality-measures provided by pear may be expanded upon request in
 !pear_ebi MAPLE_res/IQtreeStartingTree_slower_Trees -m hashrf_RF --pcoa 2 --quality
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m32[0m trees;
+     Tree set containing 32 trees;
      File: MAPLE_res/IQtreeStartingTree_slower_Trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
-    [2K[32m⠼[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mhashrf_RF | Done![0m
-    [?25l[32m⠋[0m [1;32mEmbedding distances...[0m
-    [1A[2K[1;34mpcoa | Done![0m
-    With [1;36m2[0m components/dimensions, the explained variance is [1;36m96.56[0m,
-     with an estimated correlation [1;36m1.00[0m with the [1;36m32[0m-dimensional coordinates
+    ⠼ Calculating distances...0m
+    hashrf_RF | Done!
+    ⠋ Embedding distances...
+    pcoa | Done!
+    With 2 components/dimensions, the explained variance is 96.56,
+     with an estimated correlation 1.00 with the 32-dimensional coordinates
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 
@@ -494,22 +494,22 @@ The toolset of quality-measures provided by pear may be expanded upon request in
 !pear_ebi MAPLE_res/IQtreeStartingTree_slower_Trees -m hashrf_RF --pcoa 10 --quality
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m32[0m trees;
+     Tree set containing 32 trees;
      File: MAPLE_res/IQtreeStartingTree_slower_Trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
-    [2K[32m⠦[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mhashrf_RF | Done![0m
-    [?25l[32m⠋[0m [1;32mEmbedding distances...[0m
-    [1A[2K[1;34mpcoa | Done![0m
-    With [1;36m10[0m components/dimensions, the explained variance is [1;36m99.98[0m,
-     with an estimated correlation [1;36m1.00[0m with the [1;36m32[0m-dimensional coordinates
+    ⠦ Calculating distances...0m
+    hashrf_RF | Done!
+    ⠋ Embedding distances...
+    pcoa | Done!
+    With 10 components/dimensions, the explained variance is 99.98,
+     with an estimated correlation 1.00 with the 32-dimensional coordinates
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 <i>Pro tip</i>: since in order to compute an embedded space we need the distance matrix first, pear will automatically compute the distances with `hashrf_RF` when no method is indicated (and no precomputed distance matrix is specified)
@@ -519,20 +519,20 @@ The toolset of quality-measures provided by pear may be expanded upon request in
 !pear_ebi MAPLE_res/IQtreeStartingTree_slower_Trees --pcoa 2
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m32[0m trees;
+     Tree set containing 32 trees;
      File: MAPLE_res/IQtreeStartingTree_slower_Trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
-    [2K[32m⠦[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mhashrf_RF | Done![0m
-    [?25l[32m⠋[0m [1;32mEmbedding distances...[0m
-    [1A[2K[1;34mpcoa | Done![0m
+    ⠦ Calculating distances...0m
+    hashrf_RF | Done!
+    ⠋ Embedding distances...
+    pcoa | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 ## <font color='blue'>tree_set</font> vs <font color='dark pink'>set_collection</font> ##
@@ -556,12 +556,12 @@ All the above, but staying in the loop!
 !pear_ebi -i
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mSpecify file with tree set[0m
+    PEAR v0.1.85
+    Specify file with tree set
 
     File: ^C
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 
@@ -569,25 +569,25 @@ All the above, but staying in the loop!
 !pear_ebi MAPLE_res/IQtreeStartingTree_slower_Trees -i
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set containing [1;36m32[0m trees;
+     Tree set containing 32 trees;
      File: MAPLE_res/IQtreeStartingTree_slower_Trees;
      Distance matrix: not computed.
     ─────────────────────────────
 
-    [1;32mPEAR | Interactive Mode[0m
-    [32m⣿⣿⣿⣿⣿⣿⣿⣿⠿⣟⠉⡿⠿⣿⣿⣿⣿⣿⣿⣿[0m[1;37m -- Controls --[0m
-    [32m⣿⣿⣿⣿⡿⣿⢉⢳⠴⣞⠉⡷⢥⡏⡙⡿⢿⣿⣿⣿[0m[1;37m [0m[1;37m1[0m[1;37m --> see status[0m
-    [32m⣿⣿⡋⢻⡤⣼⠉⢯⡆⣞⠙⣧⣢⠏⠪⣣⢦⡛⠹⣿[0m[1;37m [0m[1;37m2[0m[1;37m --> calculate distances[0m
-    [32m⣿⣿⠓⢻⣄⣼⠋⢷⡠⡽⠚⣉⣤⡞⢚⢦⢢⠟⠹⣿[0m[1;37m [0m[1;37m3[0m[1;37m --> embed distances[0m
-    [32m⣿⣿⢓⢻⡄⡼⠗⢃⣂⡒⠻⣧⣂⡿⠚⣨⢨⡓⠻⣿[0m[1;37m [0m[1;37m4[0m[1;37m --> plot embeddings[0m
-    [32m⣿⣿⠗⢎⢄⠂⠾⣯⣂⡽⢓⢆⢔⠐⠿⣇⢅⡗⠻⣿[0m[1;37m [0m[1;37m5[0m[1;37m --> add set to collection[0m
-    [32m⣿⣿⠖⢯⡡⣹⠗⣤⣉⠛⠶⣏⢌⡿⠲⡌⢌⢞⠼⣿[0m[1;37m [0m[1;37m6[0m[1;37m --> get subset[0m
-    [32m⣿⣿⣮⣾⡉⣹⠦⣞⡉⡽⠶⡌⠌⡮⠲⣏⢩⣷⣼⣿[0m
-    [32m⣿⣿⣿⣿⣿⣿⣤⣞⢉⣳⠥⣏⠍⣧⣵⣿⣿⣿⣿⣿[0m[1;37m [0m[1;37m7[0m[1;37m --> exit[0m
-    [32m⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿[0m[1;37m [0m[1;37m8[0m[1;37m --> see list of controls[0m
+    PEAR | Interactive Mode
+    ⣿⣿⣿⣿⣿⣿⣿⣿⠿⣟⠉⡿⠿⣿⣿⣿⣿⣿⣿⣿ -- Controls --
+    ⣿⣿⣿⣿⡿⣿⢉⢳⠴⣞⠉⡷⢥⡏⡙⡿⢿⣿⣿⣿ 1 --> see status
+    ⣿⣿⡋⢻⡤⣼⠉⢯⡆⣞⠙⣧⣢⠏⠪⣣⢦⡛⠹⣿ 2 --> calculate distances
+    ⣿⣿⠓⢻⣄⣼⠋⢷⡠⡽⠚⣉⣤⡞⢚⢦⢢⠟⠹⣿ 3 --> embed distances
+    ⣿⣿⢓⢻⡄⡼⠗⢃⣂⡒⠻⣧⣂⡿⠚⣨⢨⡓⠻⣿ 4 --> plot embeddings
+    ⣿⣿⠗⢎⢄⠂⠾⣯⣂⡽⢓⢆⢔⠐⠿⣇⢅⡗⠻⣿ 5 --> add set to collection
+    ⣿⣿⠖⢯⡡⣹⠗⣤⣉⠛⠶⣏⢌⡿⠲⡌⢌⢞⠼⣿ 6 --> get subset
+    ⣿⣿⣮⣾⡉⣹⠦⣞⡉⡽⠶⡌⠌⡮⠲⣏⢩⣷⣼⣿
+    ⣿⣿⣿⣿⣿⣿⣤⣞⢉⣳⠥⣏⠍⣧⣵⣿⣿⣿⣿⣿ 7 --> exit
+    ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣤⣿⣿⣿⣿⣿⣿⣿⣿⣿ 8 --> see list of controls
     Command:
 
 ## There is more...

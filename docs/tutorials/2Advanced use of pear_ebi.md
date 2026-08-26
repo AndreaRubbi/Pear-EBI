@@ -120,24 +120,24 @@ We embed the distances in a 3-dimensional space using PCoA, and we plot the resu
 !pear_ebi --config example_1.toml
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [37mLooking into directory [0m[35m..[0m[35m/beast_trees/[0m[35m [0m[37m- pattern: [0m[35m*run2*[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Looking into directory ../beast_trees/ - pattern: *run2*
+    Your input:
     ─────────────────────────────
-     Tree set collection containing [1;36m3003[0m trees;
-     File: Set_collection_[93m72c842e8-e1ac-4a90-8fbc-535c4b10ef92[0m;
+     Tree set collection containing 3003 trees;
+     File: Set_collection_72c842e8-e1ac-4a90-8fbc-535c4b10ef92;
      Distance matrix: not computed.
     ─────────────────────────────
-    beast_run1; Containing [1;36m1001[0m trees.
-    beast_long; Containing [1;36m1001[0m trees.
-    beast_run2; Containing [1;36m1001[0m trees.
+    beast_run1; Containing 1001 trees.
+    beast_long; Containing 1001 trees.
+    beast_run2; Containing 1001 trees.
 
-    [2K[32m⠸[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mhashrf_RF | Done![0m
-    [2K[32m⠋[0m [1;32mEmbedding distances...[0m0m
-    [1A[2K[1;34mpcoa | Done![0m
+    ⠸ Calculating distances...0m
+    hashrf_RF | Done!
+    ⠋ Embedding distances...0m
+    pcoa | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 #### Example 1 Continued
@@ -149,24 +149,24 @@ As an example, we change the embedding method to tSNE.
 !pear_ebi --config example_1.toml --tsne 3
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [37mLooking into directory [0m[35m..[0m[35m/beast_trees/[0m[35m [0m[37m- pattern: [0m[35m*run2*[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Looking into directory ../beast_trees/ - pattern: *run2*
+    Your input:
     ─────────────────────────────
-     Tree set collection containing [1;36m3003[0m trees;
-     File: Set_collection_[93m9a55b5c8-53b6-40c3-b4c7-55df883b3258[0m;
+     Tree set collection containing 3003 trees;
+     File: Set_collection_9a55b5c8-53b6-40c3-b4c7-55df883b3258;
      Distance matrix: not computed.
     ─────────────────────────────
-    beast_run1; Containing [1;36m1001[0m trees.
-    beast_long; Containing [1;36m1001[0m trees.
-    beast_run2; Containing [1;36m1001[0m trees.
+    beast_run1; Containing 1001 trees.
+    beast_long; Containing 1001 trees.
+    beast_run2; Containing 1001 trees.
 
-    [2K[32m⠼[0m [1;32mCalculating distances...[0m0m
-    [1A[2K[1;34mhashrf_RF | Done![0m
-    [2K[32m⠹[0m [1;32mEmbedding distances...[0m0m
-    [1A[2K[1;34mtsne | Done![0m
+    ⠼ Calculating distances...0m
+    hashrf_RF | Done!
+    ⠹ Embedding distances...0m
+    tsne | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 ### Example 2
@@ -213,24 +213,24 @@ We substitute the 3$^{rd}$ dimension with the Likelihood scores, and we use the 
 !pear_ebi --config example_2.toml
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set collection containing [1;36m138[0m trees;
-     File: Set_collection_[93mec4084c4-a5a7-4878-abcc-93c634208b6e[0m;
+     Tree set collection containing 138 trees;
+     File: Set_collection_ec4084c4-a5a7-4878-abcc-93c634208b6e;
      Distance matrix: computed.
     ─────────────────────────────
-    IQtreeStartingTree_Trees; Containing [1;36m29[0m trees.
-    MapleStartingTree_Trees; Containing [1;36m5[0m trees.
-    ParsimonyRAxMLStartingTree_GTRmodel_Trees; Containing [1;36m47[0m trees.
-    RAxMLNGStartingTree_Trees; Containing [1;36m26[0m trees.
-    UshERStartingTree_Trees; Containing [1;36m30[0m trees.
-    TrueTreeSimulations; Containing [1;36m1[0m trees.
+    IQtreeStartingTree_Trees; Containing 29 trees.
+    MapleStartingTree_Trees; Containing 5 trees.
+    ParsimonyRAxMLStartingTree_GTRmodel_Trees; Containing 47 trees.
+    RAxMLNGStartingTree_Trees; Containing 26 trees.
+    UshERStartingTree_Trees; Containing 30 trees.
+    TrueTreeSimulations; Containing 1 trees.
 
-    [2K[32m⠋[0m [1;32mEmbedding distances...[0m0m
-    [1A[2K[1;34mpcoa | Done![0m
+    ⠋ Embedding distances...0m
+    pcoa | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
 
 
 #### Example 2 Continued
@@ -241,21 +241,21 @@ We now show that we can easily run the same analyses in a very neat way by simpl
 !pear_ebi
 ```
 
-    [34mPEAR v0.[0m[1;34m1.85[0m
-    [95mYour input:[0m
+    PEAR v0.1.85
+    Your input:
     ─────────────────────────────
-     Tree set collection containing [1;36m138[0m trees;
-     File: Set_collection_[93mb87402e6-2e41-4902-8fd2-092a3f6c230a[0m;
+     Tree set collection containing 138 trees;
+     File: Set_collection_b87402e6-2e41-4902-8fd2-092a3f6c230a;
      Distance matrix: computed.
     ─────────────────────────────
-    IQtreeStartingTree_Trees; Containing [1;36m29[0m trees.
-    MapleStartingTree_Trees; Containing [1;36m5[0m trees.
-    ParsimonyRAxMLStartingTree_GTRmodel_Trees; Containing [1;36m47[0m trees.
-    RAxMLNGStartingTree_Trees; Containing [1;36m26[0m trees.
-    UshERStartingTree_Trees; Containing [1;36m30[0m trees.
-    TrueTreeSimulations; Containing [1;36m1[0m trees.
+    IQtreeStartingTree_Trees; Containing 29 trees.
+    MapleStartingTree_Trees; Containing 5 trees.
+    ParsimonyRAxMLStartingTree_GTRmodel_Trees; Containing 47 trees.
+    RAxMLNGStartingTree_Trees; Containing 26 trees.
+    UshERStartingTree_Trees; Containing 30 trees.
+    TrueTreeSimulations; Containing 1 trees.
 
-    [2K[32m⠋[0m [1;32mEmbedding distances...[0m0m
-    [1A[2K[1;34mpcoa | Done![0m
+    ⠋ Embedding distances...0m
+    pcoa | Done!
 
-    [93m- Leaving PEAR -[0m
+    - Leaving PEAR -
