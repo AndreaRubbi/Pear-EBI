@@ -49,7 +49,12 @@ class CLITestCase(unittest.TestCase):
     def run_pear(self, *args, expect_success=True):
         env = dict(os.environ, MPLBACKEND="Agg")
         result = subprocess.run(
-            [PEAR, *args], cwd=self.cwd, capture_output=True, text=True, timeout=900, env=env
+            [PEAR, *args],
+            cwd=self.cwd,
+            capture_output=True,
+            text=True,
+            timeout=900,
+            env=env,
         )
         if expect_success:
             self.assertEqual(
@@ -93,8 +98,10 @@ class TestBasicInvocation(CLITestCase):
         sub = os.path.join(self.cwd, "sets")
         os.makedirs(sub)
         for name in ("a.nwk", "b.nwk"):
-            shutil.copy(os.path.join(FIXTURES, "three_trees_no_final_newline.nwk"),
-                        os.path.join(sub, name))
+            shutil.copy(
+                os.path.join(FIXTURES, "three_trees_no_final_newline.nwk"),
+                os.path.join(sub, name),
+            )
         result = self.run_pear("--dir", "sets", "--pattern", "*.nwk")
         self.assertIn("6 trees", result.stdout)
 
@@ -146,13 +153,16 @@ class TestDistanceMethods(CLITestCase):
         self.assertFalse(np.array_equal(fast, slow))
         ratios = np.unique(np.round(slow[fast != 0] / fast[fast != 0], 6))
         self.assertGreater(
-            len(ratios), 1,
+            len(ratios),
+            1,
             "smart_RF and hashrf_RF now differ by a single constant factor; if one of "
             "them was changed, update this test and the documentation together",
         )
 
     def test_invalid_method_is_rejected(self):
-        result = self.run_pear("twelve_trees.nwk", "-m", "not_a_method", expect_success=False)
+        result = self.run_pear(
+            "twelve_trees.nwk", "-m", "not_a_method", expect_success=False
+        )
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("Invalid method", result.stdout + result.stderr)
 
@@ -170,11 +180,14 @@ class TestEmbeddings(CLITestCase):
     def test_pcoa_and_tsne(self):
         for flag, tag in (("--pcoa", "PCOA"), ("--tsne", "TSNE")):
             with self.subTest(flag=flag):
-                self.run_pear("twelve_trees.nwk", "-m", "hashrf_RF", flag, "2",
-                              "-o", f"{tag}.csv")
+                self.run_pear(
+                    "twelve_trees.nwk", "-m", "hashrf_RF", flag, "2", "-o", f"{tag}.csv"
+                )
                 expected = f"twelve_trees_{tag}_embedding.csv"
-                self.assertTrue(os.path.exists(self.path(expected)),
-                                f"{expected} not written; got {os.listdir(self.cwd)}")
+                self.assertTrue(
+                    os.path.exists(self.path(expected)),
+                    f"{expected} not written; got {os.listdir(self.cwd)}",
+                )
 
     def test_quality_flag(self):
         self.run_pear("twelve_trees.nwk", "-m", "hashrf_RF", "--pcoa", "2", "-q")
@@ -199,12 +212,16 @@ class TestConfigFile(CLITestCase):
 
         Before the fix both fell through to hashrf_RF, so the matrices were identical.
         """
-        self.write_config("rf.toml",
-                          '[trees]\nfile1 = "twelve_trees.nwk"\n\n'
-                          '[distance]\nmethod = "hashrf_RF"\n')
-        self.write_config("quartet.toml",
-                          '[trees]\nfile1 = "twelve_trees.nwk"\n\n'
-                          '[distance]\nmethod = "tqdist_quartet"\n')
+        self.write_config(
+            "rf.toml",
+            '[trees]\nfile1 = "twelve_trees.nwk"\n\n'
+            '[distance]\nmethod = "hashrf_RF"\n',
+        )
+        self.write_config(
+            "quartet.toml",
+            '[trees]\nfile1 = "twelve_trees.nwk"\n\n'
+            '[distance]\nmethod = "tqdist_quartet"\n',
+        )
         self.run_pear("--config", "rf.toml", "-o", "rf.csv")
         self.run_pear("--config", "quartet.toml", "-o", "quartet.csv")
         rf, qt = self.matrix("rf.csv"), self.matrix("quartet.csv")
@@ -217,24 +234,29 @@ class TestConfigFile(CLITestCase):
 
     def test_invalid_method_in_config_is_rejected(self):
         """Unreachable before: the validation never saw the value."""
-        self.write_config("bad.toml",
-                          '[trees]\nfile1 = "twelve_trees.nwk"\n\n'
-                          '[distance]\nmethod = "hashrf"\n')
+        self.write_config(
+            "bad.toml",
+            '[trees]\nfile1 = "twelve_trees.nwk"\n\n' '[distance]\nmethod = "hashrf"\n',
+        )
         result = self.run_pear("--config", "bad.toml", expect_success=False)
         self.assertIn("Invalid method", result.stdout + result.stderr)
 
     def test_cli_method_overrides_the_config(self):
-        self.write_config("rf.toml",
-                          '[trees]\nfile1 = "twelve_trees.nwk"\n\n'
-                          '[distance]\nmethod = "hashrf_RF"\n')
+        self.write_config(
+            "rf.toml",
+            '[trees]\nfile1 = "twelve_trees.nwk"\n\n'
+            '[distance]\nmethod = "hashrf_RF"\n',
+        )
         result = self.run_pear("--config", "rf.toml", "-m", "tqdist_triplet")
         self.assertIn("tqdist_triplet", result.stdout)
 
     def test_embedding_section_is_honoured(self):
-        self.write_config("emb.toml",
-                          '[trees]\nfile1 = "twelve_trees.nwk"\n\n'
-                          '[distance]\nmethod = "hashrf_RF"\n\n'
-                          '[embedding]\nmethod = "pcoa"\ndimensions = 2\n')
+        self.write_config(
+            "emb.toml",
+            '[trees]\nfile1 = "twelve_trees.nwk"\n\n'
+            '[distance]\nmethod = "hashrf_RF"\n\n'
+            '[embedding]\nmethod = "pcoa"\ndimensions = 2\n',
+        )
         result = self.run_pear("--config", "emb.toml")
         self.assertIn("pcoa", result.stdout)
 
@@ -247,15 +269,24 @@ class TestShippedExampleConfigs(unittest.TestCase):
     """The example configs are documentation; they must at least be valid."""
 
     def test_every_example_config_parses_and_names_a_valid_method(self):
-        if sys.version_info >= (3, 11):
-            import tomllib
-        else:  # pragma: no cover
-            import tomli as tomllib
         import glob
 
-        valid = {"hashrf_RF", "hashrf_wRF", "smart_RF", "tqdist_quartet", "tqdist_triplet"}
-        configs = sorted(glob.glob(
-            os.path.join(REPO_ROOT, "examples_tree_sets", "Advanced Examples", "*.toml")))
+        from .toml_compat import tomllib
+
+        valid = {
+            "hashrf_RF",
+            "hashrf_wRF",
+            "smart_RF",
+            "tqdist_quartet",
+            "tqdist_triplet",
+        }
+        configs = sorted(
+            glob.glob(
+                os.path.join(
+                    REPO_ROOT, "examples_tree_sets", "Advanced Examples", "*.toml"
+                )
+            )
+        )
         self.assertTrue(configs, "no example configs found")
         for path in configs:
             with self.subTest(config=os.path.basename(path)):
@@ -266,11 +297,9 @@ class TestShippedExampleConfigs(unittest.TestCase):
                     self.assertIn(method, valid)
 
     def test_example_configs_reference_files_that_exist(self):
-        if sys.version_info >= (3, 11):
-            import tomllib
-        else:  # pragma: no cover
-            import tomli as tomllib
         import glob
+
+        from .toml_compat import tomllib
 
         base = os.path.join(REPO_ROOT, "examples_tree_sets", "Advanced Examples")
         missing = []

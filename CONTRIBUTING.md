@@ -12,8 +12,11 @@ poetry install --with dev,docs
 should be updated in the same commit as any dependency change (`poetry lock` after editing
 `pyproject.toml`, then `poetry check --lock` to confirm they agree).
 
-PEAR requires **NumPy < 2.0** and **Python 3.9 – 3.12**. Python 3.13 is excluded on purpose:
-NumPy 1.x publishes no cp313 wheels, so a 3.13 install cannot satisfy the constraint.
+PEAR requires **NumPy < 2.0** and **Python 3.10 – 3.12**. Both bounds are forced from
+outside: 3.13 is excluded because NumPy 1.x publishes no cp313 wheels, and 3.9 was dropped
+because the patched releases of the dependency tree (pillow, urllib3, jupyter-server and the
+rest) are all published as `requires-python >= 3.10`, so supporting 3.9 meant shipping a
+lockfile with known advisories.
 
 ## Running the tests
 

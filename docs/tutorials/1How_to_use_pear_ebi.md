@@ -2,7 +2,7 @@
 This tutorial goes through the basic features of pear_ebi and how to use them
 _____
 ## Setup ##
-First of all, check that you have a supported python version (python 3.9 to 3.12). We strongly encourage the creation of a dedicated virtual environment in order to avoid potential conflicts with other libraries due to the mismatch of dependencies' versions. We also support the use of mamba as a more efficient version of conda.
+First of all, check that you have a supported python version (python 3.10 to 3.12). We strongly encourage the creation of a dedicated virtual environment in order to avoid potential conflicts with other libraries due to the mismatch of dependencies' versions. We also support the use of mamba as a more efficient version of conda.
 
 <b>In your terminal:</b><br><br>
 Download and install <b>Miniforge</b>, which provides mamba and uses conda-forge by default: <br>

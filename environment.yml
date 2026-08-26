@@ -24,7 +24,7 @@ channels:
   - nodefaults
 
 dependencies:
-  # PEAR supports 3.9-3.12; 3.11 is the recommended default.
+  # PEAR supports 3.10-3.12; 3.11 is the recommended default.
   - python=3.11
   - pip
   - poetry>=2.0

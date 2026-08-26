@@ -15,6 +15,7 @@ import importlib
 import importlib.metadata as md
 import os
 import pkgutil
+import re
 import shutil
 import subprocess
 import sys
@@ -25,10 +26,8 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def _pyproject():
-    if sys.version_info >= (3, 11):
-        import tomllib
-    else:  # pragma: no cover - only on 3.9/3.10
-        import tomli as tomllib
+    from .toml_compat import tomllib
+
     with open(os.path.join(REPO_ROOT, "pyproject.toml"), "rb") as fh:
         return tomllib.load(fh)
 
@@ -61,7 +60,7 @@ class TestMetadata(unittest.TestCase):
         scipy from source, which needs a Fortran compiler and fails.
         """
         spec = _pyproject()["project"]["requires-python"]
-        self.assertIn(">=3.9", spec)
+        self.assertIn(">=3.10", spec)
         self.assertIn("<3.13", spec)
 
     def test_numpy_pin_is_declared_and_satisfied(self):
@@ -87,7 +86,7 @@ class TestMetadata(unittest.TestCase):
             for c in project["classifiers"]
             if c.startswith("Programming Language :: Python :: 3.")
         }
-        self.assertEqual(advertised, {"3.9", "3.10", "3.11", "3.12"})
+        self.assertEqual(advertised, {"3.10", "3.11", "3.12"})
 
     def test_console_script_is_registered_and_resolvable(self):
         entries = [
@@ -130,7 +129,9 @@ class TestInstalledPackage(unittest.TestCase):
                 importlib.import_module(info.name)
             except Exception as exc:  # noqa: BLE001 - we want to report any failure
                 failures.append(f"{info.name}: {type(exc).__name__}: {exc}")
-        self.assertEqual(failures, [], "submodules failed to import:\n" + "\n".join(failures))
+        self.assertEqual(
+            failures, [], "submodules failed to import:\n" + "\n".join(failures)
+        )
 
     def test_no_top_level_test_module_was_installed(self):
         """A bare find_packages() shadowed the CPython stdlib `test` package.
@@ -198,8 +199,14 @@ class TestInstalledPackage(unittest.TestCase):
                 dirnames[:] = []
                 continue
             for name in filenames:
-                if name.endswith(".o") or name.startswith("._") or name == "CMakeCache.txt":
-                    offenders.append(os.path.relpath(os.path.join(dirpath, name), bin_dir))
+                if (
+                    name.endswith(".o")
+                    or name.startswith("._")
+                    or name == "CMakeCache.txt"
+                ):
+                    offenders.append(
+                        os.path.relpath(os.path.join(dirpath, name), bin_dir)
+                    )
         self.assertEqual(offenders[:10], [], f"{len(offenders)} build byproducts present")
 
     def test_no_machine_local_paths_in_shipped_text_files(self):
@@ -288,6 +295,49 @@ class TestBuiltDistribution(unittest.TestCase):
         ):
             with self.subTest(licence=licence):
                 self.assertIn(licence, names)
+
+
+class TestHookVersionsMatchTheProject(unittest.TestCase):
+    """The formatters used by CI must be the ones the project declares.
+
+    The lint job installs pre-commit standalone, so the `rev:` pinned in
+    .pre-commit-config.yaml -- not the version in poetry.lock -- is what decides the
+    formatting there. When the two disagree, one reformats what the other just
+    formatted and the job can never go green: it sat pinned at black 23.1.0 while the
+    project had moved to 26.x. Parsed with a regex rather than PyYAML, which is only in
+    the docs dependency group.
+    """
+
+    @staticmethod
+    def _pinned(tool):
+        path = os.path.join(REPO_ROOT, ".pre-commit-config.yaml")
+        with open(path, encoding="utf-8") as fh:
+            config = fh.read()
+        match = re.search(
+            r"repo:\s*https://\S*/" + tool + r"\s*\n\s*rev:\s*v?([0-9][^\s#]*)",
+            config,
+        )
+        return match.group(1) if match else None
+
+    def test_black_and_isort_revs_match_the_installed_versions(self):
+        for tool in ("black", "isort"):
+            with self.subTest(tool=tool):
+                pinned = self._pinned(tool)
+                self.assertIsNotNone(pinned, f"no {tool} hook found in the config")
+                self.assertEqual(
+                    pinned,
+                    md.version(tool),
+                    f"pre-commit pins {tool} {pinned} but the environment has "
+                    f"{md.version(tool)}; the two will fight over the formatting",
+                )
+
+    def test_blacken_docs_uses_the_same_black(self):
+        path = os.path.join(REPO_ROOT, ".pre-commit-config.yaml")
+        with open(path, encoding="utf-8") as fh:
+            config = fh.read()
+        match = re.search(r"additional_dependencies:\s*\[black==([^\]]+)\]", config)
+        self.assertIsNotNone(match, "blacken-docs does not pin a black version")
+        self.assertEqual(match.group(1), md.version("black"))
 
 
 if __name__ == "__main__":

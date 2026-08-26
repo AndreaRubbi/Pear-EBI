@@ -11,8 +11,12 @@ keywords = ["phylogenetics", "phylogenetic-trees", "embedding", "robinson-foulds
 
 # Was absent entirely, so pip would install on any interpreter and fail at runtime.
 #
-# Floor: the dependency floors below (pandas, scipy, scikit-learn) all require
-# >= 3.9, which is why the old 3.7/3.8 classifiers were never installable.
+# Floor: 3.10. It was 3.9 until Python 3.9 went end-of-life in October 2025 and the
+# security fixes for the dependency tree stopped being available for it -- pillow,
+# urllib3, requests, jupyter-server, click, filelock, setuptools, bleach, black and
+# pytest all publish their patched releases as requires-python >= 3.10, so staying on
+# 3.9 meant staying on versions with known advisories. Raising the floor is what
+# makes a vulnerability-free lockfile possible at all.
 #
 # Ceiling: 3.13 is excluded deliberately, and it follows from the NumPy < 2.0
 # requirement rather than from anything in this package. NumPy 1.26.4 is the last
@@ -20,14 +24,13 @@ keywords = ["phylogenetics", "phylogenetic-trees", "embedding", "robinson-foulds
 # NumPy 2.1. Verified by installing the wheel on 3.13, where pip falls back to
 # building scipy 1.13.1 from source and fails for want of a Fortran compiler. If
 # the NumPy < 2 constraint is ever lifted, this ceiling can be raised with it.
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.10,<3.13"
 
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
   "Operating System :: POSIX :: Linux",
   "Operating System :: MacOS :: MacOS X",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
@@ -118,6 +121,9 @@ black = ">=23.1"
 isort = ">=5.10"
 pre-commit = ">=3.5"
 pytest-cov = ">=4.0"
+# The tests read pyproject.toml. tomllib is stdlib from 3.11; on 3.10 it is not,
+# and a bare `import tomllib` there is what failed CI on 3.9 and 3.10.
+tomli = { version = ">=2.0", python = "<3.11" }
 
 [tool.poetry.group.docs.dependencies]
 # Every plugin mkdocs.yml requires. None of these were declared anywhere before,

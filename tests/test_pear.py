@@ -166,7 +166,9 @@ class TestTreeSetCounting(TempDirTestCase):
         s = tree_set(NO_NL_A, output_file=self.out("d.csv"))
         self.assertEqual(s.file, NO_NL_A)
         self.assertNotEqual(s.tool_input(), s.file)
-        self.assertEqual(s.metadata["SET-ID"].unique().tolist(), ["three_trees_no_final_newline"])
+        self.assertEqual(
+            s.metadata["SET-ID"].unique().tolist(), ["three_trees_no_final_newline"]
+        )
 
     def test_normalised_copy_is_one_tree_per_line(self):
         s = tree_set(NO_NL_A, output_file=self.out("d.csv"))
@@ -209,9 +211,7 @@ class TestCollectionConcatenation(TempDirTestCase):
                 d = np.asarray(c.distance_matrix)
                 self.assertEqual(d.shape, (6, 6))
                 np.testing.assert_array_equal(d, d.T)
-                self.assertTrue(
-                    (d != 0).any(), f"{method} returned an all-zeros matrix"
-                )
+                self.assertTrue((d != 0).any(), f"{method} returned an all-zeros matrix")
 
     def test_empty_collection_is_rejected(self):
         c = set_collection(collection=[NO_NL_A], output_file=self.out("c.csv"))
@@ -273,8 +273,8 @@ class TestNativeToolPermissions(unittest.TestCase):
 
     def test_permission_denied_message_names_the_path(self):
         """The old message printed a literal "{bin_path}" -- it was not an f-string."""
-        from pear_ebi.calculate_distances import _exec
         from pear_ebi import _install_helpers as ih
+        from pear_ebi.calculate_distances import _exec
 
         tmp = tempfile.mkdtemp()
         fake = os.path.join(tmp, "hashrf")
@@ -461,8 +461,9 @@ class TestPEAR(TempDirTestCase):
 class TestParser(unittest.TestCase):
     def test_config_distance_method_is_read(self):
         """config["method"] was read from the top level, so [distance] was ignored."""
-        import tomllib
         from collections import defaultdict
+
+        from .toml_compat import tomllib
 
         toml_text = b'[distance]\nmethod = "tqdist_quartet"\n'
         config = defaultdict(lambda: None, tomllib.loads(toml_text.decode()))
@@ -472,7 +473,8 @@ class TestParser(unittest.TestCase):
 
     def test_shipped_configs_use_valid_methods(self):
         import glob
-        import tomllib
+
+        from .toml_compat import tomllib
 
         valid = {
             "hashrf_RF",
@@ -572,7 +574,8 @@ class TestNotebooksAreExecutable(unittest.TestCase):
                     tags = cell.get("metadata", {}).get("tags", [])
                     with self.subTest(notebook=os.path.basename(rel), cell=i):
                         self.assertIn(
-                            "skip-execution", tags,
+                            "skip-execution",
+                            tags,
                             f"cell {i} starts interactive mode and would hang "
                             "nbconvert forever; it must be tagged skip-execution",
                         )
@@ -626,7 +629,8 @@ class TestHashrfSplitOrientation(TempDirTestCase):
             fh.write("(A:1,B:1,(C:1,D:1):1);\n(C:1,D:1,(A:1,B:1):1);\n")
         m = np.asarray(hashrf(path, 2, self.out("flip.csv")))
         self.assertEqual(
-            m[0, 1], 1,
+            m[0, 1],
+            1,
             "hashrf now reports 0 for the same unrooted tree written with the "
             "opposite side nested. If the vendored binary was fixed or replaced, "
             "update this test and the documentation of hashrf_RF together.",
