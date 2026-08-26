@@ -2,86 +2,86 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/index.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/gendoc.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/_install_helpers.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/tree_emb_parser.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/tree_set.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/calculate_distances/_exec.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/calculate_distances/hashrf.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/calculate_distances/maple_RF.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/calculate_distances/tqdist.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/embeddings/Isomap_e.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/embeddings/LLE_e.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/embeddings/PCoA_e.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/embeddings/emb_quality.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/embeddings/tSNE_e.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/embeddings/graph/graph.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/interactive_mode/interactive.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/subsample/subsample.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/modules/pear_ebi/subsample/subsample_multiprocess.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/tutorials/1How_to_use_pear_ebi.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/tutorials/2Advanced%20use%20of%20pear_ebi.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
     <url>
          <loc>https://andrearubbi.github.io/Pear-EBI/tutorials/3How%20to%20use%20pear_ebi%20on%20python%20and%20reproduce%20the%20examples%20on%20the%20paper.html</loc>
-         <lastmod>2026-08-20</lastmod>
+         <lastmod>2026-08-26</lastmod>
     </url>
 </urlset>

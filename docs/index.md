@@ -80,6 +80,27 @@ It's possible to compute the distance matrix and re-use it in subsequent runs of
 
 If any additional metadata is available, this may be specified by indicating a *.csv* file containing a dataframe of compatible shape.
 
+### Output files
+
+Every file PEAR writes is named as it is written, so a run tells you what it produced:
+
+```
+hashrf_RF | Done!
+Distance matrix  -> beast_run1_distance_matrix.csv
+pcoa | Done!
+Embedding        -> beast_run1_PCOA_embedding.csv
+Plot (2D)        -> beast_run1_PCOA_2D.html
+```
+
+Names are derived from the input file and resolved against the current working
+directory, so paths inside it are shown relative to it and anything elsewhere is shown
+in full. Use *-o* to choose the distance-matrix path yourself.
+
+Add *-v* / *--verbose* to see what PEAR resolved before it starts: which files were
+actually picked up (useful with *--dir*, where a glob can be surprising), how many trees
+each contributed, and which HashRF or tqDist binary will run — a copy found on your
+PATH takes precedence over the bundled one.
+
 ### Config file
 A standard config toml file can be used for specific embeddings of multiple sets of trees. Instances of toml files are reported in the <a href='https://github.com/AndreaRubbi/Pear-EBI/tree/pear_ebi/examples_tree_sets'>examples</a> folder.
 

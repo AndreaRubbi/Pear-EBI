@@ -277,6 +277,40 @@ def _fit_metadata_rows(df, n_trees):
     return df.iloc[:keep].reset_index(drop=True)
 
 
+# soft_wrap so a long path is never broken across lines -- a wrapped path cannot be
+# copied out of the terminal, which defeats the point of printing it.
+_output_console = Console(soft_wrap=True)
+
+
+def _report_output(kind, path):
+    """Say where an output file was written.
+
+    PEAR resolves most output paths relative to the working directory and derives
+    their names from the input, so a single run could produce a distance matrix, an
+    embedding and a plot without naming any of them -- the user had to list the
+    directory to find out. Reporting them also makes an accidental overwrite visible,
+    which is how two tree sets in one directory used to end up silently sharing a
+    plot filename.
+
+    Paths inside the working directory are shown relative to it, because that is both
+    shorter and what the user would type next; anything outside is shown in full.
+    """
+    try:
+        resolved = os.path.abspath(os.fspath(path))
+    except (TypeError, ValueError):
+        _output_console.print(f"[green]{kind:<17}[/green]-> {path}")
+        return
+
+    try:
+        shown = os.path.relpath(resolved, os.getcwd())
+        if shown.startswith(os.pardir):  # outside the cwd -- show it in full
+            shown = resolved
+    except (OSError, ValueError):
+        shown = resolved
+
+    _output_console.print(f"[green]{kind:<17}[/green]-> {shown}")
+
+
 def _load_distance_matrix(source, n_trees, label):
     """Load a precomputed distance matrix and check it describes `n_trees` trees.
 
@@ -585,6 +619,7 @@ class tree_set:
                 self.tool_input(), self.n_trees, self.output_file
             )
         print(f"[bold blue]{method} | Done!")
+        _report_output("Distance matrix", self.output_file)
 
     # ─── EMBED ─────────────────────────────────────────────────────────────────
     def embed(self, method, dimensions, quality=False, report=False, output=None):
@@ -660,6 +695,7 @@ class tree_set:
                 output=output,
             )
         print(f"[bold blue]{method} | Done!")
+        _report_output("Embedding", output)
 
         if quality:
             if method == "pcoa":
@@ -841,7 +877,13 @@ class tree_set:
             )
 
         else:
-            raise ValueError("'method' can only be either 'pcoa' or 'tsne' ")
+            raise ValueError(
+                "'method' can only be 'pcoa', 'tsne', 'isomap' or 'lle'"
+            )
+
+        # plot_embedding writes the html only when save is requested
+        if save:
+            _report_output("Plot (2D)", f"{name_plot}.html")
 
         return fig
 
@@ -960,7 +1002,13 @@ class tree_set:
             )
 
         else:
-            raise ValueError("'method' can only be either 'pcoa' or 'tsne' ")
+            raise ValueError(
+                "'method' can only be 'pcoa', 'tsne', 'isomap' or 'lle'"
+            )
+
+        # plot_embedding writes the html only when save is requested
+        if save:
+            _report_output("Plot (3D)", f"{name_plot}.html")
 
         return fig
 
@@ -1309,6 +1357,7 @@ class set_collection(tree_set):
             self.distance_matrix = methods[method](
                 combined_file, self.n_trees, self.output_file
             )
+        _report_output("Distance matrix", self.output_file)
 
         # The combined input lives in a TemporaryDirectory now, so it is cleaned up
         # even if this call raises. The old code shelled out to `rm` with an unquoted

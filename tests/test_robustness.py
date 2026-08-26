@@ -7,12 +7,14 @@ kinds, and the second kind is the dangerous one:
   - a wrong or incomplete result reported as success with exit code 0.
 """
 
+import io
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 
 import numpy as np
 
@@ -523,3 +525,125 @@ class TestNoStrayTempFiles(ScratchTestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         parallel = np.loadtxt("par.csv", delimiter=",")
         np.testing.assert_array_equal(parallel, single)
+
+
+# ─── Telling the user where output went ───────────────────────────────────────
+
+
+class TestOutputReporting(ScratchTestCase):
+    """A run could write three files and name none of them.
+
+    PEAR derives most output names from the input and resolves them against the
+    working directory, so `pear_ebi t.nwk -m hashrf_RF --pcoa 2 -p` printed only
+    "hashrf_RF | Done!" and "pcoa | Done!" while creating a distance matrix, an
+    embedding and an html plot. Reporting them is also what makes an accidental
+    overwrite visible.
+    """
+
+    def setUp(self):
+        super().setUp()
+        shutil.copy(TWELVE, "t.nwk")
+
+    def test_paths_inside_the_cwd_are_shown_relative(self):
+        from pear_ebi.tree_set import _report_output
+
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            _report_output("Thing", os.path.join(self.cwd, "out.csv"))
+        text = buf.getvalue()
+        self.assertIn("out.csv", text)
+        self.assertNotIn(self.cwd, text, "a path in the cwd should be shown relative")
+
+    def test_paths_outside_the_cwd_are_shown_in_full(self):
+        from pear_ebi.tree_set import _report_output
+
+        with tempfile.TemporaryDirectory() as other:
+            target = os.path.join(other, "out.csv")
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                _report_output("Thing", target)
+            self.assertIn(other, buf.getvalue())
+
+    @unittest.skipIf(PEAR is None, "console script not installed")
+    def test_cli_names_every_file_it_writes(self):
+        r = self.run_cli("t.nwk", "-m", "hashrf_RF", "--pcoa", "2", "-p")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+
+        produced = {f for f in os.listdir(self.cwd) if f != "t.nwk"}
+        self.assertTrue(produced, "the run wrote nothing")
+        for name in produced:
+            with self.subTest(file=name):
+                self.assertIn(name, r.stdout,
+                              f"{name} was written but never mentioned; "
+                              f"output was:\n{r.stdout}")
+
+    @unittest.skipIf(PEAR is None, "console script not installed")
+    def test_verbose_reports_the_resolved_configuration(self):
+        r = self.run_cli("t.nwk", "-m", "hashrf_RF", "-v")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        for expected in ("Resolved configuration", "working directory",
+                         "input files", "total trees", "hashrf binary", "platform"):
+            with self.subTest(field=expected):
+                self.assertIn(expected, r.stdout)
+        # the binary actually in use must be named -- one on PATH silently wins
+        from pear_ebi import _install_helpers as ih
+        self.assertIn(os.path.basename(ih.hashrf_binary()), r.stdout)
+
+    @unittest.skipIf(PEAR is None, "console script not installed")
+    def test_verbose_is_off_by_default(self):
+        r = self.run_cli("t.nwk", "-m", "hashrf_RF")
+        self.assertNotIn("Resolved configuration", r.stdout)
+
+    @unittest.skipIf(PEAR is None, "console script not installed")
+    def test_reported_paths_are_not_wrapped_across_lines(self):
+        """A path broken over two lines cannot be copied out of the terminal."""
+        r = self.run_cli("t.nwk", "-m", "hashrf_RF", "-v")
+        for line in r.stdout.splitlines():
+            if "->" in line or "directory :" in line:
+                with self.subTest(line=line[:40]):
+                    self.assertFalse(line.rstrip().endswith(("/", "-")),
+                                     f"line looks wrapped: {line!r}")
+
+
+class TestCapturedStreamSummary(unittest.TestCase):
+    """The native tools repeat one diagnostic per tree pair."""
+
+    def test_duplicate_lines_are_collapsed_with_a_count(self):
+        from pear_ebi.calculate_distances._exec import format_streams
+
+        # cycling A,B,C x 20 -- not adjacent duplicates, so neighbour-collapsing fails
+        stderr = "\n".join(["alpha", "beta", "gamma"] * 20)
+        out = format_streams("", stderr)
+        self.assertIn("(x20)", out)
+        self.assertEqual(out.count("alpha"), 1)
+        self.assertLess(len(out.splitlines()), 10)
+
+    def test_long_output_is_capped_and_says_so(self):
+        from pear_ebi.calculate_distances._exec import format_streams
+
+        out = format_streams("", "\n".join(f"distinct line {i}" for i in range(200)))
+        self.assertIn("more distinct line(s)", out)
+        self.assertLess(len(out.splitlines()), 20)
+
+    def test_short_output_is_untouched(self):
+        from pear_ebi.calculate_distances._exec import format_streams
+
+        out = format_streams("", "just one problem")
+        self.assertIn("just one problem", out)
+        self.assertNotIn("(x", out)
+
+
+class TestTaxonMismatchMessage(ScratchTestCase):
+    def test_tqdist_names_the_taxon_mismatch(self):
+        """The real cause was buried under 108 lines of repeated diagnostics."""
+        from pear_ebi.calculate_distances import tqdist
+        from pear_ebi.calculate_distances._exec import PearExecutableError
+
+        with open("mixed.nwk", "w") as fh:
+            fh.write("(A:1,B:1,(C:1,D:1):1);\n(A:1,B:1,(C:1,E:1):1);\n"
+                     "(E:1,F:1,(G:1,H:1):1);\n")
+        with self.assertRaises(PearExecutableError) as ctx:
+            tqdist.quartet("mixed.nwk", 3, "out.csv")
+        message = str(ctx.exception)
+        self.assertIn("same set of taxa", message)
+        self.assertLess(len(message.splitlines()), 25, "message is still a wall of text")

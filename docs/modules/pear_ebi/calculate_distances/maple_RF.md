@@ -2,7 +2,7 @@
 
 
 ## Tree
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L47)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L54)
 ```python 
 Tree(
    name = '', children = None, dist = 3.3e-05
@@ -16,7 +16,7 @@ Tree(
 
 
 ### .add_child
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L70)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L77)
 ```python
 .add_child(
    node
@@ -28,7 +28,7 @@ Tree(
 
 
 ### readNewick
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L76)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L83)
 ```python
 .readNewick(
    tree_list, defaultBLen = 3.3e-05, normalizeInputBLen = 1.0
@@ -58,7 +58,7 @@ modularized form, suitable for comparisons with other trees.
 
 
 ### prepareTreeComparison
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L177)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L184)
 ```python
 .prepareTreeComparison(
    t1, rooted = False, minimumBLen = 6e-06
@@ -85,7 +85,7 @@ Prepares newick tree for comparison
 
 
 ### RobinsonFouldsWithDay1985
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L353)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L360)
 ```python
 .RobinsonFouldsWithDay1985(
    t2, t1, rooted = False, minimumBLen = 6e-06
@@ -113,7 +113,7 @@ Computes Robinson Foulds distances using Day's algorithm
 
 
 ### calculate_distance_matrix
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L515)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L522)
 ```python
 .calculate_distance_matrix(
    file, n_trees, output_file

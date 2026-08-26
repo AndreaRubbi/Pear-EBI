@@ -11,6 +11,7 @@ def main():
 
     import os
     import re
+    import shutil
     import sys
     from collections import defaultdict
     from glob import glob
@@ -29,6 +30,51 @@ def main():
     # adding the parent directory to
     # the sys.path.
     sys.path.append(parent)
+
+    def _verbose_report(SET):
+        """Print what PEAR resolved, before it starts computing.
+
+        Answers the questions that were previously impossible to answer from the
+        output alone: which files were actually picked up (--dir with a glob can be
+        surprising), how many trees each contributed, where outputs will land, and --
+        importantly -- WHICH hashrf/tqDist binary is going to run, because one found
+        on PATH silently takes precedence over the bundled copy.
+        """
+        from rich.console import Console
+
+        from pear_ebi import _install_helpers as ih
+        from pear_ebi.tree_set import set_collection as _sc
+
+        # soft_wrap: a path broken across lines cannot be copied out of the terminal
+        out = Console(soft_wrap=True).print
+
+        out("[bold cyan]Resolved configuration")
+        out(f"  working directory : {os.getcwd()}")
+
+        members = SET.collection if isinstance(SET, _sc) else [SET]
+        out(f"  input files       : {len(members)}")
+        for member in members:
+            out(f"      {os.path.abspath(member.file)}  ({member.n_trees} trees)")
+        out(f"  total trees       : {SET.n_trees}")
+        out(f"  distance matrix   : {os.path.abspath(SET.output_file)}")
+
+        first = members[0] if members else None
+        if first is not None and first.tool_input() != first.file:
+            out(f"  normalised input  : {first.tool_input()}")
+
+        out(f"  platform          : {ih.describe_platform()}")
+        for label, resolver, name in (
+            ("hashrf", ih.hashrf_binary, "hashrf"),
+            ("tqDist", lambda: os.path.join(ih.tqdist_bin_dir() or "", "all_pairs_quartet_dist"),
+             "all_pairs_quartet_dist"),
+        ):
+            bundled = resolver()
+            on_path = shutil.which(name)
+            if on_path:
+                out(f"  {label} binary{'':<5}: {on_path}  [yellow](found on PATH, "
+                    f"overrides the bundled copy)[/yellow]")
+            elif bundled:
+                out(f"  {label} binary{'':<5}: {bundled}")
 
     def _plot_stem(SET):
         """Filename stem for a plot: the input name, not just the method.
@@ -340,6 +386,9 @@ def main():
             # shows set specifics
             print("[bright_magenta]Your input:")
             print(SET)
+
+            if args.verbose:
+                _verbose_report(SET)
 
             # same as above, we try to read method
             # value from config and we overwrite it

@@ -15,7 +15,7 @@ A bundled native tool could not be run, or failed while running.
 
 
 ### run_process
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/_exec.py/#L97)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/_exec.py/#L130)
 ```python
 .run_process(
    cmd_list, *, timeout = None
@@ -33,7 +33,7 @@ a specific message.
 
 
 ### resolve_binary
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/_exec.py/#L143)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/_exec.py/#L176)
 ```python
 .resolve_binary(
    system_name, packaged_path, *, tool_label
@@ -53,7 +53,7 @@ Raises PearExecutableError if neither is available.
 
 
 ### remove_file
-[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/_exec.py/#L242)
+[source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/_exec.py/#L275)
 ```python
 .remove_file(
    path

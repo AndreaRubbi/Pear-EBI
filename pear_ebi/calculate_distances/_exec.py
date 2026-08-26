@@ -72,6 +72,39 @@ class CompletedRun:
         return format_streams(self.stdout, self.stderr)
 
 
+# How many lines of a captured stream to show. tqDist emits its complaint once per
+# tree pair, so a mismatched taxon set produced dozens of identical stanzas and buried
+# the actual message; hashrf can be similarly repetitive on malformed input.
+_MAX_STREAM_LINES = 12
+
+
+def _summarise(text):
+    """Trim a captured stream to something readable.
+
+    Duplicate lines are collapsed wherever they occur, not only when adjacent: these
+    tools emit the same few lines once per tree pair, so the messages cycle rather
+    than repeat consecutively and a neighbour-only collapse catches nothing. Each
+    distinct line is shown once, in first-appearance order, with a count. The result
+    is then capped, and what was dropped is stated so the truncation is never silent.
+    """
+    counts = {}
+    for line in text.splitlines():
+        line = line.strip()
+        if line:
+            counts[line] = counts.get(line, 0) + 1
+
+    rendered = [
+        f"{line}   (x{count})" if count > 1 else line for line, count in counts.items()
+    ]
+
+    if len(rendered) > _MAX_STREAM_LINES:
+        hidden = len(rendered) - _MAX_STREAM_LINES
+        rendered = rendered[:_MAX_STREAM_LINES] + [
+            f"... and {hidden} more distinct line(s)"
+        ]
+    return "\n".join(rendered)
+
+
 def format_streams(stdout, stderr):
     """Render captured output as a labelled block, omitting empty streams.
 
@@ -82,9 +115,9 @@ def format_streams(stdout, stderr):
     out = (stdout or "").strip()
     err = (stderr or "").strip()
     if err:
-        parts.append(f"  stderr:\n{_indent(err)}")
+        parts.append(f"  stderr:\n{_indent(_summarise(err))}")
     if out:
-        parts.append(f"  stdout:\n{_indent(out)}")
+        parts.append(f"  stdout:\n{_indent(_summarise(out))}")
     if not parts:
         return "  (the tool produced no output on either stream)"
     return "\n".join(parts)

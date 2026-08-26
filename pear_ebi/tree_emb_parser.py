@@ -26,6 +26,16 @@ def parser(argv=None):
     # scientific tool needs a machine-readable way to record which version produced a
     # result; there was none.
     parser.add_argument(
+        "-v",
+        "--verbose",
+        dest="verbose",
+        action="store_true",
+        help="report the resolved input files, tree counts, the native binary in use, "
+        "and where every output file is written",
+        required=False,
+    )
+
+    parser.add_argument(
         "-V",
         "--version",
         action="version",

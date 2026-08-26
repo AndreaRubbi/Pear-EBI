@@ -68,6 +68,19 @@ def _read_matrix(output_file, n_trees, run, label):
             try:
                 vals = [float(t) for t in tokens]
             except ValueError as exc:
+                # tqDist writes placeholder text instead of a number when it refuses a
+                # pair, and its stderr says why. A taxon-set mismatch is by far the
+                # most common cause, so name it up front rather than leaving the user
+                # to infer it from a wall of repeated diagnostics.
+                if "same set of leaves" in run.stderr or "Leaves doesn't agree" in run.stderr:
+                    raise PearExecutableError(
+                        f"{label} cannot compare these trees: they do not all have the "
+                        f"same set of taxa.\n"
+                        f"  Quartet and triplet distances are only defined between trees "
+                        f"over the same taxon set.\n"
+                        f"  Check that every tree in the input has the same tip labels.\n"
+                        f"{run.streams()}"
+                    ) from exc
                 raise PearExecutableError(
                     f"{label} wrote a non-numeric value on line {i + 1}: "
                     f"{line.strip()!r}\n{run.streams()}"
