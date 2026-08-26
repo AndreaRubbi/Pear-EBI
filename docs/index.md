@@ -131,25 +131,19 @@ bumps the version, verifies the artefacts, publishes to PyPI, tags the commit an
 this documentation. Every push to `pear_ebi` rebuilds and redeploys the documentation on its
 own, so the published site never lags the branch.
 
-Note that PEAR uses a four-segment version (`1.0.1.6`), so Poetry's `patch` keyword bumps it
-to `1.0.2.0` rather than `1.0.1.7` — a routine release should pass an explicit version.
-Publishing relies on PyPI Trusted Publishing, which has to be enabled once on PyPI before the
-first automated release; `CONTRIBUTING.md` says how.
+Versions are plain `MAJOR.MINOR.PATCH`. Publishing relies on PyPI Trusted Publishing, which
+has to be enabled once on PyPI before the first automated release; `CONTRIBUTING.md` says how.
 
 ________________________
 
 ## How to cite
 
-If you use PEAR in published work, please cite the software. `CITATION.cff` in the
-repository root carries the metadata, and GitHub turns it into a formatted citation
-via the "Cite this repository" button.
-
-The tutorials refer to an associated manuscript in several places. There is no DOI or
-preprint reference in this repository yet, so `CITATION.cff` currently describes the
-software only; once the paper is available it should gain a `preferred-citation` entry
-so that citing PEAR cites the paper.
+If you use PEAR in published work, please cite the software and the version you used.
+`CITATION.cff` in the repository root carries the metadata, and GitHub turns it into a
+ready-made citation -- BibTeX, APA or plain text -- behind the "Cite this repository"
+button in the sidebar.
 
 ## Licensing
 
 This project is released under the terms of the MIT Open Source License. View
-*LICENSE.txt* for more information.
+*LICENSE* for more information.
