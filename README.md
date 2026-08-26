@@ -1,6 +1,6 @@
 
  <h1> Phylogeny Embedding  & <br>  Approximate Representation </h1>
- <img src="https://github.com/AndreaRubbi/Pear-EBI/raw/pear_ebi/logos/LOGO_PEAR.png" width="100" height="100" style='position:absolute; left:400px; top:-15px' >
+ <img src="https://github.com/AndreaRubbi/Pear-EBI/raw/pear_ebi/logos/LOGO_PEAR.png" width="100" height="100" alt="PEAR logo">
 
  <img src="https://img.shields.io/github/license/AndreaRubbi/Pear-EBI?color=red&label=License&style=plastic"> <img src="https://img.shields.io/pypi/v/pear_ebi?color=purple&label=version&style=plastic"> <img src="https://img.shields.io/pypi/implementation/pear_ebi?style=plastic"> <img src="https://img.shields.io/pypi/pyversions/pear_ebi?color=green&style=plastic">
 
@@ -16,7 +16,7 @@ See also the <a href="https://andrearubbi.github.io/Pear-EBI/index.html"> autoge
 
 PEAR usage
 ==========
-Pear is both a python software and library. It can be installed with `python -m pip install pear_ebi` or downloaded from <a href="https://github.com/AndreaRubbi/Pear-EBI">Github</a>. Pear requires **Python 3.10 - 3.12** and runs on **Linux (x86-64)** and **macOS (Apple silicon)**; it ships prebuilt HashRF and tqDist binaries for both.
+Pear is both a python software and library. It can be installed with `python -m pip install pear_ebi` or downloaded from <a href="https://github.com/AndreaRubbi/Pear-EBI">Github</a>. Pear requires **Python 3.10 - 3.13** and runs on **Linux (x86-64)** and **macOS (Apple silicon)**; it ships prebuilt HashRF and tqDist binaries for both.
 
 Reproducible environments
 -------------------------
@@ -28,9 +28,10 @@ installs the exact versions recorded in `poetry.lock`, which is the authoritativ
 known-good environment. Add `--with docs` for the documentation toolchain, or install the
 `notebook` extra (`pip install "pear_ebi[notebook]"`) for Jupyter.
 
-PEAR requires **NumPy < 2.0**; this is enforced both by the dependency metadata and by a check
-at import time, so a NumPy 2.x environment fails immediately with an explanatory message rather
-than deep inside a dependency.
+PEAR runs on both NumPy 1.x and 2.x. There used to be a `numpy<2` pin and an import-time
+check enforcing it; the incompatibility it guarded against did not survive testing, so the
+scientific stack (NumPy, pandas, SciPy, scikit-learn) now floats and Python 3.13 is
+supported.
 
 If you use conda, note that packages must come from **conda-forge** (EMBL-EBI is no longer
 licensed for Anaconda's `defaults` channel). <a href="https://github.com/conda-forge/miniforge#install">Miniforge</a>

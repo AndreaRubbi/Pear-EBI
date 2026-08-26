@@ -99,30 +99,55 @@ class TestMetadata(unittest.TestCase):
             "`poetry install`",
         )
 
-    def test_requires_python_excludes_3_13(self):
-        """NumPy 1.x ships no cp313 wheels, so 3.13 cannot work while numpy<2 holds.
-
-        Verified empirically: installing on 3.13 makes pip fall back to building
-        scipy from source, which needs a Fortran compiler and fails.
-        """
+    def test_requires_python_covers_the_tested_interpreters(self):
+        """3.10 to 3.13. The 3.13 exclusion went when the numpy<2 pin went."""
         spec = _pyproject()["project"]["requires-python"]
         self.assertIn(">=3.10", spec)
-        self.assertIn("<3.13", spec)
+        self.assertIn("<3.14", spec)
 
-    def test_numpy_pin_is_declared_and_satisfied(self):
+    def test_scientific_stack_carries_no_upper_bounds(self):
+        """numpy, pandas, scipy and scikit-learn must stay unceilinged.
+
+        The ceilings were all downstream of "numpy<2.0", which rested on the claim
+        that pyDRMetrics 0.0.7 had not been ported to NumPy 2. It had: pyDRMetrics
+        uses no removed alias and returns the same metrics under 2.5.2 as under
+        1.26.4. Re-adding a ceiling here would silently re-freeze the stack and,
+        with it, drop Python 3.13 -- so say so rather than letting it drift back.
+        """
         requires = md.requires("pear_ebi") or []
-        numpy_reqs = [r for r in requires if r.lower().startswith("numpy")]
-        self.assertTrue(numpy_reqs, "numpy is not a declared dependency")
-        self.assertTrue(
-            any("<2" in r for r in numpy_reqs),
-            f"the numpy<2 ceiling is missing from {numpy_reqs}",
-        )
-        import numpy
+        for package in ("numpy", "pandas", "scipy", "scikit-learn"):
+            with self.subTest(package=package):
+                specs = [r for r in requires if r.lower().startswith(package)]
+                self.assertTrue(specs, f"{package} is not a declared dependency")
+                self.assertNotIn(
+                    "<",
+                    " ".join(specs),
+                    f"{package} has regained an upper bound: {specs}",
+                )
 
+    def test_plotly_and_kaleido_move_together(self):
+        """A plotly 5 / kaleido 1 mix breaks image export, which nothing else catches.
+
+        kaleido 1.x removed kaleido.scopes.plotly, which plotly 5's write_image
+        imports, so that combination raises on the first `save=True` plot. The
+        floors have to stay paired.
+        """
+        requires = " ".join(md.requires("pear_ebi") or [])
+        self.assertRegex(requires, r"plotly[^;,]*>=6")
+        self.assertRegex(requires, r"kaleido[^;,]*>=1")
+
+    def test_anywidget_is_a_hard_dependency(self):
+        """plotly >= 6 renders FigureWidget through anywidget.
+
+        Without it every interactive plot raises ImportError, and interactive plots
+        are the documented primary interface -- so it is not an optional extra.
+        """
+        requires = md.requires("pear_ebi") or []
         self.assertTrue(
-            numpy.__version__.startswith("1."),
-            f"numpy {numpy.__version__} is installed but pear_ebi requires < 2.0",
+            [r for r in requires if r.lower().startswith("anywidget")],
+            "anywidget is not declared; FigureWidget will raise on plotly >= 6",
         )
+        import anywidget  # noqa: F401
 
     def test_classifiers_match_requires_python(self):
         """The old classifiers advertised 3.7-3.9, none of which was installable."""
@@ -132,7 +157,7 @@ class TestMetadata(unittest.TestCase):
             for c in project["classifiers"]
             if c.startswith("Programming Language :: Python :: 3.")
         }
-        self.assertEqual(advertised, {"3.10", "3.11", "3.12"})
+        self.assertEqual(advertised, {"3.10", "3.11", "3.12", "3.13"})
 
     def test_console_script_is_registered_and_resolvable(self):
         entries = [

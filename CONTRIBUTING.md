@@ -12,11 +12,17 @@ poetry install --with dev,docs
 should be updated in the same commit as any dependency change (`poetry lock` after editing
 `pyproject.toml`, then `poetry check --lock` to confirm they agree).
 
-PEAR requires **NumPy < 2.0** and **Python 3.10 – 3.12**. Both bounds are forced from
-outside: 3.13 is excluded because NumPy 1.x publishes no cp313 wheels, and 3.9 was dropped
+PEAR supports **Python 3.10 – 3.13** and runs on NumPy 1.x or 2.x. The floor is 3.10
 because the patched releases of the dependency tree (pillow, urllib3, jupyter-server and the
-rest) are all published as `requires-python >= 3.10`, so supporting 3.9 meant shipping a
-lockfile with known advisories.
+rest) are all published as `requires-python >= 3.10`, so supporting 3.9 — end-of-life since
+October 2025 — meant shipping a lockfile with known advisories. 3.14 is excluded only because
+it has not been tried.
+
+The scientific stack deliberately carries **no upper bounds**. Those ceilings all followed
+from a `numpy<2` pin justified by pyDRMetrics 0.0.7 not being ported; that turned out to be
+untrue, and tests now assert the ceilings stay off, because re-adding one silently drops
+Python 3.13 with it. Note that `anywidget` is a hard dependency, not an extra: from plotly 6
+onwards `FigureWidget` — which every interactive PEAR plot is — raises without it.
 
 ## Running the tests
 

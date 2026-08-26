@@ -18,13 +18,12 @@ keywords = ["phylogenetics", "phylogenetic-trees", "embedding", "robinson-foulds
 # 3.9 meant staying on versions with known advisories. Raising the floor is what
 # makes a vulnerability-free lockfile possible at all.
 #
-# Ceiling: 3.13 is excluded deliberately, and it follows from the NumPy < 2.0
-# requirement rather than from anything in this package. NumPy 1.26.4 is the last
-# 1.x release and ships wheels only for cp39-cp312; 3.13 support first appeared in
-# NumPy 2.1. Verified by installing the wheel on 3.13, where pip falls back to
-# building scipy 1.13.1 from source and fails for want of a Fortran compiler. If
-# the NumPy < 2 constraint is ever lifted, this ceiling can be raised with it.
-requires-python = ">=3.10,<3.13"
+# Ceiling: 3.14, i.e. 3.13 is supported. It was excluded while NumPy < 2 held --
+# NumPy 1.26.4 is the last 1.x release and ships no cp313 wheels -- and that pin
+# turned out to rest on a false premise (see the numpy entry below), so both went
+# together. 3.13 is exercised in CI and the whole suite plus all three notebooks
+# were run on it. 3.14 is left out only because it has not been tried.
+requires-python = ">=3.10,<3.14"
 
 classifiers = [
   "Development Status :: 3 - Alpha",
@@ -34,30 +33,45 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Topic :: Scientific/Engineering :: Bio-Informatics",
 ]
 
 # Runtime dependencies: only packages actually imported by pear_ebi/.
-# Every entry has a floor as well as a ceiling -- the previous "<=X" style pins
-# left the lower bound wide open (e.g. "pandas<=2.3.3" permitted pandas 0.1).
+# Every entry has a floor; the previous "<=X" style pins left the lower bound wide
+# open (e.g. "pandas<=2.3.3" permitted pandas 0.1).
+#
+# The scientific stack no longer carries ceilings. They were all downstream of
+# "numpy<2.0", which was justified on the grounds that pyDRMetrics 0.0.7 had not
+# been ported. That was checked rather than assumed: pyDRMetrics contains no
+# NumPy-2-removed alias, and DRMetrics computes the same Qlocal/Qglobal under NumPy
+# 2.5.2 as under 1.26.4. With the pin gone, scipy, scikit-learn and pandas -- whose
+# ceilings existed only to stay numpy-1-compatible -- can float as well. Verified on
+# Python 3.13 with numpy 2.5.2, pandas 3.0.5, scipy 1.18.1 and scikit-learn 1.9.0:
+# the full suite passes and all three notebooks execute without error.
 dependencies = [
-  "numpy>=1.21,<2.0",
-  "pandas>=1.3,<2.4",
-  "matplotlib>=3.4,<4",
-  "scikit-learn>=1.0,<1.7",
-  "scipy>=1.7,<1.14",
+  "numpy>=1.21",
+  "pandas>=1.3",
+  "matplotlib>=3.4",
+  "scikit-learn>=1.0",
+  "scipy>=1.7",
   "rich>=12,<15",
   "toml>=0.10,<0.11",
-  "plotly>=5.11,<6",
-  # kaleido 1.x removed kaleido.scopes.plotly, which plotly 5.x's write_image
-  # imports; the old "kaleido==1.2.0" with "plotly==5.11.0" made the PDF export
-  # at embeddings/graph/graph.py raise on a fresh install. Staying on kaleido 0.x
-  # keeps plotly 5 working; moving to plotly >=6.1 + kaleido 1.x is the follow-up.
-  # Exact pin, not a range: 0.2.1.post1 -- the highest 0.x -- publishes only an
-  # armv7l wheel, so any range ending below 1.0 resolves to something that cannot
-  # install on x86_64 or arm64. 0.2.1 is the last release with real platform wheels.
-  "kaleido==0.2.1",
+  # plotly >= 6.1 with kaleido >= 1. The old pairing was plotly 5 with kaleido
+  # pinned to exactly 0.2.1, because kaleido 1.x dropped kaleido.scopes.plotly,
+  # which plotly 5's write_image imports -- so the PDF export at
+  # embeddings/graph/graph.py raised on a fresh install with any newer kaleido.
+  # Moving both forward together fixes it properly: png, pdf and svg export were
+  # all confirmed working on plotly 7.0.0 with kaleido 1.3.0.
+  "plotly>=6.1",
+  "kaleido>=1.0",
   "ipywidgets>=7.7,<9",
+  # plotly >= 6 renders FigureWidget through anywidget rather than ipywidgets, and
+  # raises ImportError("Please install anywidget to use the FigureWidget class")
+  # without it. Every interactive plot PEAR produces is a FigureWidget, so this is
+  # a hard requirement, not an extra. With it, the widget still registers as an
+  # ipywidgets Widget and still emits application/vnd.jupyter.widget-view+json.
+  "anywidget>=0.9",
   "pyDRMetrics==0.0.7",
   # Required transitively, NOT by pear_ebi itself: pyDRMetrics 0.0.7 declares no
   # dependencies at all (its Requires-Dist is empty) while importing numpy, pandas,

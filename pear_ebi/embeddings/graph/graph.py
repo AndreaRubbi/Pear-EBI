@@ -11,6 +11,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from ipywidgets import widgets
+from pandas.api.types import is_numeric_dtype
 
 random.seed(123)
 np.random.seed(123)
@@ -83,7 +84,7 @@ def plot_embedding(
         # a single category instead.
         if column.isna().all():
             column = column.astype(object).fillna("n/a")
-        elif not np.issubdtype(column.dtype, np.number) and column.isna().any():
+        elif not is_numeric_dtype(column) and column.isna().any():
             column = column.fillna("n/a")
 
         elements = np.unique(column)  # unique elements
@@ -306,7 +307,11 @@ def plot_embedding(
         # here we generate a color map --> if the meta is a number,
         # we assume that the variable is some sort of continuous parameter. e.g. likelihood, step, parsimony...
         cont_colorsc = False
-        if np.issubdtype(elements.dtype, np.number):
+        # is_numeric_dtype, not np.issubdtype: from pandas 3 a text column is a
+        # StringDtype rather than object, and numpy raises
+        # TypeError: Cannot interpret '<StringDtype(...)>' as a data type on it.
+        # The pandas predicate answers the same question for every pandas version.
+        if is_numeric_dtype(elements):
             cont_colorsc = True
 
             # nanmin/nanmax: a numeric column with a blank row would otherwise make

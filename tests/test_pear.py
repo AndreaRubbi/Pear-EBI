@@ -10,6 +10,7 @@ All paths are resolved from __file__. The old suite used a cwd-relative
 "../examples_tree_sets/..." and only worked if run from inside its own directory.
 """
 
+import math
 import os
 import shutil
 import subprocess
@@ -295,33 +296,50 @@ class TestNativeToolPermissions(unittest.TestCase):
 # ─── Bug class (c): NumPy version ────────────────────────────────────────────
 
 
-class TestNumpyVersionGuard(unittest.TestCase):
-    def test_installed_numpy_satisfies_the_pin(self):
+class TestNumpyMajorVersionIsNotGated(unittest.TestCase):
+    """There was a numpy<2 pin, and an import-time guard raising ImportError on 2.x.
+
+    Both are gone. They rested on the claim that pyDRMetrics 0.0.7 -- unmaintained,
+    declaring no dependencies -- had not been ported to NumPy 2. Checking it refuted
+    it: pyDRMetrics uses no NumPy-2-removed alias, and DRMetrics returns the same
+    metrics under 2.5.2 as under 1.26.4. So the claim becomes a test rather than a
+    comment in a pin.
+    """
+
+    def test_import_is_not_gated_on_the_numpy_version(self):
+        source = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "pear_ebi",
+            "__init__.py",
+        )
+        with open(source, encoding="utf-8") as fh:
+            body = fh.read()
+        self.assertNotIn(
+            "numpy",
+            body.lower(),
+            "pear_ebi/__init__.py inspects numpy again; a version gate there caps "
+            "the whole scientific stack and, with it, the supported interpreters",
+        )
+
+    def test_quality_metrics_compute_under_the_installed_numpy(self):
+        """The substantive claim: pyDRMetrics works on whatever numpy is installed."""
         import numpy
+        from sklearn.decomposition import PCA
 
-        self.assertTrue(
-            numpy.__version__.startswith("1."),
-            f"pear_ebi requires NumPy < 2.0 but {numpy.__version__} is installed",
-        )
+        from pear_ebi.embeddings.emb_quality import DRM
 
-    def test_guard_rejects_numpy_2(self):
-        """Run in a subprocess so a stub numpy cannot leak into this interpreter."""
-        code = (
-            "import sys, types\n"
-            "stub = types.ModuleType('numpy'); stub.__version__ = '2.3.5'\n"
-            "sys.modules['numpy'] = stub\n"
-            "try:\n"
-            "    import pear_ebi\n"
-            "except ImportError as exc:\n"
-            "    print('GUARD:' + str(exc).splitlines()[0])\n"
-            "else:\n"
-            "    print('NOGUARD')\n"
-        )
-        result = subprocess.run(
-            [sys.executable, "-c", code], capture_output=True, text=True
-        )
-        self.assertIn("GUARD:", result.stdout, result.stdout + result.stderr)
-        self.assertIn("NumPy < 2.0", result.stdout)
+        rng = numpy.random.default_rng(0)
+        points = rng.random((12, 3))
+        distances = numpy.linalg.norm(points[:, None] - points[None, :], axis=-1)
+        pca = PCA(n_components=2)
+        embedding = pca.fit_transform(distances)
+        drm = DRM(distances, embedding, pca.inverse_transform(embedding))
+        for name in ("Qlocal", "Qglobal"):
+            with self.subTest(metric=name, numpy=numpy.__version__):
+                value = float(getattr(drm, name))
+                self.assertFalse(
+                    math.isnan(value), f"{name} is NaN under numpy {numpy.__version__}"
+                )
 
 
 # ─── Error reporting ─────────────────────────────────────────────────────────
