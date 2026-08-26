@@ -24,4 +24,3 @@ embed distance_matrix in n_components with Locally Linear Embedding
 **Returns**
 
 * **components** (numpy.array) : Embedding of distance matrix
-

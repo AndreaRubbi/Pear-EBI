@@ -3,7 +3,7 @@
 
 ## Tree
 [source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/maple_RF.py/#L54)
-```python 
+```python
 Tree(
    name = '', children = None, dist = 3.3e-05
 )
@@ -134,4 +134,3 @@ Computes the whole pipeline that calculates the pairwise distances in a collecti
 **Returns**
 
 * **distance_matrix** (np.array) : distance matrix
-

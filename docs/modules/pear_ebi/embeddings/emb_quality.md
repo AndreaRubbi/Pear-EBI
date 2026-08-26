@@ -75,4 +75,3 @@ Return DRM object from https://github.com/zhangys11/pyDRMetrics
 **Returns**
 
 * **DRM**  : DRM object with quality metrics
-

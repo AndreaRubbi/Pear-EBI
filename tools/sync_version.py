@@ -14,6 +14,7 @@ Usage:
     python tools/sync_version.py          # sync, report what changed
     python tools/sync_version.py --check  # exit 1 if out of step, change nothing
 """
+
 from __future__ import annotations
 
 import argparse
@@ -35,14 +36,14 @@ def read_pyproject_version() -> str:
     text = PYPROJECT.read_text(encoding="utf-8")
     match = PYPROJECT_VERSION.search(text)
     if not match:
-        sys.exit(f"No top-level `version = \"...\"` found in {PYPROJECT}")
+        sys.exit(f'No top-level `version = "..."` found in {PYPROJECT}')
     return match.group(1)
 
 
 def read_init_version(text: str) -> str:
     match = INIT_VERSION.search(text)
     if not match:
-        sys.exit(f"No `__version__ = \"...\"` found in {INIT}")
+        sys.exit(f'No `__version__ = "..."` found in {INIT}')
     return match.group(2)
 
 

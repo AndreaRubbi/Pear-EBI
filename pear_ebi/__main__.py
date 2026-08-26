@@ -65,14 +65,19 @@ def main():
         out(f"  platform          : {ih.describe_platform()}")
         for label, resolver, name in (
             ("hashrf", ih.hashrf_binary, "hashrf"),
-            ("tqDist", lambda: os.path.join(ih.tqdist_bin_dir() or "", "all_pairs_quartet_dist"),
-             "all_pairs_quartet_dist"),
+            (
+                "tqDist",
+                lambda: os.path.join(ih.tqdist_bin_dir() or "", "all_pairs_quartet_dist"),
+                "all_pairs_quartet_dist",
+            ),
         ):
             bundled = resolver()
             on_path = shutil.which(name)
             if on_path:
-                out(f"  {label} binary{'':<5}: {on_path}  [yellow](found on PATH, "
-                    f"overrides the bundled copy)[/yellow]")
+                out(
+                    f"  {label} binary{'':<5}: {on_path}  [yellow](found on PATH, "
+                    f"overrides the bundled copy)[/yellow]"
+                )
             elif bundled:
                 out(f"  {label} binary{'':<5}: {bundled}")
 
@@ -524,9 +529,7 @@ def main():
                 # feature (see template_pear.toml) that crashed on the single-file
                 # case. Build the same {name: {"n_trees": n}} shape either way.
                 if hasattr(SET, "data"):
-                    set_sizes = {
-                        name: info["n_trees"] for name, info in SET.data.items()
-                    }
+                    set_sizes = {name: info["n_trees"] for name, info in SET.data.items()}
                 else:
                     set_sizes = {
                         os.path.splitext(os.path.basename(SET.file))[0]: SET.n_trees
@@ -585,7 +588,9 @@ def main():
                         print(
                             f"[yellow]Warning: highlight length ({len(highlight)}) < total points ({total_points}). Padding with zeros."
                         )
-                        highlight = list(highlight) + [0] * (total_points - len(highlight))
+                        highlight = list(highlight) + [0] * (
+                            total_points - len(highlight)
+                        )
                     else:
                         print(
                             f"[yellow]Warning: highlight length ({len(highlight)}) > total points ({total_points}). Truncating to match."
@@ -602,7 +607,9 @@ def main():
                             np.array(SET.metadata["highlight"]) == 1
                         )
                         steps = SET.metadata.loc[mask, "STEP"].tolist()
-                        print(f"  - {set_name}: {len(steps)} highlighted -> {steps[:10]}{'...' if len(steps)>10 else ''}")
+                        print(
+                            f"  - {set_name}: {len(steps)} highlighted -> {steps[:10]}{'...' if len(steps)>10 else ''}"
+                        )
                 except Exception:
                     pass
 

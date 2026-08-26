@@ -118,9 +118,9 @@ class TestMainInProcess(unittest.TestCase):
         Library paths still raise SystemExit with a message rather than returning, so
         the message arrives as SystemExit.code and is folded into the output here.
         """
-        from pear_ebi.__main__ import main
-
         from contextlib import redirect_stderr
+
+        from pear_ebi.__main__ import main
 
         with mock.patch.object(sys, "argv", ["pear_ebi", *argv]):
             out, err = io.StringIO(), io.StringIO()
@@ -166,8 +166,10 @@ class TestMainInProcess(unittest.TestCase):
 
     def test_config_distance_method_is_used(self):
         with open("q.toml", "w") as fh:
-            fh.write('[trees]\nfile1 = "twelve_trees.nwk"\n\n'
-                     '[distance]\nmethod = "tqdist_quartet"\n')
+            fh.write(
+                '[trees]\nfile1 = "twelve_trees.nwk"\n\n'
+                '[distance]\nmethod = "tqdist_quartet"\n'
+            )
         code, output = self.main("--config", "q.toml", "-o", "q.csv")
         self.assertIn(code, (0, None))
         self.assertIn("tqdist_quartet", output)
@@ -176,10 +178,12 @@ class TestMainInProcess(unittest.TestCase):
         """A single [trees] file makes a tree_set, which has no .data attribute, so
         this documented feature used to die with AttributeError."""
         with open("h.toml", "w") as fh:
-            fh.write('[trees]\nfile1 = "twelve_trees.nwk"\n\n'
-                     '[distance]\nmethod = "hashrf_RF"\n\n'
-                     '[embedding]\nmethod = "pcoa"\ndimensions = 2\n\n'
-                     '[highlight]\ntrace1 = [0, 5]\n')
+            fh.write(
+                '[trees]\nfile1 = "twelve_trees.nwk"\n\n'
+                '[distance]\nmethod = "hashrf_RF"\n\n'
+                '[embedding]\nmethod = "pcoa"\ndimensions = 2\n\n'
+                "[highlight]\ntrace1 = [0, 5]\n"
+            )
         code, output = self.main("--config", "h.toml")
         self.assertIn(code, (0, None), output[-800:])
         self.assertIn("2 highlighted", output)
@@ -187,10 +191,12 @@ class TestMainInProcess(unittest.TestCase):
     def test_highlight_with_a_collection(self):
         shutil.copy("twelve_trees.nwk", "second.nwk")
         with open("h2.toml", "w") as fh:
-            fh.write('[trees]\nfile1 = "twelve_trees.nwk"\nfile2 = "second.nwk"\n\n'
-                     '[distance]\nmethod = "hashrf_RF"\n\n'
-                     '[embedding]\nmethod = "pcoa"\ndimensions = 2\n\n'
-                     '[highlight]\ntrace1 = [0, 5]\ntrace2 = [1]\n')
+            fh.write(
+                '[trees]\nfile1 = "twelve_trees.nwk"\nfile2 = "second.nwk"\n\n'
+                '[distance]\nmethod = "hashrf_RF"\n\n'
+                '[embedding]\nmethod = "pcoa"\ndimensions = 2\n\n'
+                "[highlight]\ntrace1 = [0, 5]\ntrace2 = [1]\n"
+            )
         code, output = self.main("--config", "h2.toml")
         self.assertIn(code, (0, None), output[-800:])
         self.assertIn("highlighted", output)
@@ -199,10 +205,12 @@ class TestMainInProcess(unittest.TestCase):
         """template_pear.toml ships trace1 = [0, 1001] for a 1001-tree set, where the
         valid range is 0-1000."""
         with open("h3.toml", "w") as fh:
-            fh.write('[trees]\nfile1 = "twelve_trees.nwk"\n\n'
-                     '[distance]\nmethod = "hashrf_RF"\n\n'
-                     '[embedding]\nmethod = "pcoa"\ndimensions = 2\n\n'
-                     '[highlight]\ntrace1 = [0, 9999]\n')
+            fh.write(
+                '[trees]\nfile1 = "twelve_trees.nwk"\n\n'
+                '[distance]\nmethod = "hashrf_RF"\n\n'
+                '[embedding]\nmethod = "pcoa"\ndimensions = 2\n\n'
+                "[highlight]\ntrace1 = [0, 9999]\n"
+            )
         code, output = self.main("--config", "h3.toml")
         self.assertIn(code, (0, None), output[-800:])
         self.assertIn("1 highlighted", output)
@@ -243,13 +251,16 @@ class TestSubsample(unittest.TestCase):
         script = subsample.__file__
         result = subprocess.run(
             [sys.executable, script, str([TWELVE]), "12", "3"],
-            capture_output=True, text=True, timeout=600,
+            capture_output=True,
+            text=True,
+            timeout=600,
         )
         self.assertEqual(result.returncode, 0, result.stderr[-600:])
-        lines = [l for l in result.stdout.splitlines()
-                 if l.startswith(subsample.RESULT_MARKER)]
+        lines = [
+            l for l in result.stdout.splitlines() if l.startswith(subsample.RESULT_MARKER)
+        ]
         self.assertEqual(len(lines), 1, "expected exactly one result line")
-        payload = json.loads(lines[0][len(subsample.RESULT_MARKER):])
+        payload = json.loads(lines[0][len(subsample.RESULT_MARKER) :])
         self.assertEqual(len(payload["trees"]), 3)
         self.assertEqual(len(payload["idxs"]), 3)
 
@@ -310,11 +321,15 @@ class TestMapleRF(unittest.TestCase):
             for j in range(i + 1, len(trees)):
                 with self.subTest(pair=(i, j)):
                     a = maple_RF.RobinsonFouldsWithDay1985(
-                        trees[j], maple_RF.prepareTreeComparison(trees[i], rooted=False),
-                        rooted=False)[0]
+                        trees[j],
+                        maple_RF.prepareTreeComparison(trees[i], rooted=False),
+                        rooted=False,
+                    )[0]
                     b = maple_RF.RobinsonFouldsWithDay1985(
-                        trees[i], maple_RF.prepareTreeComparison(trees[j], rooted=False),
-                        rooted=False)[0]
+                        trees[i],
+                        maple_RF.prepareTreeComparison(trees[j], rooted=False),
+                        rooted=False,
+                    )[0]
                     self.assertEqual(a, b)
 
     def test_worker_is_picklable(self):
@@ -350,8 +365,11 @@ class TestInstallHelpers(unittest.TestCase):
         from pear_ebi import _install_helpers as ih
 
         ih.ensure_native_executables()
-        self.assertEqual(ih.ensure_native_executables(), [],
-                         "a second call should have nothing left to fix")
+        self.assertEqual(
+            ih.ensure_native_executables(),
+            [],
+            "a second call should have nothing left to fix",
+        )
 
     def test_build_tqdist_reports_rather_than_raises(self):
         """It returns (ok, message) so callers can surface the reason."""
@@ -476,7 +494,9 @@ class TestExecLayer(unittest.TestCase):
             os.chmod(packaged, 0o755)
             with mock.patch.object(_exec.shutil, "which", return_value="/usr/bin/mytool"):
                 with self.assertWarns(RuntimeWarning):
-                    resolved = _exec.resolve_binary("mytool", packaged, tool_label="MyTool")
+                    resolved = _exec.resolve_binary(
+                        "mytool", packaged, tool_label="MyTool"
+                    )
             self.assertEqual(resolved, "/usr/bin/mytool")
 
 
@@ -488,9 +508,7 @@ class TestHashrfStdoutFallback(unittest.TestCase):
 
         text = "*** Number of trees in the input file: 1\nFatal error\n"
         with tempfile.TemporaryDirectory() as tmp:
-            self.assertIsNone(
-                _parse_hashrf_stdout(text, 5, os.path.join(tmp, "o.csv"))
-            )
+            self.assertIsNone(_parse_hashrf_stdout(text, 5, os.path.join(tmp, "o.csv")))
 
     def test_declines_empty_output(self):
         from pear_ebi.calculate_distances.hashrf import _parse_hashrf_stdout

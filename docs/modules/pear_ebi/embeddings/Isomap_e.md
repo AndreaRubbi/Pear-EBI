@@ -24,4 +24,3 @@ embed distance_matrix in n_components with Isomap
 **Returns**
 
 * **components** (numpy.array) : embedding of distance matrix
-

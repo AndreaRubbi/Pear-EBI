@@ -3,7 +3,7 @@
 
 ## PearExecutableError
 [source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/calculate_distances/_exec.py/#L41)
-```python 
+```python
 PearExecutableError()
 ```
 

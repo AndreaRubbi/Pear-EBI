@@ -49,14 +49,19 @@ class ScratchTestCase(unittest.TestCase):
     def run_cli(self, *args):
         env = dict(os.environ, MPLBACKEND="Agg")
         return subprocess.run(
-            [PEAR, *args], cwd=self.cwd, capture_output=True, text=True,
-            timeout=1800, env=env,
+            [PEAR, *args],
+            cwd=self.cwd,
+            capture_output=True,
+            text=True,
+            timeout=1800,
+            env=env,
         )
 
     def assertNoTraceback(self, result, label):
         combined = result.stdout + result.stderr
         self.assertNotIn(
-            "Traceback (most recent call last)", combined,
+            "Traceback (most recent call last)",
+            combined,
             f"{label} dumped a raw traceback at the user:\n{combined[-900:]}",
         )
 
@@ -89,7 +94,9 @@ class TestMetadata(ScratchTestCase):
     def test_user_supplied_set_id_is_preserved(self):
         from pear_ebi.tree_set import tree_set
 
-        self._meta("m.csv", "SET-ID,LK\n" + "\n".join(f"mine,{-i}" for i in range(12)) + "\n")
+        self._meta(
+            "m.csv", "SET-ID,LK\n" + "\n".join(f"mine,{-i}" for i in range(12)) + "\n"
+        )
         s = tree_set("t.nwk", metadata="m.csv", output_file="d.csv")
         self.assertEqual(s.metadata["SET-ID"].unique().tolist(), ["mine"])
 
@@ -282,11 +289,13 @@ class TestSetIdCollisions(ScratchTestCase):
         """self.data is keyed by SET-ID, so the second member overwrote the first."""
         from pear_ebi.tree_set import set_collection
 
-        os.makedirs("run1"); os.makedirs("run2")
+        os.makedirs("run1")
+        os.makedirs("run2")
         shutil.copy(THREE_A, "run1/trees.nwk")
         shutil.copy(THREE_B, "run2/trees.nwk")
-        c = set_collection(collection=["run1/trees.nwk", "run2/trees.nwk"],
-                           output_file="c.csv")
+        c = set_collection(
+            collection=["run1/trees.nwk", "run2/trees.nwk"], output_file="c.csv"
+        )
         self.assertEqual(c.n_trees, 6)
         self.assertEqual(len(c.data), 2, f"SET-IDs collided: {list(c.data)}")
 
@@ -359,8 +368,13 @@ class TestInteractiveMode(ScratchTestCase):
     def drive(self, keystrokes, *args):
         env = dict(os.environ, MPLBACKEND="Agg")
         return subprocess.run(
-            [PEAR, *args, "-i"], input=keystrokes, cwd=self.cwd,
-            capture_output=True, text=True, timeout=1800, env=env,
+            [PEAR, *args, "-i"],
+            input=keystrokes,
+            cwd=self.cwd,
+            capture_output=True,
+            text=True,
+            timeout=1800,
+            env=env,
         )
 
     def test_status_and_exit(self):
@@ -456,8 +470,9 @@ class TestBlankMetadataPlots(ScratchTestCase):
 
     def test_numeric_column_with_a_blank(self):
         """A blank in a numeric column would make both colour-scale bounds NaN."""
-        self._meta("m.csv", "SUPPORT",
-                   ["" if i == 4 else f"{0.1 * i:.2f}" for i in range(12)])
+        self._meta(
+            "m.csv", "SUPPORT", ["" if i == 4 else f"{0.1 * i:.2f}" for i in range(12)]
+        )
         self.assertIsNotNone(self._plot("m.csv"))
 
     def test_column_with_no_blanks_is_unaffected(self):
@@ -489,18 +504,30 @@ class TestNoStrayTempFiles(ScratchTestCase):
             fh.write(f'#!/bin/sh\nexec {sys.executable} "$@"\n')
         os.chmod(shim, 0o755)
 
-        env = dict(os.environ, MPLBACKEND="Agg",
-                   PATH=os.path.join(self.cwd, "fakebin") + os.pathsep + os.environ["PATH"])
+        env = dict(
+            os.environ,
+            MPLBACKEND="Agg",
+            PATH=os.path.join(self.cwd, "fakebin") + os.pathsep + os.environ["PATH"],
+        )
         result = subprocess.run(
-            [sys.executable, "-c",
-             "from pear_ebi.calculate_distances import maple_RF;"
-             "maple_RF.calculate_distance_matrix('t.nwk', 12, 's.csv')"],
-            cwd=self.cwd, capture_output=True, text=True, timeout=1800, env=env,
+            [
+                sys.executable,
+                "-c",
+                "from pear_ebi.calculate_distances import maple_RF;"
+                "maple_RF.calculate_distance_matrix('t.nwk', 12, 's.csv')",
+            ],
+            cwd=self.cwd,
+            capture_output=True,
+            text=True,
+            timeout=1800,
+            env=env,
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertTrue(os.path.exists("s.csv"))
-        self.assertFalse(os.path.exists("Trees.pckl"),
-                         f"pickle left behind; cwd holds {sorted(os.listdir(self.cwd))}")
+        self.assertFalse(
+            os.path.exists("Trees.pckl"),
+            f"pickle left behind; cwd holds {sorted(os.listdir(self.cwd))}",
+        )
 
     def test_parallel_and_single_core_smart_RF_agree(self):
         """The worker signature changed to carry the pickle directory."""
@@ -514,13 +541,23 @@ class TestNoStrayTempFiles(ScratchTestCase):
         with open(shim, "w") as fh:
             fh.write(f'#!/bin/sh\nexec {sys.executable} "$@"\n')
         os.chmod(shim, 0o755)
-        env = dict(os.environ, MPLBACKEND="Agg",
-                   PATH=os.path.join(self.cwd, "fakebin") + os.pathsep + os.environ["PATH"])
+        env = dict(
+            os.environ,
+            MPLBACKEND="Agg",
+            PATH=os.path.join(self.cwd, "fakebin") + os.pathsep + os.environ["PATH"],
+        )
         result = subprocess.run(
-            [sys.executable, "-c",
-             "from pear_ebi.calculate_distances import maple_RF;"
-             "maple_RF.calculate_distance_matrix('t.nwk', 12, 'par.csv')"],
-            cwd=self.cwd, capture_output=True, text=True, timeout=1800, env=env,
+            [
+                sys.executable,
+                "-c",
+                "from pear_ebi.calculate_distances import maple_RF;"
+                "maple_RF.calculate_distance_matrix('t.nwk', 12, 'par.csv')",
+            ],
+            cwd=self.cwd,
+            capture_output=True,
+            text=True,
+            timeout=1800,
+            env=env,
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         parallel = np.loadtxt("par.csv", delimiter=",")
@@ -573,20 +610,30 @@ class TestOutputReporting(ScratchTestCase):
         self.assertTrue(produced, "the run wrote nothing")
         for name in produced:
             with self.subTest(file=name):
-                self.assertIn(name, r.stdout,
-                              f"{name} was written but never mentioned; "
-                              f"output was:\n{r.stdout}")
+                self.assertIn(
+                    name,
+                    r.stdout,
+                    f"{name} was written but never mentioned; "
+                    f"output was:\n{r.stdout}",
+                )
 
     @unittest.skipIf(PEAR is None, "console script not installed")
     def test_verbose_reports_the_resolved_configuration(self):
         r = self.run_cli("t.nwk", "-m", "hashrf_RF", "-v")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-        for expected in ("Resolved configuration", "working directory",
-                         "input files", "total trees", "hashrf binary", "platform"):
+        for expected in (
+            "Resolved configuration",
+            "working directory",
+            "input files",
+            "total trees",
+            "hashrf binary",
+            "platform",
+        ):
             with self.subTest(field=expected):
                 self.assertIn(expected, r.stdout)
         # the binary actually in use must be named -- one on PATH silently wins
         from pear_ebi import _install_helpers as ih
+
         self.assertIn(os.path.basename(ih.hashrf_binary()), r.stdout)
 
     @unittest.skipIf(PEAR is None, "console script not installed")
@@ -601,8 +648,10 @@ class TestOutputReporting(ScratchTestCase):
         for line in r.stdout.splitlines():
             if "->" in line or "directory :" in line:
                 with self.subTest(line=line[:40]):
-                    self.assertFalse(line.rstrip().endswith(("/", "-")),
-                                     f"line looks wrapped: {line!r}")
+                    self.assertFalse(
+                        line.rstrip().endswith(("/", "-")),
+                        f"line looks wrapped: {line!r}",
+                    )
 
 
 class TestCapturedStreamSummary(unittest.TestCase):
@@ -640,8 +689,10 @@ class TestTaxonMismatchMessage(ScratchTestCase):
         from pear_ebi.calculate_distances._exec import PearExecutableError
 
         with open("mixed.nwk", "w") as fh:
-            fh.write("(A:1,B:1,(C:1,D:1):1);\n(A:1,B:1,(C:1,E:1):1);\n"
-                     "(E:1,F:1,(G:1,H:1):1);\n")
+            fh.write(
+                "(A:1,B:1,(C:1,D:1):1);\n(A:1,B:1,(C:1,E:1):1);\n"
+                "(E:1,F:1,(G:1,H:1):1);\n"
+            )
         with self.assertRaises(PearExecutableError) as ctx:
             tqdist.quartet("mixed.nwk", 3, "out.csv")
         message = str(ctx.exception)

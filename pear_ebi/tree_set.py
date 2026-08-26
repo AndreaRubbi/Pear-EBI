@@ -28,6 +28,7 @@ __status__ = "Production"
 import json
 import os
 import random
+import re
 import shutil
 import subprocess
 import sys
@@ -35,11 +36,11 @@ import tempfile
 import time
 import uuid
 import warnings
-import re
 
 import numpy as np
 import pandas as pd
 from rich import print
+
 # ? rich is a very nice library that allows to
 # ? easily format the output of console
 # ? https://github.com/Textualize/rich
@@ -61,11 +62,11 @@ from scipy.sparse import SparseEfficiencyWarning
 from .calculate_distances import _exec, hashrf, maple_RF, tqdist
 from .embeddings import Isomap_e, LLE_e, PCoA_e, tSNE_e
 from .embeddings.graph import graph
+
 # from .interactive_mode import interactive
 from .subsample import subsample
 
 # importing other modules
-
 
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -659,8 +660,7 @@ class tree_set:
             per_set = ""
             if hasattr(self, "data"):
                 per_set = "\n  Per-set tree counts:\n" + "\n".join(
-                    f"    - {name}: {info['n_trees']}"
-                    for name, info in self.data.items()
+                    f"    - {name}: {info['n_trees']}" for name, info in self.data.items()
                 )
             sys.exit(
                 f"Shape mismatch: the distance matrix has {n_data} rows but the "
@@ -877,9 +877,7 @@ class tree_set:
             )
 
         else:
-            raise ValueError(
-                "'method' can only be 'pcoa', 'tsne', 'isomap' or 'lle'"
-            )
+            raise ValueError("'method' can only be 'pcoa', 'tsne', 'isomap' or 'lle'")
 
         # plot_embedding writes the html only when save is requested
         if save:
@@ -1002,9 +1000,7 @@ class tree_set:
             )
 
         else:
-            raise ValueError(
-                "'method' can only be 'pcoa', 'tsne', 'isomap' or 'lle'"
-            )
+            raise ValueError("'method' can only be 'pcoa', 'tsne', 'isomap' or 'lle'")
 
         # plot_embedding writes the html only when save is requested
         if save:
@@ -1051,9 +1047,7 @@ class tree_set:
                     payload = None
                     for line in res:
                         if line.startswith(subsample.RESULT_MARKER):
-                            payload = json.loads(
-                                line[len(subsample.RESULT_MARKER) :]
-                            )
+                            payload = json.loads(line[len(subsample.RESULT_MARKER) :])
                             break
                     if payload is None:
                         sys.exit(

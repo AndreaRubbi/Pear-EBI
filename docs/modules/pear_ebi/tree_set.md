@@ -3,7 +3,7 @@
 
 ## tree_set
 [source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L433)
-```python 
+```python
 tree_set(
    file, output_file = None, distance_matrix = None, metadata = None
 )
@@ -170,7 +170,7 @@ Gets subset of phylogenetic trees
 
 ## set_collection
 [source](https://github.com/AndreaRubbi/Pear-EBI/blob/pear_ebi/pear_ebi/tree_set.py/#L1143)
-```python 
+```python
 set_collection(
    collection = list(), file = 'Set_collection_', output_file = None,
    distance_matrix = None, metadata = None
@@ -220,4 +220,3 @@ Concatenates two collections or collection and tree_set
 **Returns**
 
 * **set_collection**  : concatenated set_collection
-

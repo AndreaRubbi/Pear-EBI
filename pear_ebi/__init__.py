@@ -9,6 +9,7 @@ __institute__ = "EMBL-EBI"
 __email__ = "andrear@ebi.ac.uk"
 __status__ = "Production"
 
+
 # ─── NumPy version guard ──────────────────────────────────────────────────────
 # PEAR requires NumPy < 2.0. The pin is declared in pyproject.toml, but a conda
 # environment (or a later `pip install -U numpy`) can still put NumPy 2.x in front

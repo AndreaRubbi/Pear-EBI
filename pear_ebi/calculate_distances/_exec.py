@@ -158,9 +158,7 @@ def run_process(cmd_list, *, timeout=None):
             cmd_list,
         )
     except subprocess.TimeoutExpired as exc:
-        return CompletedRun(
-            1, exc.stdout or "", f"timed out after {timeout}s", cmd_list
-        )
+        return CompletedRun(1, exc.stdout or "", f"timed out after {timeout}s", cmd_list)
     except OSError as exc:
         code = getattr(exc, "errno", None)
         if code in (errno.ENOEXEC, errno.EFAULT, _EBADARCH):
@@ -170,7 +168,9 @@ def run_process(cmd_list, *, timeout=None):
                 f"exec format error when trying to run {cmd_list[0]}: {exc}",
                 cmd_list,
             )
-        return CompletedRun(1, "", f"os error when running {cmd_list[0]}: {exc}", cmd_list)
+        return CompletedRun(
+            1, "", f"os error when running {cmd_list[0]}: {exc}", cmd_list
+        )
 
 
 def resolve_binary(system_name, packaged_path, *, tool_label):

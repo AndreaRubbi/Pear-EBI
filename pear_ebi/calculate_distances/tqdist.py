@@ -72,7 +72,10 @@ def _read_matrix(output_file, n_trees, run, label):
                 # pair, and its stderr says why. A taxon-set mismatch is by far the
                 # most common cause, so name it up front rather than leaving the user
                 # to infer it from a wall of repeated diagnostics.
-                if "same set of leaves" in run.stderr or "Leaves doesn't agree" in run.stderr:
+                if (
+                    "same set of leaves" in run.stderr
+                    or "Leaves doesn't agree" in run.stderr
+                ):
                     raise PearExecutableError(
                         f"{label} cannot compare these trees: they do not all have the "
                         f"same set of taxa.\n"

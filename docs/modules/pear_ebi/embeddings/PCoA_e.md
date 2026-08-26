@@ -24,4 +24,3 @@ embed distance_matrix in n_components with Principal Coordinate Analysis
 **Returns**
 
 * **components** (numpy.array) : principal coordinates(components) of distance matrix
-

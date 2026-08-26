@@ -62,4 +62,3 @@ Computes weighted Robinson Foulds distances
 
 * **PearExecutableError**  : if hashrf cannot be run, or fails, or produces
     output that does not match n_trees.
-

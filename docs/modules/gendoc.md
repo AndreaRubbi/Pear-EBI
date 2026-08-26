@@ -129,4 +129,3 @@ Count the indentation in whitespace characters.
 **Returns**
 
 * **int**  : Number of whitespace indentations
-

@@ -543,7 +543,7 @@ def plot_embedding(
                 xaxis=ax_style_x,
                 yaxis=ax_style_y,
                 zaxis=ax_style_z,
-            )
+            ),
             # hovermode="x unified",
         )
 
@@ -835,7 +835,7 @@ def plot_embedding(
                 showticklabels=True,
                 domain=[0, 0.84],
                 title="PCo1",
-                title_font=dict(size=20)
+                title_font=dict(size=20),
                 # range = [min_x - abs(0.1 * min_x), max_x + abs(0.1 * max_x)]
             ),
             yaxis=dict(
@@ -847,7 +847,7 @@ def plot_embedding(
                 showticklabels=True,
                 domain=[0, 0.84],
                 title="PCo2",
-                title_font=dict(size=20)
+                title_font=dict(size=20),
                 # range = [min_y - abs(0.1 * min_y), max_y + abs(0.1 * max_y)]
             ),
             # plot_bgcolor="rgb(240,240,240)",

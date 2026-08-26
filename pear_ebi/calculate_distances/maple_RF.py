@@ -8,6 +8,7 @@ __credits__ = {
 	Further improvements thanks to Myrthe's work made the implementation more flexible.
 	MAPLE code is available on GitHub: https://github.com/NicolaDM/MAPLE"""
 
+import json
 import multiprocessing as mp
 import os
 import pickle
@@ -17,8 +18,6 @@ import sys
 import tempfile
 import time
 import warnings
-
-import json
 
 import numpy as np
 import pandas as pd

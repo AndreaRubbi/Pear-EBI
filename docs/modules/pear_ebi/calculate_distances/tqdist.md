@@ -62,4 +62,3 @@ Computes triplet distances
 
 * **PearExecutableError**  : if tqDist cannot be run, fails, or produces a matrix
     that does not match n_trees.
-

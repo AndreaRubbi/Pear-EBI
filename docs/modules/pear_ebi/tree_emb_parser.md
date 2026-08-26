@@ -24,4 +24,3 @@ Parses PEAR's command line arguments.
 **Returns**
 
 * **Namespace**  : the parsed arguments
-
